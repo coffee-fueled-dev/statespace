@@ -1,0 +1,57 @@
+# Simple Card Game Configuration
+name: "Simple Card Game"
+description: "A basic card game with deck, hand, and discard pile"
+position_plugin: "cardgame-mechanics"
+default_transition_type: "MOVE"
+
+containers:
+  - id: "deck"
+    slots: 5
+    container_type: "deck"
+    initial_elements: ["ace", "king", "queen", "jack", "ten"]
+    metadata:
+      type: "deck"
+      faceDown: true
+    transitions:
+      - target: "hand"
+        from_position: "top"
+        to_position: "middle"
+        action: "DRAW"
+
+  - id: "hand"
+    slots: 3
+    container_type: "hand"
+    metadata:
+      type: "hand"
+      visible: true
+    transitions:
+      - target: "discard"
+        from_position: "middle"
+        to_position: "stack"
+        action: "DISCARD"
+
+  - id: "discard"
+    slots: 5
+    container_type: "discard"
+    metadata:
+      type: "discard"
+      faceUp: true
+    transitions:
+      - target: "deck"
+        from_position: "stack"
+        to_position: "bottom"
+        action: "SHUFFLE"
+
+element_bank:
+  [
+    "ace",
+    "king",
+    "queen",
+    "jack",
+    "ten",
+    "nine",
+    "eight",
+    "seven",
+    "six",
+    "five",
+  ]

@@ -1,0 +1,116 @@
+# Generic System Configuration
+name: "Generic System"
+description: "Basic generic container system with standard position types"
+default_transition_type: "MOVE"
+
+containers:
+  - id: "container_A"
+    slots: 6
+    initial_elements: []
+    metadata:
+      type: "large"
+      category: "primary"
+    transitions:
+      - target: "container_B"
+        from_position: "any"
+        to_position: "start"
+        action: "MOVE"
+      - target: "container_E"
+        from_position: "any"
+        to_position: "any"
+        action: "MOVE"
+      - target: "container_C"
+        from_position: "any"
+        to_position: "start"
+        action: "MOVE"
+      - target: "container_A"
+        from_position: "any"
+        to_position: "any"
+        action: "SHIFT"
+
+  - id: "container_B"
+    slots: 1
+    initial_elements: []
+    metadata:
+      type: "small"
+      category: "secondary"
+    transitions:
+      - target: "container_C"
+        from_position: "any"
+        to_position: "end"
+        action: "MOVE"
+      - target: "container_E"
+        from_position: "start"
+        to_position: "any"
+        action: "MOVE"
+      - target: "container_D"
+        from_position: "any"
+        to_position: "any"
+        action: "MOVE"
+      - target: "container_A"
+        from_position: "start"
+        to_position: "any"
+        action: "MOVE"
+
+  - id: "container_C"
+    slots: 1
+    initial_elements: []
+    metadata:
+      type: "small"
+      category: "secondary"
+    transitions:
+      - target: "container_B"
+        from_position: "any"
+        to_position: "end"
+        action: "MOVE"
+      - target: "container_E"
+        from_position: "start"
+        to_position: "any"
+        action: "MOVE"
+      - target: "container_D"
+        from_position: "any"
+        to_position: "any"
+        action: "MOVE"
+      - target: "container_A"
+        from_position: "start"
+        to_position: "any"
+        action: "MOVE"
+
+  - id: "container_D"
+    slots: 1
+    initial_elements: []
+    metadata:
+      type: "transfer"
+      category: "utility"
+    transitions:
+      - target: "container_C"
+        from_position: "any"
+        to_position: "end"
+        action: "MOVE"
+      - target: "container_B"
+        from_position: "any"
+        to_position: "end"
+        action: "MOVE"
+
+  - id: "container_E"
+    slots: 1
+    initial_elements: []
+    metadata:
+      type: "storage"
+      category: "primary"
+    transitions:
+      - target: "container_C"
+        from_position: "any"
+        to_position: "start"
+        action: "MOVE"
+      - target: "container_B"
+        from_position: "any"
+        to_position: "start"
+        action: "MOVE"
+      - target: "container_A"
+        from_position: "any"
+        to_position: "any"
+        action: "MOVE"
+
+element_bank:
+  ["item_1", "item_2", "item_3", "item_4", "item_5", "item_6", "item_7"]

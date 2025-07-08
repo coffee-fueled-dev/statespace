@@ -1,0 +1,27 @@
+{
+  "name": "@statespace/monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "examples/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "context": "bun run scripts/context.ts",
+    "example:card-game:yaml": "bun run --elide-lines 0 --filter @statespace/example-card-game start:yaml",
+    "example:card-game:ts": "bun run --elide-lines 0 --filter @statespace/example-card-game start:ts",
+    "example:card-game:reachability": "bun run --elide-lines 0 --filter @statespace/example-card-game start:card-game:reachability",
+    "example:card-game:goal-search": "bun run --elide-lines 0 --filter @statespace/example-card-game start:card-game:goal-search",
+    "example:generic-system:ts": "bun run --elide-lines 0 --filter @statespace/example-generic-system start:ts",
+    "example:generic-system:yaml": "bun run --elide-lines 0 --filter @statespace/example-generic-system start:yaml"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/parse-gitignore": "^1.0.2",
+    "minimatch": "^10.0.3",
+    "parse-gitignore": "^2.0.0"
+  },
+  "peerDependencies": {},
+  "dependencies": {}
+}

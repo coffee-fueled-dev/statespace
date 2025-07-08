@@ -1,0 +1,17 @@
+{
+  "name": "@statespace/example-generic-system",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Generic system without plugins",
+  "scripts": {
+    "start:ts": "bun run typescript/main.ts",
+    "start:yaml": "bun run yaml/main.ts"
+  },
+  "dependencies": {
+    "@statespace/core": "workspace:*",
+    "@statespace/example-shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}

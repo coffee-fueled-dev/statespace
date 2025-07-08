@@ -1,0 +1,16 @@
+{
+  "name": "@statespace/example-shared",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Shared utilities for examples",
+  "exports": {
+    "./runner": "./runner.ts",
+    "./graph": "./graph.ts"
+  },
+  "dependencies": {
+    "@statespace/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
