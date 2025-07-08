@@ -10,7 +10,7 @@ import type { Container, StatespaceConfig } from "@statespace/core";
 export const genericSystemTemplate: Container[] = [
   {
     id: "container_A",
-    slots: [false, false, false, false, false, false],
+    slots: 6,
     metadata: { type: "large", category: "primary" },
     allowedTransitions: [
       { targetId: "container_B", to: "start", from: "any" },
@@ -21,7 +21,7 @@ export const genericSystemTemplate: Container[] = [
   },
   {
     id: "container_B",
-    slots: [false],
+    slots: 1,
     metadata: { type: "small", category: "secondary" },
     allowedTransitions: [
       { targetId: "container_C", to: "end", from: "any" },
@@ -32,7 +32,7 @@ export const genericSystemTemplate: Container[] = [
   },
   {
     id: "container_C",
-    slots: [false],
+    slots: 1,
     metadata: { type: "small", category: "secondary" },
     allowedTransitions: [
       { targetId: "container_B", to: "end", from: "any" },
@@ -43,7 +43,7 @@ export const genericSystemTemplate: Container[] = [
   },
   {
     id: "container_D",
-    slots: [false],
+    slots: 1,
     metadata: { type: "transfer", category: "utility" },
     allowedTransitions: [
       { targetId: "container_C", to: "end", from: "any" },
@@ -52,7 +52,7 @@ export const genericSystemTemplate: Container[] = [
   },
   {
     id: "container_E",
-    slots: [false],
+    slots: 1,
     metadata: { type: "storage", category: "primary" },
     allowedTransitions: [
       { targetId: "container_C", to: "start", from: "any" },
@@ -71,9 +71,6 @@ export const genericElementBank = [
   "item_5",
   "item_6",
   "item_7",
-  false,
-  false,
-  false,
 ];
 
 // Export the complete configuration

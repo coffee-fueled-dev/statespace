@@ -6,7 +6,6 @@ default_transition_type: "MOVE"
 containers:
   - id: "container_A"
     slots: 6
-    initial_elements: []
     metadata:
       type: "large"
       category: "primary"
@@ -30,7 +29,6 @@ containers:
 
   - id: "container_B"
     slots: 1
-    initial_elements: []
     metadata:
       type: "small"
       category: "secondary"
@@ -54,7 +52,6 @@ containers:
 
   - id: "container_C"
     slots: 1
-    initial_elements: []
     metadata:
       type: "small"
       category: "secondary"
@@ -78,7 +75,6 @@ containers:
 
   - id: "container_D"
     slots: 1
-    initial_elements: []
     metadata:
       type: "transfer"
       category: "utility"
@@ -94,7 +90,6 @@ containers:
 
   - id: "container_E"
     slots: 1
-    initial_elements: []
     metadata:
       type: "storage"
       category: "primary"

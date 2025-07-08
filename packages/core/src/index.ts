@@ -1,10 +1,12 @@
 export {
   Explorer,
   type ExplorerConfig,
+  type ExplorationResult,
   type StateDiscoveryEvent,
   type TransitionDiscoveryEvent,
   type ExplorerEventHandler,
 } from "./explorer";
+export * from "./analytics";
 export { Codec } from "./codec";
 export {
   TransitionEngine,

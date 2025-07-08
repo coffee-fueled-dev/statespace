@@ -1,6 +1,13 @@
-import { ConfigLoader } from "@statespace/core";
-import { runExploration } from "@statespace/example-shared/runner";
+import {
+  AnalyticsEngine,
+  ConfigLoader,
+  displayBoundedPathSearchResult,
+} from "@statespace/core";
 import { cardgameMechanicsPlugin } from "../plugins/cardgame-mechanics";
+
+const ORIGIN_INDEX = 0;
+const TARGET_INDEX = 1;
+const LIMIT = 10;
 
 async function main() {
   try {
@@ -12,35 +19,16 @@ async function main() {
     );
     const explorer = await configLoader.buildSystem(yamlConfig);
 
-    await runExploration({
-      name: yamlConfig.name,
-      description: `${yamlConfig.description} (Multi-layer: YAML + Plugin)`,
-      icon: "🃏",
+    const analytics = new AnalyticsEngine({
       explorer,
-      elementBank: yamlConfig.element_bank,
-      containerCount: yamlConfig.containers.length,
-      customSetupInfo: () => {
-        console.log("\n📋 Container Setup:");
-        yamlConfig.containers.forEach((container) => {
-          const initialCount = container.initial_elements?.length || 0;
-          console.log(
-            `  ${container.id}: ${initialCount}/${container.slots} slots filled (${container.container_type})`
-          );
-        });
-      },
-      customStats: () => {
-        console.log(`\n🏗️  Configuration Layers Used:`);
-        console.log(
-          `  Layer 1 (YAML): ${yamlConfig.name} - ${yamlConfig.containers.length} containers`
-        );
-        console.log(
-          `  Layer 2 (Plugin): ${cardgameMechanicsPlugin.name} v${cardgameMechanicsPlugin.version}`
-        );
-        console.log(
-          `  Layer 3 (ConfigLoader): System integration and validation`
-        );
-      },
+      autoTrackDiscoveries: true,
     });
+
+    const result = await analytics.pathToTarget(ORIGIN_INDEX, TARGET_INDEX, {
+      stepLimit: LIMIT,
+    });
+
+    displayBoundedPathSearchResult(result, true);
   } catch (error) {
     console.error("❌ Multi-layer configuration failed:", error);
   }

@@ -19,6 +19,20 @@ export interface TransitionEngineConfig {
   positionHandlers?: Record<PositionType, PositionHandler>;
 }
 
+// Internal container format with actual slot arrays for processing
+interface InternalContainer {
+  id: string;
+  slots: Element[];
+  metadata?: Record<string, any>;
+  allowedTransitions: any[];
+  positionHandlers?: Record<PositionType, PositionHandler>;
+}
+
+// Internal system state for processing
+interface InternalSystemState {
+  containers: InternalContainer[];
+}
+
 /**
  * TransitionEngine handles the generation of valid state transitions.
  */
@@ -42,8 +56,8 @@ export class TransitionEngine {
    * Generate all valid transitions from the current state
    */
   generateTransitions(
-    currentState: SystemState,
-    encodeState: (state: SystemState) => number
+    currentState: InternalSystemState,
+    encodeState: (state: InternalSystemState) => number
   ): StateTransition[] {
     const transitions: StateTransition[] = [];
 
@@ -89,12 +103,23 @@ export class TransitionEngine {
 
             const lexicalIndex = encodeState({ containers: newContainers });
 
+            // Convert back to external SystemState format for the result
+            const externalResultingState: SystemState = {
+              containers: newContainers.map((container) => ({
+                id: container.id,
+                slots: container.slots.length,
+                metadata: container.metadata,
+                allowedTransitions: container.allowedTransitions,
+                positionHandlers: container.positionHandlers,
+              })),
+            };
+
             transitions.push({
               element: move.element,
               fromContainer: origin.id,
               toContainer: target.id,
               transitionType,
-              resultingState: { containers: newContainers },
+              resultingState: externalResultingState,
               lexicalIndex,
               metadata: rule.metadata,
             });
@@ -111,7 +136,7 @@ export class TransitionEngine {
    */
   private getValidMoves(
     position: string,
-    container: Container
+    container: InternalContainer
   ): { element: Element; modifiedSlots: Element[] }[] {
     const handler = this.getPositionHandler(position, container);
     return handler ? handler.canMoveFrom(container.slots) : [];
@@ -122,7 +147,7 @@ export class TransitionEngine {
    */
   private getValidPlacements(
     position: string,
-    container: Container,
+    container: InternalContainer,
     element: Element
   ): Element[][] {
     const handler = this.getPositionHandler(position, container);
@@ -133,12 +158,12 @@ export class TransitionEngine {
    * Create new container configuration after a move
    */
   private createNewContainers(
-    containers: Container[],
+    containers: InternalContainer[],
     originId: string,
     newOriginSlots: Element[],
     targetId: string,
     newTargetSlots: Element[]
-  ): Container[] {
+  ): InternalContainer[] {
     return containers.map((container) => {
       if (container.id === originId) {
         return { ...container, slots: newOriginSlots };
@@ -155,7 +180,7 @@ export class TransitionEngine {
    */
   private getPositionHandler(
     position: string,
-    container: Container
+    container: InternalContainer
   ): PositionHandler | null {
     // 1. Check container-specific handlers first
     if (container.positionHandlers?.[position]) {
@@ -230,6 +255,77 @@ export class TransitionEngine {
           }
 
           return placements;
+        },
+      },
+      top: {
+        canMoveFrom: (slots: Element[]) => {
+          const element = slots[0];
+          if (typeof element === "boolean") return [];
+          return [{ element, modifiedSlots: [false, ...slots.slice(1)] }];
+        },
+        canMoveTo: (slots: Element[], element: Element) => {
+          return slots[0] === false ? [[element, ...slots.slice(1)]] : [];
+        },
+      },
+      bottom: {
+        canMoveFrom: (slots: Element[]) => {
+          const element = slots[slots.length - 1];
+          if (typeof element === "boolean") return [];
+          return [{ element, modifiedSlots: [...slots.slice(0, -1), false] }];
+        },
+        canMoveTo: (slots: Element[], element: Element) => {
+          const lastIndex = slots.length - 1;
+          return slots[lastIndex] === false
+            ? [[...slots.slice(0, lastIndex), element]]
+            : [];
+        },
+      },
+      middle: {
+        canMoveFrom: (slots: Element[]) => {
+          const moves: { element: Element; modifiedSlots: Element[] }[] = [];
+          for (let i = 0; i < slots.length; i++) {
+            if (typeof slots[i] === "string") {
+              const modifiedSlots = [...slots];
+              modifiedSlots[i] = false;
+              moves.push({ element: slots[i], modifiedSlots });
+            }
+          }
+          return moves;
+        },
+        canMoveTo: (slots: Element[], element: Element) => {
+          const placements: Element[][] = [];
+          for (let i = 0; i < slots.length; i++) {
+            if (slots[i] === false) {
+              const newSlots = [...slots];
+              newSlots[i] = element;
+              placements.push(newSlots);
+            }
+          }
+          return placements;
+        },
+      },
+      stack: {
+        canMoveFrom: (slots: Element[]) => {
+          // Find the top non-false element
+          for (let i = slots.length - 1; i >= 0; i--) {
+            if (typeof slots[i] === "string") {
+              const modifiedSlots = [...slots];
+              modifiedSlots[i] = false;
+              return [{ element: slots[i], modifiedSlots }];
+            }
+          }
+          return [];
+        },
+        canMoveTo: (slots: Element[], element: Element) => {
+          // Find the first available slot from the bottom
+          for (let i = 0; i < slots.length; i++) {
+            if (slots[i] === false) {
+              const newSlots = [...slots];
+              newSlots[i] = element;
+              return [newSlots];
+            }
+          }
+          return [];
         },
       },
     };

@@ -8,7 +8,6 @@ containers:
   - id: "deck"
     slots: 5
     container_type: "deck"
-    initial_elements: ["ace", "king", "queen", "jack", "ten"]
     metadata:
       type: "deck"
       faceDown: true

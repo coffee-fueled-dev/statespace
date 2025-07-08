@@ -1,23 +1,34 @@
-import type { Container, StatespaceConfig } from "@statespace/core";
+import type { Container } from "@statespace/core";
 import { cardgameMechanicsPlugin } from "../plugins/cardgame-mechanics";
 
 /**
- * TypeScript equivalent of the YAML card game configuration
- * This demonstrates how to achieve the same multi-layer approach
- * but with TypeScript importing and using the plugin directly
+ * Element bank - declares all non-false elements available in the system
  */
+export const cardGameElementBank = [
+  "ace",
+  "king",
+  "queen",
+  "jack",
+  "ten",
+  "nine",
+  "eight",
+  "seven",
+  "six",
+  "five",
+];
 
-// Define containers that mirror the YAML configuration
-export const cardGameYamlEquivalentContainers: Container[] = [
+/**
+ * Container definitions using the clean structural API
+ */
+export const cardGameContainers: Container[] = [
   {
     id: "deck",
-    slots: ["ace", "king", "queen", "jack", "ten"],
+    slots: 5, // Number of slots
     metadata: {
       container_type: "deck",
       type: "deck",
       faceDown: true,
     },
-    // Apply the plugin's position handlers for deck type
     positionHandlers: cardgameMechanicsPlugin.containerTypes?.deck,
     allowedTransitions: [
       {
@@ -30,13 +41,12 @@ export const cardGameYamlEquivalentContainers: Container[] = [
   },
   {
     id: "hand",
-    slots: [false, false, false],
+    slots: 3, // Number of slots
     metadata: {
       container_type: "hand",
       type: "hand",
       visible: true,
     },
-    // Apply the plugin's position handlers for hand type
     positionHandlers: cardgameMechanicsPlugin.containerTypes?.hand,
     allowedTransitions: [
       {
@@ -49,13 +59,12 @@ export const cardGameYamlEquivalentContainers: Container[] = [
   },
   {
     id: "discard",
-    slots: [false, false, false, false, false],
+    slots: 5, // Number of slots
     metadata: {
       container_type: "discard",
       type: "discard",
       faceUp: true,
     },
-    // Apply the plugin's position handlers for discard type
     positionHandlers: cardgameMechanicsPlugin.containerTypes?.discard,
     allowedTransitions: [
       {
@@ -68,29 +77,15 @@ export const cardGameYamlEquivalentContainers: Container[] = [
   },
 ];
 
-// Element bank that mirrors the YAML configuration
-export const cardGameYamlEquivalentElementBank = [
-  "ace",
-  "king",
-  "queen",
-  "jack",
-  "ten",
-  "nine",
-  "eight",
-  "seven",
-  "six",
-  "five",
-  false,
-  false,
-  false,
-];
-
-// Export the complete configuration
-export const cardGameYamlEquivalentConfig: StatespaceConfig = {
+/**
+ * Complete configuration object
+ */
+export const cardGameConfig = {
   name: "Simple Card Game (TypeScript Multi-layer)",
-  description: "A basic card game with deck, hand, and discard pile",
-  containers: cardGameYamlEquivalentContainers,
-  elementBank: cardGameYamlEquivalentElementBank,
+  description:
+    "A basic card game with deck, hand, and discard pile (TypeScript Multi-layer: Config + Plugin)",
+  containers: cardGameContainers,
+  elementBank: cardGameElementBank,
   transitionEngine: {
     defaultTransitionType: "MOVE",
     getTransitionType: cardgameMechanicsPlugin.getTransitionType,

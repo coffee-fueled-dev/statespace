@@ -4,10 +4,8 @@
   "type": "module",
   "description": "Multi-layer configuration card game example",
   "scripts": {
-    "start:ts": "bun run typescript/main.ts",
     "start:yaml": "bun run yaml/main.ts",
-    "start:card-game:reachability": "bun run analysis/reachability-analysis.ts",
-    "start:card-game:goal-search": "bun run analysis/goal-search-analysis.ts"
+    "start:card-game:reachability": "bun run analysis/reachability.ts"
   },
   "dependencies": {
     "@statespace/core": "workspace:*",

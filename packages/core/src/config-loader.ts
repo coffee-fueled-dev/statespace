@@ -21,7 +21,6 @@ export interface YamlContainer {
   id: string;
   slots: number;
   container_type?: string; // Maps to plugin container type
-  initial_elements?: string[];
   metadata?: Record<string, any>;
 
   transitions: YamlTransition[];
@@ -141,7 +140,10 @@ export class ConfigLoader {
     const containers = this.convertContainers(config.containers, plugin);
 
     // Build element bank with proper false slots
-    const elementBank = this.buildElementBank(config.element_bank, containers);
+    const fullElementBank = this.buildElementBank(
+      config.element_bank,
+      containers
+    );
 
     // Build transition engine config
     const transitionEngineConfig = this.buildTransitionEngineConfig(
@@ -150,7 +152,7 @@ export class ConfigLoader {
     );
 
     // Create the explorer
-    return new Explorer(elementBank, containers, {
+    return new Explorer(config.element_bank, containers, {
       transitionEngine: transitionEngineConfig,
     });
   }
@@ -163,18 +165,6 @@ export class ConfigLoader {
     plugin?: PositionPlugin
   ): Container[] {
     return yamlContainers.map((yamlContainer) => {
-      // Create slots array with initial elements
-      const slots: Element[] = new Array(yamlContainer.slots).fill(false);
-
-      // Place initial elements if specified
-      if (yamlContainer.initial_elements) {
-        yamlContainer.initial_elements.forEach((element, index) => {
-          if (index < slots.length) {
-            slots[index] = element;
-          }
-        });
-      }
-
       // Get position handlers for this container type
       const positionHandlers = this.getContainerPositionHandlers(
         yamlContainer.container_type,
@@ -194,7 +184,7 @@ export class ConfigLoader {
 
       return {
         id: yamlContainer.id,
-        slots,
+        slots: yamlContainer.slots,
         metadata: yamlContainer.metadata,
         allowedTransitions,
         positionHandlers,
@@ -224,7 +214,7 @@ export class ConfigLoader {
     containers: Container[]
   ): (string | boolean)[] {
     const totalSlots = containers.reduce(
-      (sum, container) => sum + container.slots.length,
+      (sum, container) => sum + container.slots,
       0
     );
 

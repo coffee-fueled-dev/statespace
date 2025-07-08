@@ -32,7 +32,7 @@ export interface TransitionRule {
 
 export interface Container {
   id: string;
-  slots: Element[];
+  slots: number; // Number of slots in the container
   metadata?: Record<string, any>;
   allowedTransitions: TransitionRule[];
   positionHandlers?: Record<PositionType, PositionHandler>;
@@ -56,7 +56,7 @@ export interface StatespaceConfig {
   name: string;
   description: string;
   containers: Container[];
-  elementBank: (string | boolean)[];
+  elementBank: string[]; // Only non-false elements
   transitionEngine?: TransitionEngineConfig;
   metadata?: Record<string, any>;
 }
