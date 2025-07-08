@@ -1,8 +1,8 @@
+import { ConfigLoader } from "@statespace/core";
 import {
   AnalyticsEngine,
-  ConfigLoader,
   displayBoundedPathSearchResult,
-} from "@statespace/core";
+} from "@statespace/analysis";
 import { cardgameMechanicsPlugin } from "../plugins/cardgame-mechanics";
 
 const ORIGIN_INDEX = 0;

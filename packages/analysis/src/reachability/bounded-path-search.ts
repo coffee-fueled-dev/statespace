@@ -1,5 +1,4 @@
-import type { Explorer } from "../../explorer/index";
-import type { StateTransition, LexicalIndex } from "../../types";
+import type { Explorer, StateTransition, LexicalIndex } from "@statespace/core";
 
 export interface BoundedPathSearchResult {
   found: boolean;

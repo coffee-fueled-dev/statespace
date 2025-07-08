@@ -6,7 +6,6 @@ export {
   type TransitionDiscoveryEvent,
   type ExplorerEventHandler,
 } from "./explorer";
-export * from "./analytics";
 export { Codec } from "./codec";
 export {
   TransitionEngine,

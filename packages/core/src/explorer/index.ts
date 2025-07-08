@@ -263,6 +263,3 @@ export class Explorer {
     return this.transitionEngine;
   }
 }
-
-// Export analytics modules
-export * from "../analytics";

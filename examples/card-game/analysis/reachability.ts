@@ -1,6 +1,9 @@
-import { Explorer, AnalyticsEngine } from "@statespace/core";
+import { Explorer } from "@statespace/core";
+import {
+  AnalyticsEngine,
+  displayBoundedPathSearchResult,
+} from "@statespace/analysis";
 import { cardGameConfig } from "../typescript/config";
-import { displayBoundedPathSearchResult } from "@statespace/core";
 
 /**
  * Simple goal search analysis: determine if target state is reachable from origin

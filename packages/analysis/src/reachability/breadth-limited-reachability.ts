@@ -1,5 +1,4 @@
-import type { Explorer } from "../../explorer/index";
-import type { LexicalIndex } from "../../types";
+import type { Explorer, LexicalIndex } from "@statespace/core";
 
 export interface BreadthLimitedReachabilityResult {
   statesByStep: Map<number, Set<LexicalIndex>>;

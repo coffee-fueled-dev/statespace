@@ -1,5 +1,4 @@
-import type { Explorer } from "../explorer";
-import type { StateTransition, LexicalIndex } from "../types";
+import type { Explorer, StateTransition, LexicalIndex } from "@statespace/core";
 import * as Reachability from "./reachability";
 
 export interface AnalyticsEngineConfig {
@@ -46,7 +45,7 @@ export class AnalyticsEngine {
   /**
    * Search for a path between two states
    */
-  async pathToTarget(
+  async boundedPathSearch(
     origin: LexicalIndex,
     target: LexicalIndex,
     options: Reachability.BoundedPathSearchOptions = {}
@@ -62,7 +61,7 @@ export class AnalyticsEngine {
   /**
    * Find all states reachable within X steps from an origin state
    */
-  async statesReachableWithinSteps(
+  async breadthLimitedReachability(
     origin: LexicalIndex,
     maxSteps: number,
     silent: boolean = false

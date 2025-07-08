@@ -1,8 +1,8 @@
+import { ConfigLoader } from "@statespace/core";
 import {
   AnalyticsEngine,
-  ConfigLoader,
   displayBoundedPathSearchResult,
-} from "@statespace/core";
+} from "@statespace/analysis";
 
 const ORIGIN_INDEX = 0;
 const TARGET_INDEX = 1;
