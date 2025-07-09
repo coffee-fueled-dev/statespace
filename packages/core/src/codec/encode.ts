@@ -1,6 +1,6 @@
 import { bignumber, factorial, add, evaluate } from "mathjs";
 import BitSet from "bitset";
-import type { Element, Permutation, LexicalIndex } from "../types";
+import type { Element, Permutation, LexicalIndex, Container } from "../types";
 import { createContext, type CodecContext } from "./create-context";
 
 /**
@@ -10,8 +10,32 @@ import { createContext, type CodecContext } from "./create-context";
 export function encode(
   permutation: Permutation,
   elementBank: Element[]
+): LexicalIndex;
+
+/**
+ * Encode a permutation with automatic element bank padding based on containers
+ */
+export function encode(
+  permutation: Permutation,
+  elementBank: Element[],
+  containers: Container[]
+): LexicalIndex;
+
+export function encode(
+  permutation: Permutation,
+  elementBank: Element[],
+  containers?: Container[]
 ): LexicalIndex {
-  const context = createContext(elementBank);
+  let totalSlots: number | undefined;
+
+  if (containers) {
+    totalSlots = containers.reduce(
+      (sum, container) => sum + container.slots,
+      0
+    );
+  }
+
+  const context = createContext(elementBank, totalSlots);
   const lehmerCode = generateLehmerCode(permutation, context);
   return lehmerToLexicalIndex(lehmerCode);
 }

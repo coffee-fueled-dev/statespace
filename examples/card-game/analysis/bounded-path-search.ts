@@ -11,7 +11,11 @@ import { cardGameConfig } from "../typescript/config.js";
 
 async function main() {
   const getState = (index: number) => {
-    const permutation = decode(index, cardGameConfig.elementBank);
+    const permutation = decode(
+      index,
+      cardGameConfig.elementBank,
+      cardGameConfig.containers
+    );
     return permutationToInternalState(permutation, cardGameConfig.containers);
   };
 
@@ -20,7 +24,11 @@ async function main() {
     state.containers.forEach((container) => {
       permutation.push(...container.slots);
     });
-    return encode(permutation, cardGameConfig.elementBank);
+    return encode(
+      permutation,
+      cardGameConfig.elementBank,
+      cardGameConfig.containers
+    );
   };
 
   const result = await boundedPathSearch(
@@ -39,6 +47,10 @@ async function main() {
   return result;
 }
 
-if (import.meta.main) {
-  main().catch(console.error);
-}
+main()
+  .then((result) => {
+    console.log("Bounded Path Search Result:", result);
+  })
+  .catch((error) => {
+    console.error("Error:", error);
+  });

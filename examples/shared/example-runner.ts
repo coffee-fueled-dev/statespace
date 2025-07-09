@@ -23,7 +23,7 @@ export function runExample(
   positionHandlers: Record<PositionType, PositionHandler>,
   seedIndex: number
 ): ExampleResult {
-  const permutation = decode(seedIndex, config.elementBank);
+  const permutation = decode(seedIndex, config.elementBank, config.containers);
   const state = permutationToInternalState(permutation, config.containers);
 
   const encodeState = (state: InternalSystemState) => {
@@ -31,7 +31,7 @@ export function runExample(
     state.containers.forEach((container) => {
       permutation.push(...container.slots);
     });
-    return encode(permutation, config.elementBank);
+    return encode(permutation, config.elementBank, config.containers);
   };
 
   // Breadth-first generation

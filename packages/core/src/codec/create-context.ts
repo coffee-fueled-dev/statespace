@@ -9,8 +9,23 @@ export interface CodecContext {
 /**
  * Create codec context for encoding/decoding operations
  */
-export function createContext(elementBank: Element[]): CodecContext {
-  const sortedBank = [...elementBank].sort((a, b) => {
+export function createContext(
+  elementBank: Element[],
+  totalSlots?: number
+): CodecContext {
+  // Automatically pad element bank if totalSlots is provided
+  let paddedElementBank = [...elementBank];
+
+  if (totalSlots !== undefined) {
+    const currentLength = elementBank.length;
+    if (currentLength < totalSlots) {
+      // Pad with false values to match total slots
+      const padding = new Array(totalSlots - currentLength).fill(false);
+      paddedElementBank = [...elementBank, ...padding];
+    }
+  }
+
+  const sortedBank = [...paddedElementBank].sort((a, b) => {
     const aStr = String(a);
     const bStr = String(b);
     return aStr < bStr ? -1 : aStr > bStr ? 1 : 0;
@@ -26,5 +41,5 @@ export function createContext(elementBank: Element[]): CodecContext {
     elementToIndex.get(element)!.push(index);
   });
 
-  return { elementBank: [...elementBank], sortedBank, elementToIndex };
+  return { elementBank: paddedElementBank, sortedBank, elementToIndex };
 }
