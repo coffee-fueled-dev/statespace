@@ -1,6 +1,5 @@
-import type { Container, Element, InternalSystemState } from ".";
+import type { Container, Element, InternalSystemState } from "..";
 
-// Helper to convert permutation to internal state
 export function permutationToInternalState(
   permutation: Element[],
   containers: Container[]

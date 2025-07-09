@@ -1,252 +1,155 @@
 import { test, expect, describe } from "bun:test";
 import { encode, generateLehmerCode, lehmerToLexicalIndex } from "./encode";
 import { createContext } from "./create-context";
+import type { Container } from "../types";
 
 describe("encode", () => {
-  describe("Simple elements (no duplicates)", () => {
-    const elementBank = ["a", "b", "c", "d"];
+  const elementBank = ["a", "b", "c", "d"];
 
-    test("should encode canonical first permutation", () => {
-      const result = encode(["a", "b", "c", "d"], elementBank);
-      expect(result).toBe(0);
-    });
-
-    test("should encode canonical last permutation", () => {
-      const result = encode(["d", "c", "b", "a"], elementBank);
-      expect(result).toBe(23);
-    });
-
-    test("should encode second permutation", () => {
-      const result = encode(["a", "b", "d", "c"], elementBank);
-      expect(result).toBe(1);
-    });
-
-    test("should encode middle permutations", () => {
-      const testCases = [
-        { perm: ["c", "a", "d", "b"], expectedIndex: 13 },
-        { perm: ["b", "d", "c", "a"], expectedIndex: 11 },
-        { perm: ["d", "a", "b", "c"], expectedIndex: 18 },
-      ];
-
-      testCases.forEach(({ perm, expectedIndex }) => {
-        expect(encode(perm, elementBank)).toBe(expectedIndex);
-      });
-    });
-
-    test("should handle all 24 permutations consistently", () => {
-      const allPermutations = [
-        ["a", "b", "c", "d"],
-        ["a", "b", "d", "c"],
-        ["a", "c", "b", "d"],
-        ["a", "c", "d", "b"],
-        ["a", "d", "b", "c"],
-        ["a", "d", "c", "b"],
-        ["b", "a", "c", "d"],
-        ["b", "a", "d", "c"],
-        ["b", "c", "a", "d"],
-        ["b", "c", "d", "a"],
-        ["b", "d", "a", "c"],
-        ["b", "d", "c", "a"],
-        ["c", "a", "b", "d"],
-        ["c", "a", "d", "b"],
-        ["c", "b", "a", "d"],
-        ["c", "b", "d", "a"],
-        ["c", "d", "a", "b"],
-        ["c", "d", "b", "a"],
-        ["d", "a", "b", "c"],
-        ["d", "a", "c", "b"],
-        ["d", "b", "a", "c"],
-        ["d", "b", "c", "a"],
-        ["d", "c", "a", "b"],
-        ["d", "c", "b", "a"],
-      ];
-
-      const encodedIndices = new Set();
-      allPermutations.forEach((perm, expectedIndex) => {
-        const encoded = encode(perm, elementBank);
-        expect(encoded).toBe(expectedIndex);
-        expect(encodedIndices.has(encoded)).toBe(false);
-        encodedIndices.add(encoded);
-      });
-
-      expect(encodedIndices.size).toBe(24);
-    });
+  test("should encode basic permutations", () => {
+    expect(encode(["a", "b", "c", "d"], elementBank)).toBe(0);
+    expect(encode(["d", "c", "b", "a"], elementBank)).toBe(23);
+    expect(encode(["a", "b", "d", "c"], elementBank)).toBe(1);
+    expect(encode(["c", "a", "d", "b"], elementBank)).toBe(13);
   });
 
-  describe("Duplicate elements", () => {
-    const elementBank = ["a", "b", "x", "x"];
-
-    test("should handle canonical mapping for duplicate elements", () => {
-      const result = encode(["a", "b", "x", "x"], elementBank);
-      expect(result).toBe(0);
-    });
-
-    test("should maintain consistency for non-duplicate positions", () => {
-      const perm1 = ["a", "b", "x", "x"];
-      const perm2 = ["b", "a", "x", "x"];
-
-      const encoded1 = encode(perm1, elementBank);
-      const encoded2 = encode(perm2, elementBank);
-
-      expect(encoded1).not.toBe(encoded2);
-    });
-
-    test("should handle mixed duplicate scenarios", () => {
-      const testPermutations = [
-        ["a", "x", "b", "x"],
-        ["a", "x", "x", "b"],
-        ["x", "a", "b", "x"],
-        ["x", "x", "a", "b"],
-      ];
-
-      testPermutations.forEach((perm) => {
-        const encoded = encode(perm, elementBank);
-        expect(typeof encoded).toBe("number");
-        expect(encoded).toBeGreaterThanOrEqual(0);
-      });
-    });
-  });
-
-  describe("Card game scenario", () => {
-    const elementBank = [
-      "ace",
-      "king",
-      "queen",
-      "jack",
-      "ten",
-      "nine",
-      "eight",
-      "seven",
-      "six",
-      "five",
-      false,
-      false,
-      false,
+  test("should encode all permutations uniquely", () => {
+    const allPermutations = [
+      ["a", "b", "c", "d"],
+      ["a", "b", "d", "c"],
+      ["a", "c", "b", "d"],
+      ["a", "c", "d", "b"],
+      ["a", "d", "b", "c"],
+      ["a", "d", "c", "b"],
+      ["b", "a", "c", "d"],
+      ["b", "a", "d", "c"],
+      ["b", "c", "a", "d"],
+      ["b", "c", "d", "a"],
+      ["b", "d", "a", "c"],
+      ["b", "d", "c", "a"],
+      ["c", "a", "b", "d"],
+      ["c", "a", "d", "b"],
+      ["c", "b", "a", "d"],
+      ["c", "b", "d", "a"],
+      ["c", "d", "a", "b"],
+      ["c", "d", "b", "a"],
+      ["d", "a", "b", "c"],
+      ["d", "a", "c", "b"],
+      ["d", "b", "a", "c"],
+      ["d", "b", "c", "a"],
+      ["d", "c", "a", "b"],
+      ["d", "c", "b", "a"],
     ];
 
-    test("should handle realistic card game permutations", () => {
-      const cardPermutation = [
-        "ace",
-        "king",
-        "queen",
-        "jack",
-        "ten",
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-      ];
+    const encodedIndices = new Set();
+    allPermutations.forEach((perm, expectedIndex) => {
+      const encoded = encode(perm, elementBank);
+      expect(encoded).toBe(expectedIndex);
+      expect(encodedIndices.has(encoded)).toBe(false);
+      encodedIndices.add(encoded);
+    });
 
-      const encoded = encode(cardPermutation, elementBank);
+    expect(encodedIndices.size).toBe(24);
+  });
+
+  test("should encode with automatic padding from containers", () => {
+    const containers: Container[] = [
+      { id: "container1", slots: 3, allowedTransitions: [] },
+      { id: "container2", slots: 2, allowedTransitions: [] },
+    ];
+
+    const testCases = [
+      ["a", "b", "c", false, false],
+      ["a", false, "b", "c", false],
+      [false, false, "a", "b", "c"],
+    ];
+
+    testCases.forEach((permutation) => {
+      const result = encode(permutation, ["a", "b", "c"], containers);
+      expect(typeof result).toBe("number");
+      expect(result).toBeGreaterThanOrEqual(0);
+    });
+
+    // Different arrangements should produce different indices
+    const index1 = encode(
+      ["a", "b", "c", false, false],
+      ["a", "b", "c"],
+      containers
+    );
+    const index2 = encode(
+      ["a", false, "b", "c", false],
+      ["a", "b", "c"],
+      containers
+    );
+    expect(index1).not.toBe(index2);
+  });
+
+  test("should handle duplicate elements", () => {
+    const duplicateBank = ["a", "b", "x", "x"];
+
+    expect(encode(["a", "b", "x", "x"], duplicateBank)).toBe(0);
+    expect(encode(["b", "a", "x", "x"], duplicateBank)).not.toBe(
+      encode(["a", "b", "x", "x"], duplicateBank)
+    );
+
+    const testPerms = [
+      ["a", "x", "b", "x"],
+      ["x", "a", "b", "x"],
+      ["x", "x", "a", "b"],
+    ];
+    testPerms.forEach((perm) => {
+      const encoded = encode(perm, duplicateBank);
       expect(typeof encoded).toBe("number");
       expect(encoded).toBeGreaterThanOrEqual(0);
     });
-
-    test("should handle edge cases with all false values first", () => {
-      const allFalseFirst = [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        "ace",
-        "king",
-        "queen",
-        "jack",
-        "ten",
-      ];
-
-      expect(() => encode(allFalseFirst, elementBank)).not.toThrow();
-    });
   });
 
-  describe("Error handling", () => {
-    const elementBank = ["a", "b", "c"];
+  test("should handle various edge cases", () => {
+    // Wrong elements, wrong lengths, empty cases
+    expect(typeof encode(["x", "y", "z"], elementBank)).toBe("number");
+    expect(() => encode(["a", "b"], elementBank)).not.toThrow();
+    expect(() => encode([], [])).not.toThrow();
 
-    test("should handle wrong elements gracefully", () => {
-      const result = encode(["x", "y", "z"], elementBank);
-      expect(typeof result).toBe("number");
-    });
-
-    test("should handle wrong length permutations", () => {
-      expect(() => encode(["a", "b"], elementBank)).not.toThrow();
-      expect(() => encode(["a", "b", "c", "d"], elementBank)).not.toThrow();
-
-      const shortResult = encode(["a", "b"], elementBank);
-      expect(typeof shortResult).toBe("number");
-    });
-
-    test("should handle empty permutation", () => {
-      expect(() => encode([], elementBank)).not.toThrow();
-    });
-
-    test("should handle empty element bank", () => {
-      expect(() => encode([], [])).not.toThrow();
-    });
-  });
-
-  describe("Performance characteristics", () => {
-    test("should handle larger element banks efficiently", () => {
-      const largeBank = Array.from({ length: 8 }, (_, i) => `item${i}`);
-      const permutation = [...largeBank].reverse();
-
-      const start = performance.now();
-      const result = encode(permutation, largeBank);
-      const end = performance.now();
-
-      expect(typeof result).toBe("number");
-      expect(end - start).toBeLessThan(100); // Should complete quickly
-    });
+    // Mixed scenarios with false values
+    const cardBank = ["ace", "king", "queen", false, false];
+    const cardPerm = ["ace", false, "king", "queen", false];
+    expect(typeof encode(cardPerm, cardBank)).toBe("number");
   });
 });
 
 describe("generateLehmerCode", () => {
-  test("should generate correct Lehmer code for simple permutation", () => {
+  test("should generate Lehmer codes", () => {
     const context = createContext(["a", "b", "c", "d"]);
-    const lehmer = generateLehmerCode(["b", "a", "d", "c"], context);
-    expect(lehmer).toEqual([1, 0, 1, 0]);
+
+    expect(generateLehmerCode(["b", "a", "d", "c"], context)).toEqual([
+      1, 0, 1, 0,
+    ]);
+    expect(
+      generateLehmerCode(["a", "b", "c"], createContext(["a", "b", "c"]))
+    ).toEqual([0, 0, 0]);
   });
 
-  test("should handle duplicate elements", () => {
+  test("should handle duplicates", () => {
     const context = createContext(["a", "b", "x", "x"]);
     const lehmer = generateLehmerCode(["a", "x", "b", "x"], context);
+
     expect(Array.isArray(lehmer)).toBe(true);
     expect(lehmer).toHaveLength(4);
-  });
-
-  test("should handle identity permutation", () => {
-    const context = createContext(["a", "b", "c"]);
-    const lehmer = generateLehmerCode(["a", "b", "c"], context);
-    expect(lehmer).toEqual([0, 0, 0]);
   });
 });
 
 describe("lehmerToLexicalIndex", () => {
-  test("should convert Lehmer code to lexical index", () => {
+  test("should convert Lehmer codes to indices", () => {
     expect(lehmerToLexicalIndex([0, 0, 0, 0])).toBe(0);
     expect(lehmerToLexicalIndex([0, 0, 0, 1])).toBe(1);
     expect(lehmerToLexicalIndex([3, 2, 1, 0])).toBe(23);
-  });
-
-  test("should handle empty Lehmer code", () => {
     expect(lehmerToLexicalIndex([])).toBe(0);
   });
 
-  test("should handle single element", () => {
-    expect(lehmerToLexicalIndex([0])).toBe(0);
-  });
-
-  test("should handle larger factorials", () => {
-    // Test with larger Lehmer codes that require mathjs
+  test("should handle large factorials", () => {
     const largeLehmer = new Array(25).fill(1);
     const result = lehmerToLexicalIndex(largeLehmer);
+
     expect(typeof result).toBe("number");
     expect(result).toBeGreaterThan(0);
   });

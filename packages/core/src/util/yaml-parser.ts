@@ -1,5 +1,5 @@
 import * as yaml from "js-yaml";
-import type { StatespaceConfig, Container, TransitionRule } from "./types";
+import type { StatespaceConfig, Container, TransitionRule } from "../types";
 
 // YAML Configuration Schema
 export interface YamlSystemConfig {
