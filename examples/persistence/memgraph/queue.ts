@@ -46,37 +46,54 @@ export function createQueueProcessor(
   let completionPromise: Promise<void> | null = null;
   let completionResolve: (() => void) | null = null;
   let completionReject: ((error: any) => void) | null = null;
+  let totalBatchesProcessed = 0;
+  let totalLinksProcessed = 0;
 
   // Function to add a batch job to the queue
   const addBatchToQueue = (links: MarkovLink[]) => {
     if (links.length === 0) return;
 
+    const batchNumber = totalBatchesProcessed + queue.length + 1;
+
     queue.push(async () => {
-      console.log(`Processing batch of ${links.length} Markov links...`);
+      const remaining = queue.length;
+      console.log(
+        `[Batch ${batchNumber}] Processing ${links.length} links (${remaining} batches remaining)`
+      );
+
       await processBatch(adapter, links, maxRetries);
-      console.log(`Batch completed successfully`);
+
+      totalBatchesProcessed++;
+      totalLinksProcessed += links.length;
+
+      const stillRemaining = queue.length;
+      console.log(
+        `[Batch ${batchNumber}] ✓ Complete (${totalLinksProcessed} total links processed, ${stillRemaining} batches remaining)`
+      );
     });
   };
 
   // Set up queue event listeners
   queue.addEventListener("success", () => {
-    console.log("Batch job completed successfully");
+    // Individual batch success is now logged in addBatchToQueue
   });
 
   queue.addEventListener("error", (e) => {
-    console.error("Batch job failed:", e.detail.error);
+    console.error(`❌ Batch failed:`, e.detail.error);
     if (completionReject) {
       completionReject(e.detail.error);
     }
   });
 
   queue.addEventListener("timeout", (e) => {
-    console.log("Batch job timed out");
+    console.log(`⏰ Batch timed out, continuing...`);
     e.detail.next(); // Continue with next job
   });
 
   queue.addEventListener("end", () => {
-    console.log("All batches processed successfully");
+    console.log(
+      `🎉 All batches complete! Processed ${totalLinksProcessed} total Markov links in ${totalBatchesProcessed} batches`
+    );
     isCompleted = true;
     if (completionResolve) {
       completionResolve();
@@ -108,6 +125,9 @@ export function createQueueProcessor(
      */
     flush: () => {
       if (markovLinkBuffer.length > 0) {
+        console.log(
+          `📤 Flushing final batch of ${markovLinkBuffer.length} links`
+        );
         addBatchToQueue([...markovLinkBuffer]);
         markovLinkBuffer = [];
       }
