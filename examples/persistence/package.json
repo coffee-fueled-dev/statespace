@@ -7,8 +7,9 @@
     "start:memgraph": "bun run memgraph/main.ts"
   },
   "dependencies": {
+    "@statespace/adapters": "workspace:*",
     "@statespace/core": "workspace:*",
-    "@statespace/adapters": "workspace:*"
+    "queue": "^7.0.0"
   },
   "devDependencies": {
     "@types/bun": "latest"

@@ -5,19 +5,21 @@ import {
   permutationToInternalState,
   type InternalSystemState,
   type Element,
+  logSpaceEstimates,
 } from "@statespace/core";
 import { start, end, any } from "@statespace/position-handlers";
-import { genericSystemConfig } from "../config.js";
+import { genericSystemConfig as config } from "../config.js";
 import {
   createMemgraphAdapter,
-  processBatches,
-  createBatches,
   closeAdapter,
   type MarkovLink,
 } from "@statespace/adapters";
+import { createQueueProcessor } from "./queue.js";
 
 async function main() {
-  const adapter = createMemgraphAdapter(genericSystemConfig);
+  const adapter = createMemgraphAdapter(config);
+
+  logSpaceEstimates(config);
 
   const positionHandlers = { start, end, any };
 
@@ -26,26 +28,31 @@ async function main() {
     state.containers.forEach((container) => {
       permutation.push(...container.slots);
     });
-    return encode(
-      permutation,
-      genericSystemConfig.elementBank,
-      genericSystemConfig.containers
-    );
+    return encode(permutation, config.elementBank, config.containers);
   };
 
   try {
-    const seedIndices = [0, 10, 50, 100, 200];
-    const allMarkovLinks: MarkovLink[] = [];
+    const limit = 20;
 
-    for (const seedIndex of seedIndices) {
+    // Create queue processor with custom options
+    const queueProcessor = createQueueProcessor(adapter, {
+      batchSize: 50,
+      maxConcurrency: 2,
+      timeout: 30000,
+      maxRetries: 3,
+    });
+
+    // Generate transitions and add to queue processor
+    for (let i = 0; i < limit; i++) {
+      const seedIndex = i;
       const permutation = decode(
         seedIndex,
-        genericSystemConfig.elementBank,
-        genericSystemConfig.containers
+        config.elementBank,
+        config.containers
       );
       const currentState = permutationToInternalState(
         permutation,
-        genericSystemConfig.containers
+        config.containers
       );
 
       const transitions = transitionEngines.breadthFirst(
@@ -60,43 +67,13 @@ async function main() {
         transition: transition,
       }));
 
-      allMarkovLinks.push(...markovLinks);
+      // Add links to queue processor
+      queueProcessor.addLinks(markovLinks);
     }
 
-    // Process all links in batches
-    const batches = createBatches(allMarkovLinks, 50);
-    await processBatches(adapter, batches, {
-      maxConcurrency: 2,
-      maxRetries: 3,
-    });
-
-    // Process single additional link
-    const singlePermutation = decode(
-      999,
-      genericSystemConfig.elementBank,
-      genericSystemConfig.containers
-    );
-    const singleState = permutationToInternalState(
-      singlePermutation,
-      genericSystemConfig.containers
-    );
-
-    const singleTransitions = transitionEngines.breadthFirst(
-      singleState,
-      encodeState,
-      positionHandlers
-    );
-
-    if (singleTransitions.length > 0) {
-      const singleLink: MarkovLink = {
-        fromStateIndex: 999,
-        toStateIndex: singleTransitions[0].lexicalIndex,
-        transition: singleTransitions[0],
-      };
-
-      const singleBatch = createBatches([singleLink], 1);
-      await processBatches(adapter, singleBatch);
-    }
+    // Flush any remaining links and wait for completion
+    queueProcessor.flush();
+    await queueProcessor.waitForCompletion();
 
     console.log("Persistence example completed successfully");
     await closeAdapter(adapter);
@@ -108,5 +85,6 @@ async function main() {
 }
 
 if (import.meta.main) {
+  logSpaceEstimates(config);
   main().catch(console.error);
 }

@@ -38,6 +38,7 @@
       "dependencies": {
         "@statespace/adapters": "workspace:*",
         "@statespace/core": "workspace:*",
+        "queue": "^7.0.0",
       },
       "devDependencies": {
         "@types/bun": "latest",
@@ -176,6 +177,8 @@
     "neo4j-driver-core": ["neo4j-driver-core@5.28.1", "", {}, "sha512-14vN8TlxC0JvJYfjWic5PwjsZ38loQLOKFTXwk4fWLTbCk6VhrhubB2Jsy9Rz+gM6PtTor4+6ClBEFDp1q/c8g=="],
 
     "parse-gitignore": ["parse-gitignore@2.0.0", "", {}, "sha512-RmVuCHWsfu0QPNW+mraxh/xjQVw/lhUCUru8Zni3Ctq3AoMhpDTq0OVdKS6iesd6Kqb7viCV3isAL43dciOSog=="],
+
+    "queue": ["queue@7.0.0", "", {}, "sha512-sphwS7HdfQnvrJAXUNAUgpf9H/546IE3p/5Lf2jr71O4udEYlqAhkevykumas2FYuMkX/29JMOgrRdRoYZ/X9w=="],
 
     "rxjs": ["rxjs@7.8.2", "", { "dependencies": { "tslib": "^2.1.0" } }, "sha512-dhKf903U/PQZY6boNNtAGdWbG85WAbjT/1xYoZIC7FAY0yWapOBQVsVrDl58W86//e1VpMNBtRV4MaXfdMySFA=="],
 

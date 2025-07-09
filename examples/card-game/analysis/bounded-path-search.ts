@@ -4,19 +4,16 @@ import {
   permutationToInternalState,
   type Element,
   type InternalSystemState,
+  logSpaceEstimates,
 } from "@statespace/core";
 import { boundedPathSearch } from "@statespace/analysis/bfs";
 import { cardGamePositionHandlers } from "../plugins/cardgame-mechanics.js";
-import { cardGameConfig } from "../typescript/config.js";
+import { cardGameConfig as config } from "../typescript/config.js";
 
 async function main() {
   const getState = (index: number) => {
-    const permutation = decode(
-      index,
-      cardGameConfig.elementBank,
-      cardGameConfig.containers
-    );
-    return permutationToInternalState(permutation, cardGameConfig.containers);
+    const permutation = decode(index, config.elementBank, config.containers);
+    return permutationToInternalState(permutation, config.containers);
   };
 
   const encodeState = (state: InternalSystemState) => {
@@ -24,11 +21,7 @@ async function main() {
     state.containers.forEach((container) => {
       permutation.push(...container.slots);
     });
-    return encode(
-      permutation,
-      cardGameConfig.elementBank,
-      cardGameConfig.containers
-    );
+    return encode(permutation, config.elementBank, config.containers);
   };
 
   const result = await boundedPathSearch(
@@ -47,10 +40,13 @@ async function main() {
   return result;
 }
 
-main()
-  .then((result) => {
-    console.log("Bounded Path Search Result:", result);
-  })
-  .catch((error) => {
-    console.error("Error:", error);
-  });
+if (import.meta.main) {
+  logSpaceEstimates(config);
+  main()
+    .then((result) => {
+      console.log("Bounded Path Search Result:", result);
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+    });
+}
