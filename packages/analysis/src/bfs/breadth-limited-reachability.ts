@@ -3,8 +3,8 @@ import type {
   PositionHandler,
   PositionType,
 } from "@statespace/position-handlers";
-import { transitionEngines } from "@statespace/core";
 import type { BFSOptions, ReachabilityResult } from "../types";
+import { recursiveGraphExpansion } from "./recursive-graph-expansion";
 
 /**
  * Find all reachable states within step limit using BFS
@@ -19,44 +19,24 @@ export async function breadthLimitedReachability(
   const startTime = performance.now();
   const { stepLimit = 10, visitLimit = Infinity, timeLimit = 30000 } = options;
 
-  const reachableStates = new Set<LexicalIndex>([origin]);
-  const queue: Array<{ index: LexicalIndex; steps: number }> = [
-    { index: origin, steps: 0 },
-  ];
+  const reachableStates = new Set<LexicalIndex>();
 
-  while (queue.length > 0) {
-    // Check time limit
-    if (performance.now() - startTime > timeLimit) {
-      break;
+  // Use the new recursive graph expansion
+  const expansion = recursiveGraphExpansion(
+    getState,
+    encodeState,
+    positionHandlers,
+    [origin], // Single origin as array
+    {
+      levels: stepLimit,
+      visitLimit,
+      timeLimit,
     }
+  );
 
-    const current = queue.shift()!;
-    const { index, steps } = current;
-
-    // Check step limit
-    if (steps >= stepLimit) continue;
-
-    // Check visit limit
-    if (reachableStates.size >= visitLimit) break;
-
-    const currentState = getState(index);
-    if (!currentState) continue;
-
-    // Use breadth-first transition generator
-    const transitions = transitionEngines.breadthFirst(
-      currentState,
-      encodeState,
-      positionHandlers
-    );
-
-    for (const transition of transitions) {
-      const nextIndex = transition.lexicalIndex;
-
-      if (!reachableStates.has(nextIndex)) {
-        reachableStates.add(nextIndex);
-        queue.push({ index: nextIndex, steps: steps + 1 });
-      }
-    }
+  // Collect all discovered states
+  for await (const discoveredState of expansion) {
+    reachableStates.add(discoveredState.index);
   }
 
   return {

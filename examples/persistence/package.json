@@ -9,6 +9,7 @@
   "dependencies": {
     "@statespace/adapters": "workspace:*",
     "@statespace/core": "workspace:*",
+    "@statespace/analysis": "workspace:*",
     "queue": "^7.0.0"
   },
   "devDependencies": {
