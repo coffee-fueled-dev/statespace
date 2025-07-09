@@ -1,26 +1,31 @@
 // Core types for the Lehmer-based state space exploration framework
 
-import type { TransitionEngineConfig } from "./transition-engine";
+import type {
+  PositionType,
+  PositionReference,
+  PositionHandler,
+} from "@statespace/position-handlers";
+
+// Internal container format with actual slot arrays for processing
+export interface InternalContainer {
+  id: string;
+  slots: Element[];
+  metadata?: Record<string, any>;
+  allowedTransitions: any[];
+  positionHandlers?: Record<PositionType, PositionHandler>;
+}
+
+// Internal system state for processing
+export interface InternalSystemState {
+  containers: InternalContainer[];
+}
 
 export type Element = string | boolean;
 export type Permutation = Element[];
 export type LexicalIndex = number;
 
-// Generic position type - can be any string defined by the user
-export type PositionType = string;
-
 // Generic transition type - can be any string defined by the user
 export type TransitionType = string;
-
-export type PositionReference = string;
-
-// Position handler interface for custom position behavior
-export interface PositionHandler {
-  canMoveFrom: (
-    slots: Element[]
-  ) => { element: Element; modifiedSlots: Element[] }[];
-  canMoveTo: (slots: Element[], element: Element) => Element[][];
-}
 
 export interface TransitionRule {
   targetId: string;
@@ -57,6 +62,5 @@ export interface StatespaceConfig {
   description: string;
   containers: Container[];
   elementBank: string[]; // Only non-false elements
-  transitionEngine?: TransitionEngineConfig;
   metadata?: Record<string, any>;
 }

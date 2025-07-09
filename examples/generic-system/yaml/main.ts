@@ -1,34 +1,15 @@
-import { ConfigLoader } from "@statespace/core";
-import {
-  AnalyticsEngine,
-  displayBoundedPathSearchResult,
-} from "@statespace/analysis";
-
-const ORIGIN_INDEX = 0;
-const TARGET_INDEX = 1;
-const LIMIT = 10;
+import { parseYamlFromFile } from "@statespace/core";
+import { start, end, any } from "@statespace/position-handlers";
+import { runExample } from "../../shared/example-runner.js";
 
 async function main() {
-  try {
-    const configLoader = new ConfigLoader({});
-    const yamlConfig = await configLoader.loadYamlFromFile(
-      "./yaml/config.yaml"
-    );
-    const explorer = await configLoader.buildSystem(yamlConfig);
+  const config = await parseYamlFromFile("./yaml/config.yaml");
+  const positionHandlers = { start, end, any };
+  const result = runExample(config, positionHandlers, 100);
 
-    const analytics = new AnalyticsEngine({
-      explorer,
-      autoTrackDiscoveries: true,
-    });
-
-    const result = await analytics.pathToTarget(ORIGIN_INDEX, TARGET_INDEX, {
-      stepLimit: LIMIT,
-    });
-
-    displayBoundedPathSearchResult(result, true);
-  } catch (error) {
-    console.error("❌ Multi-layer configuration failed:", error);
-  }
+  console.log("Generic System YAML Example Result:");
+  console.log(`BF Transitions: ${result.bfTransitions.length}`);
+  console.log("First DFS Transition:", result.firstDfTransition);
 }
 
 if (import.meta.main) {

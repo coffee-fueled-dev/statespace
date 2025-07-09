@@ -1,24 +1,25 @@
-import type { PositionHandler, PositionPlugin } from "@statespace/core";
+import type { PositionHandler } from "@statespace/position-handlers";
+import type { Element } from "@statespace/core";
 
 /**
- * Card Game Mechanics Plugin
+ * Card Game Mechanics
  * Provides position handlers for card game containers
  */
 
 const deckPositions: Record<string, PositionHandler> = {
   top: {
-    canMoveFrom: (slots) => {
+    canMoveFrom: (slots: Element[]) => {
       const topCard = slots[0];
       if (typeof topCard === "boolean") return [];
       return [{ element: topCard, modifiedSlots: [false, ...slots.slice(1)] }];
     },
-    canMoveTo: (slots, element) => {
+    canMoveTo: (slots: Element[], element: Element) => {
       if (slots[0] !== false) return [];
       return [[element, ...slots.slice(1)]];
     },
   },
   bottom: {
-    canMoveFrom: (slots) => {
+    canMoveFrom: (slots: Element[]) => {
       const lastIndex = slots.length - 1;
       const bottomCard = slots[lastIndex];
       if (typeof bottomCard === "boolean") return [];
@@ -29,7 +30,7 @@ const deckPositions: Record<string, PositionHandler> = {
         },
       ];
     },
-    canMoveTo: (slots, element) => {
+    canMoveTo: (slots: Element[], element: Element) => {
       const lastIndex = slots.length - 1;
       if (slots[lastIndex] !== false) return [];
       return [[...slots.slice(0, lastIndex), element]];
@@ -39,7 +40,7 @@ const deckPositions: Record<string, PositionHandler> = {
 
 const flexiblePositions: Record<string, PositionHandler> = {
   middle: {
-    canMoveFrom: (slots) => {
+    canMoveFrom: (slots: Element[]) => {
       return slots
         .map((element, index) => ({ element, index }))
         .filter(({ element }) => typeof element === "string")
@@ -52,7 +53,7 @@ const flexiblePositions: Record<string, PositionHandler> = {
           ],
         }));
     },
-    canMoveTo: (slots, element) => {
+    canMoveTo: (slots: Element[], element: Element) => {
       const openings = slots
         .map((slot, index) => (slot === false ? index : undefined))
         .filter((index): index is number => index !== undefined);
@@ -68,7 +69,7 @@ const flexiblePositions: Record<string, PositionHandler> = {
 
 const stackPositions: Record<string, PositionHandler> = {
   stack: {
-    canMoveFrom: (slots) => {
+    canMoveFrom: (slots: Element[]) => {
       for (let i = 0; i < slots.length; i++) {
         if (slots[i] !== false) {
           return [
@@ -85,7 +86,7 @@ const stackPositions: Record<string, PositionHandler> = {
       }
       return [];
     },
-    canMoveTo: (slots, element) => {
+    canMoveTo: (slots: Element[], element: Element) => {
       for (let i = 0; i < slots.length; i++) {
         if (slots[i] === false) {
           return [[...slots.slice(0, i), element, ...slots.slice(i + 1)]];
@@ -111,19 +112,9 @@ const cardGameTransitionLogic = (
   return "MOVE";
 };
 
-export const cardgameMechanicsPlugin: PositionPlugin = {
-  name: "cardgame-mechanics",
-  description: "Position handlers for card game mechanics",
-  version: "1.0.0",
-
-  containerTypes: {
-    deck: deckPositions,
-    hand: flexiblePositions,
-    field: flexiblePositions,
-    discard: stackPositions,
-  },
-
-  getTransitionType: cardGameTransitionLogic,
+// Export position handlers by container type
+export const cardGamePositionHandlers = {
+  ...deckPositions,
+  ...flexiblePositions,
+  ...stackPositions,
 };
-
-export default cardgameMechanicsPlugin;

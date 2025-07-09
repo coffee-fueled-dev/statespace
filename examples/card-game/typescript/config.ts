@@ -1,5 +1,4 @@
-import type { Container } from "@statespace/core";
-import { cardgameMechanicsPlugin } from "../plugins/cardgame-mechanics";
+import type { Container, StatespaceConfig } from "@statespace/core";
 
 /**
  * Element bank - declares all non-false elements available in the system
@@ -23,13 +22,12 @@ export const cardGameElementBank = [
 export const cardGameContainers: Container[] = [
   {
     id: "deck",
-    slots: 5, // Number of slots
+    slots: 5,
     metadata: {
       container_type: "deck",
       type: "deck",
       faceDown: true,
     },
-    positionHandlers: cardgameMechanicsPlugin.containerTypes?.deck,
     allowedTransitions: [
       {
         targetId: "hand",
@@ -41,13 +39,12 @@ export const cardGameContainers: Container[] = [
   },
   {
     id: "hand",
-    slots: 3, // Number of slots
+    slots: 3,
     metadata: {
       container_type: "hand",
       type: "hand",
       visible: true,
     },
-    positionHandlers: cardgameMechanicsPlugin.containerTypes?.hand,
     allowedTransitions: [
       {
         targetId: "discard",
@@ -59,13 +56,12 @@ export const cardGameContainers: Container[] = [
   },
   {
     id: "discard",
-    slots: 5, // Number of slots
+    slots: 5,
     metadata: {
       container_type: "discard",
       type: "discard",
       faceUp: true,
     },
-    positionHandlers: cardgameMechanicsPlugin.containerTypes?.discard,
     allowedTransitions: [
       {
         targetId: "deck",
@@ -80,19 +76,12 @@ export const cardGameContainers: Container[] = [
 /**
  * Complete configuration object
  */
-export const cardGameConfig = {
-  name: "Simple Card Game (TypeScript Multi-layer)",
-  description:
-    "A basic card game with deck, hand, and discard pile (TypeScript Multi-layer: Config + Plugin)",
+export const cardGameConfig: StatespaceConfig = {
+  name: "Simple Card Game",
+  description: "A basic card game with deck, hand, and discard pile",
   containers: cardGameContainers,
   elementBank: cardGameElementBank,
-  transitionEngine: {
-    defaultTransitionType: "MOVE",
-    getTransitionType: cardgameMechanicsPlugin.getTransitionType,
-  },
   metadata: {
-    approach: "typescript-multi-layer",
-    plugin: cardgameMechanicsPlugin.name,
-    version: cardgameMechanicsPlugin.version,
+    approach: "typescript-functional",
   },
 };

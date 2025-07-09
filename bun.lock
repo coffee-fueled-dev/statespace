@@ -46,10 +46,6 @@
       "name": "@statespace/analysis",
       "dependencies": {
         "@statespace/core": "workspace:*",
-        "@types/js-yaml": "^4.0.9",
-        "bitset": "^5.1.1",
-        "js-yaml": "^4.1.0",
-        "mathjs": "^12.2.1",
       },
       "devDependencies": {
         "@types/bun": "latest",
@@ -66,6 +62,15 @@
         "js-yaml": "^4.1.0",
         "mathjs": "^12.2.1",
       },
+      "devDependencies": {
+        "@types/bun": "latest",
+      },
+      "peerDependencies": {
+        "typescript": "^5.0.0",
+      },
+    },
+    "packages/position-handlers": {
+      "name": "@statespace/position-handlers",
       "devDependencies": {
         "@types/bun": "latest",
       },
@@ -90,6 +95,8 @@
     "@statespace/example-generic-system": ["@statespace/example-generic-system@workspace:examples/generic-system"],
 
     "@statespace/example-shared": ["@statespace/example-shared@workspace:examples/shared"],
+
+    "@statespace/position-handlers": ["@statespace/position-handlers@workspace:packages/position-handlers"],
 
     "@types/bun": ["@types/bun@1.2.18", "", { "dependencies": { "bun-types": "1.2.18" } }, "sha512-Xf6RaWVheyemaThV0kUfaAUvCNokFr+bH8Jxp+tTZfx7dAPA8z9ePnP9S9+Vspzuxxx9JRAXhnyccRj3GyCMdQ=="],
 

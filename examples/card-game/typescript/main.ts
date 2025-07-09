@@ -1,12 +1,11 @@
-import { parseYamlFromFile } from "@statespace/core";
 import { runExample } from "../../shared/example-runner.js";
 import { cardGamePositionHandlers } from "../plugins/cardgame-mechanics.js";
+import { cardGameConfig } from "./config.js";
 
 async function main() {
-  const config = await parseYamlFromFile("./yaml/config.yaml");
-  const result = runExample(config, cardGamePositionHandlers, 456);
+  const result = runExample(cardGameConfig, cardGamePositionHandlers, 123);
 
-  console.log("Card Game YAML Example Result:");
+  console.log("Card Game Example Result:");
   console.log(`BF Transitions: ${result.bfTransitions.length}`);
   console.log("First DFS Transition:", result.firstDfTransition);
 }

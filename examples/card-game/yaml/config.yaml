@@ -1,13 +1,10 @@
 # Simple Card Game Configuration
 name: "Simple Card Game"
 description: "A basic card game with deck, hand, and discard pile"
-position_plugin: "cardgame-mechanics"
-default_transition_type: "MOVE"
 
 containers:
   - id: "deck"
     slots: 5
-    container_type: "deck"
     metadata:
       type: "deck"
       faceDown: true
@@ -19,7 +16,6 @@ containers:
 
   - id: "hand"
     slots: 3
-    container_type: "hand"
     metadata:
       type: "hand"
       visible: true
@@ -31,7 +27,6 @@ containers:
 
   - id: "discard"
     slots: 5
-    container_type: "discard"
     metadata:
       type: "discard"
       faceUp: true

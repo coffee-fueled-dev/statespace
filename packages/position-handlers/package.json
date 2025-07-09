@@ -1,11 +1,9 @@
 {
-  "name": "@statespace/analysis",
+  "name": "@statespace/position-handlers",
   "module": "index.ts",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./bfs": "./src/bfs/index.ts",
-    "./dfs": "./src/dfs/index.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {},
   "devDependencies": {
@@ -14,7 +12,5 @@
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
-  "dependencies": {
-    "@statespace/core": "workspace:*"
-  }
+  "dependencies": {}
 }

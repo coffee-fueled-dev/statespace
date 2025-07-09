@@ -1,15 +1,16 @@
-import { Explorer } from "@statespace/core";
+import { runExample } from "../../shared/example-runner.js";
+import { start, end, any } from "@statespace/position-handlers";
 import { genericSystemConfig } from "./config.js";
 
 async function main() {
-  const explorer = new Explorer(
-    genericSystemConfig.elementBank,
-    genericSystemConfig.containers,
-    { transitionEngine: genericSystemConfig.transitionEngine }
-  );
+  const positionHandlers = { start, end, any };
+  const result = runExample(genericSystemConfig, positionHandlers, 42);
+
+  console.log("Generic System Example Result:");
+  console.log(`BF Transitions: ${result.bfTransitions.length}`);
+  console.log("First DFS Transition:", result.firstDfTransition);
 }
 
-// Run if called directly
 if (import.meta.main) {
   main().catch(console.error);
 }
