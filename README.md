@@ -110,7 +110,7 @@ bun test
 # Build packages
 bun run build
 
-# Generate project context
+# Generate a .gitignore-aware plaintext dump of the codebase
 bun run context
 
 # Run persistence example with graph database
