@@ -1,5 +1,5 @@
 import { Driver } from "neo4j-driver";
-import { memgraphDriver } from "./driver";
+import * as memgraph from "neo4j-driver";
 import {
   BATCH_UPSERT_STATES_AND_TRANSITIONS_QUERY,
   GET_STATES_BY_CONFIG_QUERY,
@@ -18,107 +18,53 @@ export interface MarkovLink {
   transition: StateTransition;
 }
 
-export interface BatchInsertOptions {
-  batchSize?: number;
-  maxConcurrency?: number;
-  flushInterval?: number; // milliseconds
+export interface MemgraphAdapter {
+  driver: Driver;
+  configHash: string;
 }
 
-export class MemgraphAdapter {
-  private driver: Driver;
-  private queue: MarkovLink[] = [];
-  private isProcessing = false;
-  private flushTimer?: NodeJS.Timeout;
-  private options: Required<BatchInsertOptions>;
-  private configHash: string;
+export interface BatchInsertOptions {
+  maxConcurrency?: number;
+}
 
-  constructor(config: StatespaceConfig, options: BatchInsertOptions = {}) {
-    this.driver = memgraphDriver;
-    this.configHash = encodeConfigSync(config);
-    this.options = {
-      batchSize: options.batchSize ?? 1000,
-      maxConcurrency: options.maxConcurrency ?? 5,
-      flushInterval: options.flushInterval ?? 5000,
-    };
-  }
+/**
+ * Create a memgraph adapter instance
+ */
+export function createMemgraphAdapter(
+  config: StatespaceConfig
+): MemgraphAdapter {
+  const MEMGRAPH_URI = process.env.MEMGRAPH_URI || "bolt://localhost:7687";
+  const MEMGRAPH_USER = process.env.MEMGRAPH_USER || "neo4j";
+  const MEMGRAPH_PASS = process.env.MEMGRAPH_PASS || "password";
 
-  /**
-   * Get the config hash for this adapter
-   */
-  getConfigHash(): string {
-    return this.configHash;
-  }
-
-  /**
-   * Decode the config from the hash
-   */
-  getConfig(): StatespaceConfig {
-    return decodeConfigSync(this.configHash);
-  }
-
-  /**
-   * Add a first-order Markov link to the queue
-   */
-  enqueue(link: MarkovLink): void {
-    this.queue.push(link);
-
-    // Auto-flush if batch size reached
-    if (this.queue.length >= this.options.batchSize) {
-      this.flush();
+  const driver = memgraph.driver(
+    MEMGRAPH_URI,
+    memgraph.auth.basic(MEMGRAPH_USER, MEMGRAPH_PASS),
+    {
+      maxConnectionPoolSize: 50,
+      connectionAcquisitionTimeout: 30000,
+      maxTransactionRetryTime: 15000,
     }
+  );
 
-    // Reset flush timer
-    this.resetFlushTimer();
-  }
+  return {
+    driver,
+    configHash: encodeConfigSync(config),
+  };
+}
 
-  /**
-   * Add multiple Markov links to the queue
-   */
-  enqueueBatch(links: MarkovLink[]): void {
-    this.queue.push(...links);
+/**
+ * Process a batch of Markov links with retry logic
+ */
+export async function processBatch(
+  adapter: MemgraphAdapter,
+  links: MarkovLink[],
+  maxRetries: number = 3
+): Promise<void> {
+  if (links.length === 0) return;
 
-    // Auto-flush if batch size reached
-    if (this.queue.length >= this.options.batchSize) {
-      this.flush();
-    }
-
-    this.resetFlushTimer();
-  }
-
-  /**
-   * Force flush the queue immediately
-   */
-  async flush(): Promise<void> {
-    if (this.isProcessing || this.queue.length === 0) return;
-
-    this.isProcessing = true;
-    this.clearFlushTimer();
-
-    try {
-      // Process queue in batches with concurrency control
-      const batches = this.createBatches(this.queue, this.options.batchSize);
-      this.queue = []; // Clear queue immediately
-
-      // Process batches with concurrency limit
-      const concurrentBatches = this.createConcurrentBatches(
-        batches,
-        this.options.maxConcurrency
-      );
-
-      for (const batchGroup of concurrentBatches) {
-        await Promise.all(batchGroup.map((batch) => this.processBatch(batch)));
-      }
-    } finally {
-      this.isProcessing = false;
-      this.resetFlushTimer();
-    }
-  }
-
-  /**
-   * Process a single batch of Markov links
-   */
-  private async processBatch(links: MarkovLink[]): Promise<void> {
-    const session = this.driver.session();
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const session = adapter.driver.session();
 
     try {
       // Extract unique states with config hash
@@ -130,7 +76,7 @@ export class MemgraphAdapter {
 
       const states = Array.from(stateIndices).map((index) => ({
         index,
-        configHash: this.configHash,
+        configHash: adapter.configHash,
       }));
 
       // Prepare transition data
@@ -150,120 +96,118 @@ export class MemgraphAdapter {
         states,
         transitions,
       });
+
+      // Success - break out of retry loop
+      return;
+    } catch (error: any) {
+      // Check if this is a retriable error
+      const isRetriable =
+        error.code === "Memgraph.TransientError.MemgraphError.MemgraphError" ||
+        error.retriable === true ||
+        error.gqlStatus === "50N42";
+
+      if (isRetriable && attempt < maxRetries) {
+        // Wait with exponential backoff before retrying
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        continue;
+      }
+
+      // If not retriable or we've exhausted retries, throw the error
+      throw error;
     } finally {
       await session.close();
     }
-  }
-
-  /**
-   * Get all states for this config
-   */
-  async getStatesForConfig(): Promise<LexicalIndex[]> {
-    const session = this.driver.session();
-    try {
-      const result = await session.run(GET_STATES_BY_CONFIG_QUERY, {
-        configHash: this.configHash,
-      });
-      return result.records.map((record) => record.get("stateIndex"));
-    } finally {
-      await session.close();
-    }
-  }
-
-  /**
-   * Get config from any state index
-   */
-  async getConfigFromState(
-    stateIndex: LexicalIndex
-  ): Promise<StatespaceConfig | null> {
-    const session = this.driver.session();
-    try {
-      const result = await session.run(GET_CONFIG_FROM_STATE_QUERY, {
-        stateIndex,
-      });
-
-      if (result.records.length === 0) return null;
-
-      const configHash = result.records[0].get("configHash");
-      return decodeConfigSync(configHash);
-    } finally {
-      await session.close();
-    }
-  }
-
-  /**
-   * Create batches from array
-   */
-  private createBatches<T>(array: T[], batchSize: number): T[][] {
-    const batches: T[][] = [];
-    for (let i = 0; i < array.length; i += batchSize) {
-      batches.push(array.slice(i, i + batchSize));
-    }
-    return batches;
-  }
-
-  /**
-   * Group batches for concurrent processing
-   */
-  private createConcurrentBatches<T>(
-    batches: T[][],
-    maxConcurrency: number
-  ): T[][][] {
-    const concurrentBatches: T[][][] = [];
-    for (let i = 0; i < batches.length; i += maxConcurrency) {
-      concurrentBatches.push(batches.slice(i, i + maxConcurrency));
-    }
-    return concurrentBatches;
-  }
-
-  /**
-   * Reset the auto-flush timer
-   */
-  private resetFlushTimer(): void {
-    this.clearFlushTimer();
-    this.flushTimer = setTimeout(() => {
-      this.flush();
-    }, this.options.flushInterval);
-  }
-
-  /**
-   * Clear the auto-flush timer
-   */
-  private clearFlushTimer(): void {
-    if (this.flushTimer) {
-      clearTimeout(this.flushTimer);
-      this.flushTimer = undefined;
-    }
-  }
-
-  /**
-   * Get current queue size
-   */
-  getQueueSize(): number {
-    return this.queue.length;
-  }
-
-  /**
-   * Check if adapter is currently processing
-   */
-  isCurrentlyProcessing(): boolean {
-    return this.isProcessing;
-  }
-
-  /**
-   * Close the adapter and flush remaining data
-   */
-  async close(): Promise<void> {
-    this.clearFlushTimer();
-    await this.flush();
-    await this.driver.close();
   }
 }
 
-// Export a factory function instead of default instance
-export function createMemgraphAdapter(
-  config: StatespaceConfig,
-  options?: BatchInsertOptions
-): MemgraphAdapter {
-  return new MemgraphAdapter(config, options);
+/**
+ * Process multiple batches with concurrency control
+ */
+export async function processBatches(
+  adapter: MemgraphAdapter,
+  batches: MarkovLink[][],
+  options: BatchInsertOptions & { maxRetries?: number } = {}
+): Promise<void> {
+  const maxConcurrency = options.maxConcurrency ?? 5;
+  const maxRetries = options.maxRetries ?? 3;
+
+  // Process batches with concurrency limit
+  for (let i = 0; i < batches.length; i += maxConcurrency) {
+    const batchGroup = batches.slice(i, i + maxConcurrency);
+    await Promise.all(
+      batchGroup.map((batch) => processBatch(adapter, batch, maxRetries))
+    );
+  }
+}
+
+/**
+ * Get all states for the adapter's config
+ */
+export async function getStatesForConfig(
+  adapter: MemgraphAdapter
+): Promise<LexicalIndex[]> {
+  const session = adapter.driver.session();
+  try {
+    const result = await session.run(GET_STATES_BY_CONFIG_QUERY, {
+      configHash: adapter.configHash,
+    });
+    return result.records.map((record) => record.get("stateIndex"));
+  } finally {
+    await session.close();
+  }
+}
+
+/**
+ * Get config from any state index
+ */
+export async function getConfigFromState(
+  adapter: MemgraphAdapter,
+  stateIndex: LexicalIndex
+): Promise<StatespaceConfig | null> {
+  const session = adapter.driver.session();
+  try {
+    const result = await session.run(GET_CONFIG_FROM_STATE_QUERY, {
+      stateIndex,
+    });
+
+    if (result.records.length === 0) return null;
+
+    const configHash = result.records[0].get("configHash");
+    return decodeConfigSync(configHash);
+  } finally {
+    await session.close();
+  }
+}
+
+/**
+ * Close the adapter and its driver
+ */
+export async function closeAdapter(adapter: MemgraphAdapter): Promise<void> {
+  await adapter.driver.close();
+}
+
+/**
+ * Get the config hash for the adapter
+ */
+export function getConfigHash(adapter: MemgraphAdapter): string {
+  return adapter.configHash;
+}
+
+/**
+ * Get the config for the adapter
+ */
+export function getConfig(adapter: MemgraphAdapter): StatespaceConfig {
+  return decodeConfigSync(adapter.configHash);
+}
+
+/**
+ * Helper function to create batches from an array
+ */
+export function createBatches<T>(array: T[], batchSize: number): T[][] {
+  const batches: T[][] = [];
+  for (let i = 0; i < array.length; i += batchSize) {
+    batches.push(array.slice(i, i + batchSize));
+  }
+  return batches;
 }

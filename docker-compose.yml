@@ -1,0 +1,36 @@
+services:
+  memgraph:
+    image: memgraph/memgraph-mage
+    container_name: statespace-memgraph
+    ports:
+      - "${MEMGRAPH_BOLT_PORT:-7687}:7687"
+      - "${MEMGRAPH_LOG_PORT:-7444}:7444"
+    environment:
+      MEMGRAPH: "--memory-limit=1024"
+    volumes:
+      - memgraph_data:/var/lib/memgraph
+    networks:
+      - tkn-network
+    restart: unless-stopped
+
+  memgraph-lab:
+    image: memgraph/lab
+    container_name: statespace-lab
+    ports:
+      - "${MEMGRAPH_LAB_PORT:-3000}:3000"
+    environment:
+      QUICK_CONNECT_MG_HOST: memgraph
+      QUICK_CONNECT_MG_PORT: 7687
+    depends_on:
+      - memgraph
+    networks:
+      - tkn-network
+    restart: unless-stopped
+
+
+volumes:
+  memgraph_data:
+
+networks:
+  tkn-network:
+    driver: bridge 

@@ -8,14 +8,16 @@ import {
 } from "@statespace/core";
 import { start, end, any } from "@statespace/position-handlers";
 import { genericSystemConfig } from "../config.js";
-import { createMemgraphAdapter, type MarkovLink } from "@statespace/adapters";
+import {
+  createMemgraphAdapter,
+  processBatches,
+  createBatches,
+  closeAdapter,
+  type MarkovLink,
+} from "@statespace/adapters";
 
 async function main() {
-  const adapter = createMemgraphAdapter(genericSystemConfig, {
-    batchSize: 50,
-    maxConcurrency: 2,
-    flushInterval: 1000,
-  });
+  const adapter = createMemgraphAdapter(genericSystemConfig);
 
   const positionHandlers = { start, end, any };
 
@@ -33,6 +35,7 @@ async function main() {
 
   try {
     const seedIndices = [0, 10, 50, 100, 200];
+    const allMarkovLinks: MarkovLink[] = [];
 
     for (const seedIndex of seedIndices) {
       const permutation = decode(
@@ -57,11 +60,17 @@ async function main() {
         transition: transition,
       }));
 
-      adapter.enqueueBatch(markovLinks);
+      allMarkovLinks.push(...markovLinks);
     }
 
-    await adapter.flush();
+    // Process all links in batches
+    const batches = createBatches(allMarkovLinks, 50);
+    await processBatches(adapter, batches, {
+      maxConcurrency: 2,
+      maxRetries: 3,
+    });
 
+    // Process single additional link
     const singlePermutation = decode(
       999,
       genericSystemConfig.elementBank,
@@ -84,13 +93,16 @@ async function main() {
         toStateIndex: singleTransitions[0].lexicalIndex,
         transition: singleTransitions[0],
       };
-      adapter.enqueue(singleLink);
+
+      const singleBatch = createBatches([singleLink], 1);
+      await processBatches(adapter, singleBatch);
     }
 
-    await adapter.close();
+    console.log("Persistence example completed successfully");
+    await closeAdapter(adapter);
   } catch (error) {
     console.error("Error:", error);
-    await adapter.close();
+    await closeAdapter(adapter);
     process.exit(1);
   }
 }
