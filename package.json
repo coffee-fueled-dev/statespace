@@ -13,7 +13,8 @@
     "example:card-game:yaml": "bun run --elide-lines 0 --filter @statespace/example-card-game start:yaml",
     "example:card-game:bounded-path-search": "bun run --elide-lines 0 --filter @statespace/example-card-game start:bounded-path-search",
     "example:generic-system:ts": "bun run --elide-lines 0 --filter @statespace/example-generic-system start:ts",
-    "example:generic-system:yaml": "bun run --elide-lines 0 --filter @statespace/example-generic-system start:yaml"
+    "example:generic-system:yaml": "bun run --elide-lines 0 --filter @statespace/example-generic-system start:yaml",
+    "example:persistence:memgraph": "bun run --elide-lines 0 --filter @statespace/example-persistence start:memgraph"
   },
   "devDependencies": {
     "@types/bun": "latest",

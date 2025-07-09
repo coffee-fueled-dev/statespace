@@ -23,7 +23,7 @@ export function breadthFirst(
   getTransitionType: (
     fromContainer: string,
     toContainer: string,
-    rule?: any
+    rule?: string
   ) => TransitionType = () => "MOVE"
 ): StateTransition[] {
   const transitions: StateTransition[] = [];

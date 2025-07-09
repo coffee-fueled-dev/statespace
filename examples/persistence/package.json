@@ -1,0 +1,16 @@
+{
+  "name": "@statespace/example-persistence",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Persist states",
+  "scripts": {
+    "start:memgraph": "bun run memgraph/main.ts"
+  },
+  "dependencies": {
+    "@statespace/core": "workspace:*",
+    "@statespace/adapters": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}

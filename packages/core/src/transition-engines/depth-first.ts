@@ -23,7 +23,7 @@ export function* depthFirst(
   getTransitionType: (
     fromContainer: string,
     toContainer: string,
-    rule?: any
+    rule?: string
   ) => TransitionType = () => "MOVE"
 ): Generator<StateTransition> {
   for (const origin of currentState.containers) {
