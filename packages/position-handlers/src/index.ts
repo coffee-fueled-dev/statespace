@@ -1,4 +1,4 @@
-import type { Element } from "@statespace/core";
+import type { Element, Transition } from "@statespace/core";
 
 // Generic position type - can be any string defined by the user
 export type PositionType = string;
@@ -10,7 +10,7 @@ export interface PositionHandler {
   canMoveFrom: (
     slots: Element[]
   ) => { element: Element; modifiedSlots: Element[] }[];
-  canMoveTo: (slots: Element[], element: Element) => Element[][];
+  canMoveTo: (slots: Element[], transition: Transition) => Element[][];
 }
 
 export const start = {
@@ -19,23 +19,25 @@ export const start = {
     if (typeof element === "boolean") return [];
     return [{ element, modifiedSlots: [false, ...slots.slice(1)] }];
   },
-  canMoveTo: (slots: Element[], element: Element) => {
-    return slots[0] === false ? [[element, ...slots.slice(1)]] : [];
+  canMoveTo: (slots: Element[], transition: Transition) => {
+    return slots[0] === false ? [[transition.element, ...slots.slice(1)]] : [];
   },
 };
+
 export const end = {
   canMoveFrom: (slots: Element[]) => {
     const element = slots[slots.length - 1];
     if (typeof element === "boolean") return [];
     return [{ element, modifiedSlots: [...slots.slice(0, -1), false] }];
   },
-  canMoveTo: (slots: Element[], element: Element) => {
+  canMoveTo: (slots: Element[], transition: Transition) => {
     const lastIndex = slots.length - 1;
     return slots[lastIndex] === false
-      ? [[...slots.slice(0, lastIndex), element]]
+      ? [[...slots.slice(0, lastIndex), transition.element]]
       : [];
   },
 };
+
 export const any = {
   canMoveFrom: (slots: Element[]) => {
     const moves: { element: Element; modifiedSlots: Element[] }[] = [];
@@ -50,13 +52,13 @@ export const any = {
 
     return moves;
   },
-  canMoveTo: (slots: Element[], element: Element) => {
+  canMoveTo: (slots: Element[], transition: Transition) => {
     const placements: Element[][] = [];
 
     for (let i = 0; i < slots.length; i++) {
       if (slots[i] === false) {
         const newSlots = [...slots];
-        newSlots[i] = element;
+        newSlots[i] = transition.element;
         placements.push(newSlots);
       }
     }
@@ -64,14 +66,15 @@ export const any = {
     return placements;
   },
 };
+
 export const top = {
   canMoveFrom: (slots: Element[]) => {
     const element = slots[0];
     if (typeof element === "boolean") return [];
     return [{ element, modifiedSlots: [false, ...slots.slice(1)] }];
   },
-  canMoveTo: (slots: Element[], element: Element) => {
-    return slots[0] === false ? [[element, ...slots.slice(1)]] : [];
+  canMoveTo: (slots: Element[], transition: Transition) => {
+    return slots[0] === false ? [[transition.element, ...slots.slice(1)]] : [];
   },
 };
 export const bottom = {
@@ -80,13 +83,14 @@ export const bottom = {
     if (typeof element === "boolean") return [];
     return [{ element, modifiedSlots: [...slots.slice(0, -1), false] }];
   },
-  canMoveTo: (slots: Element[], element: Element) => {
+  canMoveTo: (slots: Element[], transition: Transition) => {
     const lastIndex = slots.length - 1;
     return slots[lastIndex] === false
-      ? [[...slots.slice(0, lastIndex), element]]
+      ? [[...slots.slice(0, lastIndex), transition.element]]
       : [];
   },
 };
+
 export const middle = {
   canMoveFrom: (slots: Element[]) => {
     const moves: { element: Element; modifiedSlots: Element[] }[] = [];
@@ -99,18 +103,19 @@ export const middle = {
     }
     return moves;
   },
-  canMoveTo: (slots: Element[], element: Element) => {
+  canMoveTo: (slots: Element[], transition: Transition) => {
     const placements: Element[][] = [];
     for (let i = 0; i < slots.length; i++) {
       if (slots[i] === false) {
         const newSlots = [...slots];
-        newSlots[i] = element;
+        newSlots[i] = transition.element;
         placements.push(newSlots);
       }
     }
     return placements;
   },
 };
+
 export const stack = {
   canMoveFrom: (slots: Element[]) => {
     // Find the top non-false element
@@ -123,12 +128,12 @@ export const stack = {
     }
     return [];
   },
-  canMoveTo: (slots: Element[], element: Element) => {
+  canMoveTo: (slots: Element[], transition: Transition) => {
     // Find the first available slot from the bottom
     for (let i = 0; i < slots.length; i++) {
       if (slots[i] === false) {
         const newSlots = [...slots];
-        newSlots[i] = element;
+        newSlots[i] = transition.element;
         return [newSlots];
       }
     }

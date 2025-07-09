@@ -11,7 +11,7 @@ export interface InternalContainer {
   id: string;
   slots: Element[];
   metadata?: Record<string, any>;
-  allowedTransitions: any[];
+  allowedTransitions: TransitionRule[];
   positionHandlers?: Record<PositionType, PositionHandler>;
 }
 
@@ -32,12 +32,20 @@ export interface TransitionRule {
   from: PositionReference;
   to: PositionReference;
   transitionType?: TransitionType;
+  cost?: number | ((state: InternalSystemState) => number) | null;
   metadata?: Record<string, any>;
+}
+
+// Transition represents a move between states with optional cost for graph edge weighting
+// Cost can be a fixed number, a function of the current state, or null for equal-weight edges
+export interface Transition {
+  element: Element;
+  cost?: number | ((state: InternalSystemState) => number) | null;
 }
 
 export interface Container {
   id: string;
-  slots: number; // Number of slots in the container
+  slots: number;
   metadata?: Record<string, any>;
   allowedTransitions: TransitionRule[];
   positionHandlers?: Record<PositionType, PositionHandler>;
@@ -54,6 +62,7 @@ export interface StateTransition {
   transitionType: TransitionType;
   resultingState: SystemState;
   lexicalIndex: LexicalIndex;
+  cost?: number | null;
   metadata?: Record<string, any>;
 }
 

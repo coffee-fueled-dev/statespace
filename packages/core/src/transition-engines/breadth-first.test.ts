@@ -183,4 +183,123 @@ describe("breadthFirst", () => {
     const elements = new Set(drawMoves.map((t) => t.element));
     expect(elements.has("ace")).toBe(true); // Should include ace (first card at start position)
   });
+
+  test("should evaluate static costs", () => {
+    const state: InternalSystemState = {
+      containers: [
+        {
+          id: "source",
+          slots: ["item"],
+          allowedTransitions: [
+            {
+              targetId: "target",
+              from: "start",
+              to: "start",
+              cost: 5,
+            },
+          ],
+        },
+        {
+          id: "target",
+          slots: [false],
+          allowedTransitions: [],
+        },
+      ],
+    };
+
+    const result = breadthFirst(state, mockEncodeState, positionHandlers);
+    expect(result[0].cost).toBe(5);
+  });
+
+  test("should evaluate cost functions", () => {
+    const state: InternalSystemState = {
+      containers: [
+        {
+          id: "source",
+          slots: ["expensive", "cheap"],
+          allowedTransitions: [
+            {
+              targetId: "target",
+              from: "any",
+              to: "any",
+              cost: (currentState) => {
+                // Cost based on number of elements in source
+                const sourceContainer = currentState.containers.find(
+                  (c) => c.id === "source"
+                );
+                return sourceContainer
+                  ? sourceContainer.slots.filter((s) => s !== false).length * 2
+                  : 1;
+              },
+            },
+          ],
+        },
+        {
+          id: "target",
+          slots: [false, false],
+          allowedTransitions: [],
+        },
+      ],
+    };
+
+    const result = breadthFirst(state, mockEncodeState, positionHandlers);
+
+    // Should evaluate cost function: 2 elements * 2 = 4
+    expect(result[0].cost).toBe(4);
+    expect(result.every((t) => t.cost === 4)).toBe(true); // All transitions have same cost
+  });
+
+  test("should handle null costs", () => {
+    const state: InternalSystemState = {
+      containers: [
+        {
+          id: "source",
+          slots: ["item"],
+          allowedTransitions: [
+            {
+              targetId: "target",
+              from: "start",
+              to: "start",
+              cost: null,
+            },
+          ],
+        },
+        {
+          id: "target",
+          slots: [false],
+          allowedTransitions: [],
+        },
+      ],
+    };
+
+    const result = breadthFirst(state, mockEncodeState, positionHandlers);
+    expect(result[0].cost).toBe(null);
+  });
+
+  test("should handle undefined costs", () => {
+    const state: InternalSystemState = {
+      containers: [
+        {
+          id: "source",
+          slots: ["item"],
+          allowedTransitions: [
+            {
+              targetId: "target",
+              from: "start",
+              to: "start",
+              // cost undefined
+            },
+          ],
+        },
+        {
+          id: "target",
+          slots: [false],
+          allowedTransitions: [],
+        },
+      ],
+    };
+
+    const result = breadthFirst(state, mockEncodeState, positionHandlers);
+    expect(result[0].cost).toBe(null);
+  });
 });

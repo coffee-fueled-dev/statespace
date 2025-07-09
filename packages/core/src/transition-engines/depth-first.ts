@@ -45,10 +45,16 @@ export function* depthFirst(
 
       // Generate transitions for each valid move
       for (const move of moves) {
+        // Create transition object for position handler
+        const transition = {
+          element: move.element,
+          cost: rule.cost || null,
+        };
+
         const placements = getValidPlacements(
           rule.to,
           target,
-          move.element,
+          transition,
           positionHandlers
         );
 
@@ -69,6 +75,12 @@ export function* depthFirst(
 
           const lexicalIndex = encodeState({ containers: newContainers });
 
+          // Evaluate cost function if present
+          const evaluatedCost =
+            typeof rule.cost === "function"
+              ? rule.cost(currentState)
+              : rule.cost ?? null;
+
           // Convert back to external SystemState format for the result
           const externalResultingState: SystemState = {
             containers: newContainers.map((container) => ({
@@ -88,6 +100,7 @@ export function* depthFirst(
             transitionType,
             resultingState: externalResultingState,
             lexicalIndex,
+            cost: evaluatedCost,
             metadata: rule.metadata,
           };
         }

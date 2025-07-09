@@ -2,7 +2,7 @@ import type {
   PositionHandler,
   PositionType,
 } from "@statespace/position-handlers";
-import type { Element, InternalContainer } from "..";
+import type { Element, InternalContainer, Transition } from "..";
 import { getPositionHandler } from "./get-position-handler";
 
 /**
@@ -11,9 +11,9 @@ import { getPositionHandler } from "./get-position-handler";
 export function getValidPlacements(
   position: string,
   container: InternalContainer,
-  element: Element,
+  transition: Transition,
   positionHandlers: Record<PositionType, PositionHandler>
 ): Element[][] {
   const handler = getPositionHandler(position, container, positionHandlers);
-  return handler ? handler.canMoveTo(container.slots, element) : [];
+  return handler ? handler.canMoveTo(container.slots, transition) : [];
 }

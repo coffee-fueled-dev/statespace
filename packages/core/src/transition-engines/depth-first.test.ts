@@ -218,4 +218,116 @@ describe("depthFirst", () => {
     expect(transitions).toHaveLength(2);
     expect(transitions[0].element).toEqual(expect.any(String));
   });
+
+  test("should evaluate static costs", () => {
+    const state: InternalSystemState = {
+      containers: [
+        {
+          id: "source",
+          slots: ["item"],
+          allowedTransitions: [
+            {
+              targetId: "target",
+              from: "start",
+              to: "start",
+              cost: 3,
+            },
+          ],
+        },
+        {
+          id: "target",
+          slots: [false],
+          allowedTransitions: [],
+        },
+      ],
+    };
+
+    const generator = depthFirst(state, mockEncodeState, positionHandlers);
+    const first = generator.next();
+
+    expect(first.value.cost).toBe(3);
+  });
+
+  test("should evaluate cost functions", () => {
+    const state: InternalSystemState = {
+      containers: [
+        {
+          id: "source",
+          slots: ["valuable", "common", "rare"],
+          allowedTransitions: [
+            {
+              targetId: "target",
+              from: "any",
+              to: "any",
+              cost: (currentState) => {
+                // Dynamic cost based on state
+                const source = currentState.containers.find(
+                  (c) => c.id === "source"
+                );
+                return source
+                  ? source.slots.filter((s) => s !== false).length
+                  : 1;
+              },
+            },
+          ],
+        },
+        {
+          id: "target",
+          slots: [false, false, false],
+          allowedTransitions: [],
+        },
+      ],
+    };
+
+    const generator = depthFirst(state, mockEncodeState, positionHandlers);
+    const transitions = Array.from(generator);
+
+    // Should evaluate cost function: 3 elements in source
+    expect(transitions[0].cost).toBe(3);
+    expect(transitions.every((t) => t.cost === 3)).toBe(true);
+  });
+
+  test("should handle cost functions with generator lazy evaluation", () => {
+    let functionCallCount = 0;
+
+    const state: InternalSystemState = {
+      containers: [
+        {
+          id: "source",
+          slots: ["a", "b"],
+          allowedTransitions: [
+            {
+              targetId: "target",
+              from: "any",
+              to: "any",
+              cost: (currentState) => {
+                functionCallCount++;
+                return 2;
+              },
+            },
+          ],
+        },
+        {
+          id: "target",
+          slots: [false, false],
+          allowedTransitions: [],
+        },
+      ],
+    };
+
+    const generator = depthFirst(state, mockEncodeState, positionHandlers);
+
+    // Function should not be called until we actually consume the generator
+    expect(functionCallCount).toBe(0);
+
+    // Get first transition
+    const first = generator.next();
+    expect(first.value.cost).toBe(2);
+    expect(functionCallCount).toBe(1);
+
+    // Get second transition
+    const second = generator.next();
+    expect(second.value.cost).toBe(2);
+    expect(functionCallCount).toBe(2);
+  });
 });
