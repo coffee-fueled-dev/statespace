@@ -1,6 +1,6 @@
-import { runExample } from "../../shared/example-runner.js";
+import { runExample } from "@statespace/example-shared/example-runner";
 import { start, end, any } from "@statespace/position-handlers";
-import { genericSystemConfig as config } from "./config.js";
+import { config } from "./config";
 import { logSpaceEstimates } from "@statespace/core";
 
 async function main() {

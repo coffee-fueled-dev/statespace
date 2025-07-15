@@ -1,6 +1,6 @@
 import { parseYamlFromFile } from "@statespace/core";
 import { start, end, any } from "@statespace/position-handlers";
-import { runExample } from "../../shared/example-runner.js";
+import { runExample } from "@statespace/example-shared/example-runner";
 
 async function main() {
   const config = await parseYamlFromFile("./yaml/config.yaml");

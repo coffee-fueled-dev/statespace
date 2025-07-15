@@ -6,23 +6,20 @@ import { createContext, type CodecContext } from "./create-context";
  * Decode a lexical index back to its corresponding permutation
  * using BitSet for O(n log n) performance
  */
-export function decode(
-  index: LexicalIndex,
-  elementBank: Element[]
-): Permutation;
+export function decode(index: LexicalIndex, elements: Element[]): Permutation;
 
 /**
  * Decode a lexical index with automatic element bank padding based on containers
  */
 export function decode(
   index: LexicalIndex,
-  elementBank: Element[],
+  elements: Element[],
   containers: Container[]
 ): Permutation;
 
 export function decode(
   index: LexicalIndex,
-  elementBank: Element[],
+  elements: Element[],
   containers?: Container[]
 ): Permutation {
   let totalSlots: number | undefined;
@@ -34,9 +31,9 @@ export function decode(
     );
   }
 
-  const context = createContext(elementBank, totalSlots);
+  const context = createContext(elements, totalSlots);
   const lehmerCode = lexicalIndexToLehmer(index, context);
-  const n = context.elementBank.length;
+  const n = context.elements.length;
 
   // Initialize BitSet with all positions available (set bits 0 to n-1)
   const available = new BitSet();
@@ -69,7 +66,7 @@ function findKthAvailableElement(
   context: CodecContext
 ): number {
   let count = 0;
-  for (let i = 0; i < context.elementBank.length; i++) {
+  for (let i = 0; i < context.elements.length; i++) {
     if (available.get(i)) {
       if (count === k) {
         return i;
@@ -91,7 +88,7 @@ export function lexicalIndexToLehmer(
   let i = 2;
   let factoradic: number[] = [0];
 
-  if (base === 0) return new Array(context.elementBank.length).fill(0);
+  if (base === 0) return new Array(context.elements.length).fill(0);
 
   while (base > 0) {
     const d = Math.floor(base / i);
@@ -101,7 +98,7 @@ export function lexicalIndexToLehmer(
     factoradic = [radix, ...factoradic];
   }
 
-  const diff = context.elementBank.length - factoradic.length;
+  const diff = context.elements.length - factoradic.length;
 
   // Pad with leading zeros if needed
   if (diff > 0) {

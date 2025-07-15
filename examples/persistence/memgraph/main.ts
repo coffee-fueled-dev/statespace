@@ -8,13 +8,13 @@ import {
   logSpaceEstimates,
 } from "@statespace/core";
 import { start, end, any } from "@statespace/position-handlers";
-import { genericSystemConfig as config } from "../config.js";
+import { config } from "@statespace/example-generic-system/config";
 import {
   createMemgraphAdapter,
   closeAdapter,
   type MarkovLink,
 } from "@statespace/adapters";
-import { createQueueProcessor } from "./queue.js";
+import { createQueueProcessor } from "./queue";
 import { bfs } from "@statespace/analysis";
 
 async function main() {
@@ -29,12 +29,12 @@ async function main() {
     state.containers.forEach((container) => {
       permutation.push(...container.slots);
     });
-    return encode(permutation, config.elementBank, config.containers);
+    return encode(permutation, config.elements, config.containers);
   };
 
   const getState = (index: number): InternalSystemState | undefined => {
     try {
-      const permutation = decode(index, config.elementBank, config.containers);
+      const permutation = decode(index, config.elements, config.containers);
       return permutationToInternalState(permutation, config.containers);
     } catch {
       return undefined;

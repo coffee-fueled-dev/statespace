@@ -70,6 +70,6 @@ export interface StatespaceConfig {
   name: string;
   description: string;
   containers: Container[];
-  elementBank: string[]; // Only non-false elements
+  elements: string[]; // Only non-false elements
   metadata?: Record<string, any>;
 }

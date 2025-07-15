@@ -3,10 +3,10 @@ import { createContext } from "./create-context";
 
 describe("createContext", () => {
   test("should create context with element bank", () => {
-    const elementBank = ["a", "b", "c"];
-    const context = createContext(elementBank);
+    const elements = ["a", "b", "c"];
+    const context = createContext(elements);
 
-    expect(context.elementBank).toEqual(["a", "b", "c"]);
+    expect(context.elements).toEqual(["a", "b", "c"]);
     expect(context.sortedBank).toEqual(["a", "b", "c"]);
     expect(context.elementToIndex.get("a")).toEqual([0]);
     expect(context.elementToIndex.get("b")).toEqual([1]);
@@ -31,30 +31,30 @@ describe("createContext", () => {
   test("should pad element bank when totalSlots is larger", () => {
     const context = createContext(["a", "b"], 5);
 
-    expect(context.elementBank).toEqual(["a", "b", false, false, false]);
+    expect(context.elements).toEqual(["a", "b", false, false, false]);
     expect(context.sortedBank).toEqual(["a", "b", false, false, false]);
     expect(context.elementToIndex.get(false)).toEqual([2, 3, 4]);
   });
 
   test("should not pad when element bank matches or exceeds totalSlots", () => {
     const exact = createContext(["a", "b", "c"], 3);
-    expect(exact.elementBank).toEqual(["a", "b", "c"]);
+    expect(exact.elements).toEqual(["a", "b", "c"]);
 
     const larger = createContext(["a", "b", "c", "d"], 3);
-    expect(larger.elementBank).toEqual(["a", "b", "c", "d"]);
+    expect(larger.elements).toEqual(["a", "b", "c", "d"]);
   });
 
   test("should handle padding with existing false values", () => {
     const context = createContext(["a", false, "b"], 6);
 
-    expect(context.elementBank).toHaveLength(6);
-    expect(context.elementBank.filter((x) => x === false)).toHaveLength(4); // 1 original + 3 padding
+    expect(context.elements).toHaveLength(6);
+    expect(context.elements.filter((x) => x === false)).toHaveLength(4); // 1 original + 3 padding
   });
 
   test("should handle empty element bank with totalSlots", () => {
     const context = createContext([], 3);
 
-    expect(context.elementBank).toEqual([false, false, false]);
+    expect(context.elements).toEqual([false, false, false]);
     expect(context.elementToIndex.get(false)).toEqual([0, 1, 2]);
   });
 });

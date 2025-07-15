@@ -29,8 +29,8 @@ import {
 } from "@statespace/core";
 ```
 
-- **`encode(permutation, elementBank, containers?)`**: Converts a given system `permutation` (an array of elements in a specific order) into its unique `lexicalIndex` (a number). An `elementBank` is required to define the set of all possible elements. Optionally, `containers` can be provided to automatically pad the element bank if the total number of slots across containers exceeds the initial `elementBank` length.
-- **`decode(index, elementBank, containers?)`**: The inverse of `encode`. This function takes a `lexicalIndex` and an `elementBank` to reconstruct the original system `permutation`. Similar to `encode`, `containers` can be provided for correct padding if the system involves empty slots.
+- **`encode(permutation, elements, containers?)`**: Converts a given system `permutation` (an array of elements in a specific order) into its unique `lexicalIndex` (a number). An `elements` is required to define the set of all possible elements. Optionally, `containers` can be provided to automatically pad the element bank if the total number of slots across containers exceeds the initial `elements` length.
+- **`decode(index, elements, containers?)`**: The inverse of `encode`. This function takes a `lexicalIndex` and an `elements` to reconstruct the original system `permutation`. Similar to `encode`, `containers` can be provided for correct padding if the system involves empty slots.
 - **`permutationToInternalState(permutation, containers)`**: Transforms a flat `permutation` array into a structured `InternalSystemState` object, distributing elements into their respective containers based on the provided `containers` configuration. This is useful for working with states in a more human-readable and rule-processable format.
 - **`transitionEngines.breadthFirst(state, encodeState, positionHandlers, getTransitionType?)`**: Generates **all** possible transitions from a given `state`. This function returns an array of `StateTransition` objects. It's suitable for exploring smaller state spaces or when you need a complete list of immediate next states.
 - **`transitionEngines.depthFirst(state, encodeState, positionHandlers, getTransitionType?)`**: Generates transitions lazily as an iterable. This is ideal for very large state spaces where generating all transitions at once might be memory-intensive. It allows for depth-first traversal strategies.
@@ -78,7 +78,7 @@ import { start, end, any } from "@statespace/position-handlers";
 
 // 1. Define your system configuration
 const config = {
-  elementBank: ["card1", "card2"], // All possible unique elements
+  elements: ["card1", "card2"], // All possible unique elements
   containers: [
     {
       id: "deck",
@@ -105,7 +105,7 @@ const positionHandlers = { start, end, any };
 // Helper functions for state conversion, using `encode` and `decode`
 const getState = (index: number): InternalSystemState => {
   // Decode the lexical index to a permutation (flat list of elements)
-  const permutation = decode(index, config.elementBank, config.containers);
+  const permutation = decode(index, config.elements, config.containers);
   // Convert the permutation into a structured internal system state
   return permutationToInternalState(permutation, config.containers);
 };
@@ -117,7 +117,7 @@ const encodeState = (state: InternalSystemState): number => {
     permutation.push(...container.slots);
   });
   // Encode the permutation back to a lexical index
-  return encode(permutation, config.elementBank, config.containers);
+  return encode(permutation, config.elements, config.containers);
 };
 
 // 3. Get an initial state (e.g., lexical index 0 often represents the initial sorted state)

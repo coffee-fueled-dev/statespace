@@ -1,6 +1,6 @@
 import { parseYamlFromFile } from "@statespace/core";
-import { runExample } from "../../shared/example-runner.js";
-import { cardGamePositionHandlers } from "../plugins/cardgame-mechanics.js";
+import { runExample } from "@statespace/example-shared/example-runner";
+import { cardGamePositionHandlers } from "../plugins/cardgame-mechanics";
 
 async function main() {
   const config = await parseYamlFromFile("./yaml/config.yaml");

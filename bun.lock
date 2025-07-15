@@ -37,7 +37,9 @@
       "version": "0.1.0",
       "dependencies": {
         "@statespace/adapters": "workspace:*",
+        "@statespace/analysis": "workspace:*",
         "@statespace/core": "workspace:*",
+        "@statespace/example-generic-system": "workspace:*",
         "queue": "^7.0.0",
       },
       "devDependencies": {

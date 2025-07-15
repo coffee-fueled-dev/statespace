@@ -81,7 +81,7 @@ export function parseYamlConfig(
     name: yamlConfig.name,
     description: yamlConfig.description || "",
     containers,
-    elementBank: yamlConfig.element_bank,
+    elements: yamlConfig.element_bank,
     metadata: yamlConfig.metadata,
   };
 }

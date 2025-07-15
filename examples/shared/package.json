@@ -4,8 +4,8 @@
   "type": "module",
   "description": "Shared utilities for examples",
   "exports": {
-    "./runner": "./runner.ts",
-    "./graph": "./graph.ts"
+    "./example-runner": "./example-runner.ts",
+    "./example-graph": "./example-graph.ts"
   },
   "dependencies": {
     "@statespace/core": "workspace:*"

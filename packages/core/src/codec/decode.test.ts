@@ -5,19 +5,19 @@ import { createContext } from "./create-context";
 import type { Container } from "../types";
 
 describe("decode", () => {
-  const elementBank = ["a", "b", "c", "d"];
+  const elements = ["a", "b", "c", "d"];
 
   test("should decode basic permutations", () => {
-    expect(decode(0, elementBank)).toEqual(["a", "b", "c", "d"]);
-    expect(decode(23, elementBank)).toEqual(["d", "c", "b", "a"]);
-    expect(decode(1, elementBank)).toEqual(["a", "b", "d", "c"]);
-    expect(decode(13, elementBank)).toEqual(["c", "a", "d", "b"]);
+    expect(decode(0, elements)).toEqual(["a", "b", "c", "d"]);
+    expect(decode(23, elements)).toEqual(["d", "c", "b", "a"]);
+    expect(decode(1, elements)).toEqual(["a", "b", "d", "c"]);
+    expect(decode(13, elements)).toEqual(["c", "a", "d", "b"]);
   });
 
   test("should maintain round-trip consistency", () => {
     for (let i = 0; i < 24; i++) {
-      const decoded = decode(i, elementBank);
-      const encoded = encode(decoded, elementBank);
+      const decoded = decode(i, elements);
+      const encoded = encode(decoded, elements);
       expect(encoded).toBe(i);
     }
   });
@@ -73,8 +73,8 @@ describe("decode", () => {
   test("should handle edge cases", () => {
     expect(decode(0, ["x"])).toEqual(["x"]);
     expect(decode(0, [])).toEqual([]);
-    expect(() => decode(-1, elementBank)).not.toThrow();
-    expect(() => decode(100, elementBank)).toThrow("Could not find");
+    expect(() => decode(-1, elements)).not.toThrow();
+    expect(() => decode(100, elements)).toThrow("Could not find");
   });
 });
 
