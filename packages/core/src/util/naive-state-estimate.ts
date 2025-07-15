@@ -24,7 +24,7 @@ export function estimateStateCount(config: StatespaceConfig): StateEstimate {
     0
   );
 
-  const uniqueElements = config.elementBank.length;
+  const uniqueElements = config.elements.length;
   const warnings: string[] = [];
 
   let upperBound: number;

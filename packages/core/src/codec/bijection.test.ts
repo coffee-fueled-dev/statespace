@@ -4,15 +4,15 @@ import type { Element } from "../types";
 
 describe("Codec Bijection Properties", () => {
   test("should maintain perfect bijection for simple element bank", () => {
-    const elementBank = ["a", "b", "c"];
+    const elements = ["a", "b", "c"];
     const maxIndex = 6; // 3! = 6
     const indexSet = new Set<number>();
     const permutationSet = new Set<string>();
 
     // Test encode -> decode -> encode round-trip
     for (let i = 0; i < maxIndex; i++) {
-      const permutation = decode(i, elementBank);
-      const reEncoded = encode(permutation, elementBank);
+      const permutation = decode(i, elements);
+      const reEncoded = encode(permutation, elements);
       const permutationStr = JSON.stringify(permutation);
 
       expect(reEncoded).toBe(i);
@@ -28,7 +28,7 @@ describe("Codec Bijection Properties", () => {
   });
 
   test("should handle duplicate elements consistently", () => {
-    const elementBank = ["x", "y", "x"];
+    const elements = ["x", "y", "x"];
 
     // Test canonical mapping for duplicates
     const variants = [
@@ -37,23 +37,23 @@ describe("Codec Bijection Properties", () => {
     ];
 
     variants.forEach((variant) => {
-      const index = encode(variant, elementBank);
-      const canonical = decode(index, elementBank);
-      const reEncoded = encode(canonical, elementBank);
+      const index = encode(variant, elements);
+      const canonical = decode(index, elements);
+      const reEncoded = encode(canonical, elements);
 
       expect(reEncoded).toBe(index);
-      expect(countElements(canonical)).toEqual(countElements(elementBank));
+      expect(countElements(canonical)).toEqual(countElements(elements));
     });
   });
 
   test("should maintain bijection for larger set", () => {
-    const elementBank = ["a", "b", "c", "d"];
+    const elements = ["a", "b", "c", "d"];
     const maxIndex = 24; // 4! = 24
     const indices = new Set<number>();
 
     for (let i = 0; i < maxIndex; i++) {
-      const permutation = decode(i, elementBank);
-      const index = encode(permutation, elementBank);
+      const permutation = decode(i, elements);
+      const index = encode(permutation, elements);
 
       expect(index).toBe(i);
       expect(indices.has(index)).toBe(false);
@@ -64,12 +64,12 @@ describe("Codec Bijection Properties", () => {
   });
 
   test("should handle mixed types (string and false)", () => {
-    const elementBank = ["a", false, "b"];
+    const elements = ["a", false, "b"];
     const maxIndex = 6;
 
     for (let i = 0; i < maxIndex; i++) {
-      const permutation = decode(i, elementBank);
-      const index = encode(permutation, elementBank);
+      const permutation = decode(i, elements);
+      const index = encode(permutation, elements);
 
       expect(index).toBe(i);
       expect(permutation).toHaveLength(3);
@@ -79,14 +79,14 @@ describe("Codec Bijection Properties", () => {
   });
 
   test("should perform efficiently on larger sets", () => {
-    const elementBank = ["a", "b", "c", "d", "e"];
+    const elements = ["a", "b", "c", "d", "e"];
     const sampleSize = 50; // Sample of 5! = 120
 
     const start = performance.now();
 
     for (let i = 0; i < sampleSize; i++) {
-      const permutation = decode(i, elementBank);
-      const index = encode(permutation, elementBank);
+      const permutation = decode(i, elements);
+      const index = encode(permutation, elements);
       expect(index).toBe(i);
     }
 

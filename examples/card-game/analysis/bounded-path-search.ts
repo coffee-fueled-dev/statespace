@@ -7,12 +7,12 @@ import {
   logSpaceEstimates,
 } from "@statespace/core";
 import { boundedPathSearch } from "@statespace/analysis/bfs";
-import { cardGamePositionHandlers } from "../plugins/cardgame-mechanics.js";
-import { cardGameConfig as config } from "../typescript/config.js";
+import { cardGamePositionHandlers } from "../plugins/cardgame-mechanics";
+import { config } from "../typescript/config";
 
 async function main() {
   const getState = (index: number) => {
-    const permutation = decode(index, config.elementBank, config.containers);
+    const permutation = decode(index, config.elements, config.containers);
     return permutationToInternalState(permutation, config.containers);
   };
 
@@ -21,7 +21,7 @@ async function main() {
     state.containers.forEach((container) => {
       permutation.push(...container.slots);
     });
-    return encode(permutation, config.elementBank, config.containers);
+    return encode(permutation, config.elements, config.containers);
   };
 
   const result = await boundedPathSearch(

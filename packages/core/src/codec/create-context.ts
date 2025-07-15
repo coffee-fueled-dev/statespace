@@ -1,7 +1,7 @@
 import type { Element } from "../types";
 
 export interface CodecContext {
-  elementBank: Element[];
+  elements: Element[];
   sortedBank: Element[];
   elementToIndex: Map<Element, number[]>;
 }
@@ -10,18 +10,18 @@ export interface CodecContext {
  * Create codec context for encoding/decoding operations
  */
 export function createContext(
-  elementBank: Element[],
+  elements: Element[],
   totalSlots?: number
 ): CodecContext {
   // Automatically pad element bank if totalSlots is provided
-  let paddedElementBank = [...elementBank];
+  let paddedElementBank = [...elements];
 
   if (totalSlots !== undefined) {
-    const currentLength = elementBank.length;
+    const currentLength = elements.length;
     if (currentLength < totalSlots) {
       // Pad with false values to match total slots
       const padding = new Array(totalSlots - currentLength).fill(false);
-      paddedElementBank = [...elementBank, ...padding];
+      paddedElementBank = [...elements, ...padding];
     }
   }
 
@@ -41,5 +41,5 @@ export function createContext(
     elementToIndex.get(element)!.push(index);
   });
 
-  return { elementBank: paddedElementBank, sortedBank, elementToIndex };
+  return { elements: paddedElementBank, sortedBank, elementToIndex };
 }

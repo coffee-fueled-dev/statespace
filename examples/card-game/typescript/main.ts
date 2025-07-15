@@ -1,7 +1,7 @@
 import { logSpaceEstimates } from "@statespace/core";
-import { runExample } from "../../shared/example-runner.js";
-import { cardGamePositionHandlers } from "../plugins/cardgame-mechanics.js";
-import { cardGameConfig as config } from "./config.js";
+import { runExample } from "@statespace/example-shared/example-runner";
+import { cardGamePositionHandlers } from "../plugins/cardgame-mechanics";
+import { config } from "./config";
 
 async function main() {
   const result = runExample(config, cardGamePositionHandlers, 123);

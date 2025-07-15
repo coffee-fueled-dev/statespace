@@ -10,6 +10,7 @@
     "@statespace/adapters": "workspace:*",
     "@statespace/core": "workspace:*",
     "@statespace/analysis": "workspace:*",
+    "@statespace/example-generic-system": "workspace:*",
     "queue": "^7.0.0"
   },
   "devDependencies": {

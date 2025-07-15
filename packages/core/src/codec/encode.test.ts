@@ -4,13 +4,13 @@ import { createContext } from "./create-context";
 import type { Container } from "../types";
 
 describe("encode", () => {
-  const elementBank = ["a", "b", "c", "d"];
+  const elements = ["a", "b", "c", "d"];
 
   test("should encode basic permutations", () => {
-    expect(encode(["a", "b", "c", "d"], elementBank)).toBe(0);
-    expect(encode(["d", "c", "b", "a"], elementBank)).toBe(23);
-    expect(encode(["a", "b", "d", "c"], elementBank)).toBe(1);
-    expect(encode(["c", "a", "d", "b"], elementBank)).toBe(13);
+    expect(encode(["a", "b", "c", "d"], elements)).toBe(0);
+    expect(encode(["d", "c", "b", "a"], elements)).toBe(23);
+    expect(encode(["a", "b", "d", "c"], elements)).toBe(1);
+    expect(encode(["c", "a", "d", "b"], elements)).toBe(13);
   });
 
   test("should encode all permutations uniquely", () => {
@@ -43,7 +43,7 @@ describe("encode", () => {
 
     const encodedIndices = new Set();
     allPermutations.forEach((perm, expectedIndex) => {
-      const encoded = encode(perm, elementBank);
+      const encoded = encode(perm, elements);
       expect(encoded).toBe(expectedIndex);
       expect(encodedIndices.has(encoded)).toBe(false);
       encodedIndices.add(encoded);
@@ -106,8 +106,8 @@ describe("encode", () => {
 
   test("should handle various edge cases", () => {
     // Wrong elements, wrong lengths, empty cases
-    expect(typeof encode(["x", "y", "z"], elementBank)).toBe("number");
-    expect(() => encode(["a", "b"], elementBank)).not.toThrow();
+    expect(typeof encode(["x", "y", "z"], elements)).toBe("number");
+    expect(() => encode(["a", "b"], elements)).not.toThrow();
     expect(() => encode([], [])).not.toThrow();
 
     // Mixed scenarios with false values

@@ -9,7 +9,7 @@ import { createContext, type CodecContext } from "./create-context";
  */
 export function encode(
   permutation: Permutation,
-  elementBank: Element[]
+  elements: Element[]
 ): LexicalIndex;
 
 /**
@@ -17,13 +17,13 @@ export function encode(
  */
 export function encode(
   permutation: Permutation,
-  elementBank: Element[],
+  elements: Element[],
   containers: Container[]
 ): LexicalIndex;
 
 export function encode(
   permutation: Permutation,
-  elementBank: Element[],
+  elements: Element[],
   containers?: Container[]
 ): LexicalIndex {
   let totalSlots: number | undefined;
@@ -35,7 +35,7 @@ export function encode(
     );
   }
 
-  const context = createContext(elementBank, totalSlots);
+  const context = createContext(elements, totalSlots);
   const lehmerCode = generateLehmerCode(permutation, context);
   return lehmerToLexicalIndex(lehmerCode);
 }
