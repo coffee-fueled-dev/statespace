@@ -3,11 +3,11 @@ import { BFS, jsonKey } from "../../src";
 import type { TransitionRules } from "../../src/transitions/types";
 
 // =============================================================================
-// 1. DEFINE THE SYSTEM STATE (Frontend + Backend)
+// DEFINE THE SYSTEM STATE (Frontend + Backend)
 // =============================================================================
 
 // Define a schema for a single Post
-const PostSchema = z.object({
+export const PostSchema = z.object({
   userId: z.number(),
   id: z.number(),
   title: z.string(),
@@ -16,7 +16,7 @@ const PostSchema = z.object({
 
 // Define the schema for our complete system state
 // This models both the frontend application AND the backend database
-const SystemStateSchema = z.object({
+export const SystemStateSchema = z.object({
   // Frontend application state
   frontend: z.object({
     posts: z.array(PostSchema), // Posts currently loaded in the UI
@@ -30,13 +30,13 @@ const SystemStateSchema = z.object({
   }),
 });
 
-type SystemState = z.infer<typeof SystemStateSchema>;
+export type SystemState = z.infer<typeof SystemStateSchema>;
 
 // =============================================================================
-// 2. DEFINE THE API TRANSITIONS (Frontend ↔ Backend Communication)
+// DEFINE THE API TRANSITIONS (Frontend ↔ Backend Communication)
 // =============================================================================
 
-const apiTransitionRules: TransitionRules<SystemState> = {
+export const apiTransitionRules: TransitionRules<SystemState> = {
   // User starts creating a new post (frontend only)
   "start-new-post": {
     constraint: (state) => {
@@ -50,6 +50,7 @@ const apiTransitionRules: TransitionRules<SystemState> = {
       return { allowed: errors.length === 0, errors };
     },
     effect: (state) => ({
+      ...state,
       frontend: {
         ...state.frontend,
         newPostDraft: {
@@ -60,7 +61,6 @@ const apiTransitionRules: TransitionRules<SystemState> = {
         },
       },
     }),
-    cost: 0, // No API call, just UI action
   },
 
   // User submits the draft post to the backend
@@ -82,6 +82,7 @@ const apiTransitionRules: TransitionRules<SystemState> = {
         id: state.backend.nextId, // Backend assigns real ID
       };
       return {
+        ...state,
         frontend: {
           ...state.frontend,
           loading: true,
@@ -106,6 +107,7 @@ const apiTransitionRules: TransitionRules<SystemState> = {
       return { allowed: errors.length === 0, errors };
     },
     effect: (state) => ({
+      ...state,
       frontend: {
         ...state.frontend,
         loading: true,
@@ -124,13 +126,13 @@ const apiTransitionRules: TransitionRules<SystemState> = {
       return { allowed: errors.length === 0, errors };
     },
     effect: (state) => ({
+      ...state,
       frontend: {
         ...state.frontend,
         posts: [...state.backend.posts], // Copy all backend posts to frontend
         loading: false,
       },
     }),
-    cost: 0, // Completion is free
   },
 
   // Backend operation: seed initial data (simulates existing data)
@@ -143,6 +145,7 @@ const apiTransitionRules: TransitionRules<SystemState> = {
       return { allowed: errors.length === 0, errors };
     },
     effect: (state) => ({
+      ...state,
       backend: {
         posts: [
           {
@@ -161,64 +164,5 @@ const apiTransitionRules: TransitionRules<SystemState> = {
         nextId: 3,
       },
     }),
-    cost: 0, // Seeding is free (happens at startup)
   },
 };
-
-// =============================================================================
-// 3. CONFIGURE AND RUN THE SEARCH
-// =============================================================================
-
-// Set the initial system state: empty frontend, empty backend
-const initialState: SystemState = {
-  frontend: {
-    posts: [],
-    loading: false,
-    newPostDraft: undefined,
-  },
-  backend: {
-    posts: [],
-    nextId: 1,
-  },
-};
-
-// Define the target condition: frontend has loaded posts from backend
-const targetCondition = (state: SystemState) => {
-  return state.frontend.posts.length > 0 && !state.frontend.loading;
-};
-
-// Main function to run the example.
-async function exploreApiWorkflow() {
-  console.log("=== Frontend/Backend API Workflow Explorer ===");
-  console.log("Initial State:", JSON.stringify(initialState, null, 2));
-  console.log("\nFinding optimal path to load posts in frontend...");
-
-  // Run the BFS search to find the optimal path to our goal state.
-  const result = await BFS({
-    systemSchema: SystemStateSchema,
-    initialState,
-    transitionRules: apiTransitionRules,
-    targetCondition,
-    keyGenerator: jsonKey<SystemState>(),
-  });
-
-  if (result) {
-    console.log("\n✅ Optimal workflow found!");
-    console.log(`Total cost: ${result.cost}`);
-    console.log("Sequence of actions:");
-    result.path.forEach((action, i) => {
-      console.log(`  ${i + 1}. ${action}`);
-    });
-
-    console.log("\n🔍 This shows the most efficient way to:");
-    console.log("  • Set up backend data");
-    console.log("  • Make API calls");
-    console.log("  • Load data into the frontend");
-    console.log("  • Handle the async loading states properly");
-  } else {
-    console.log("\n❌ No valid workflow found within the given constraints.");
-  }
-}
-
-// Run the explorer.
-exploreApiWorkflow();

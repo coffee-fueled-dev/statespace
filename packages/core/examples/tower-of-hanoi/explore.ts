@@ -7,7 +7,7 @@ import {
   TowerOfHanoiTransitionRules,
   type TowerOfHanoiState,
 } from "./config";
-import { mapStateSpace, jsonKey } from "../../src";
+import { exploreInMemory, jsonKey } from "../../src";
 
 console.log("=== Tower of Hanoi State Space Explorer ===");
 
@@ -24,78 +24,22 @@ async function exploreHanoi(numberOfDisks: number) {
 
   console.log("Initial State:", initialState);
 
-  // Map the entire reachable state space
-  const markovGraph = await mapStateSpace({
+  const {
+    profile: { branchingFactorDistribution, ...profile },
+  } = await exploreInMemory({
     systemSchema: TowerOfHanoiStateSchema,
     initialState,
     transitionRules: TowerOfHanoiTransitionRules,
     keyGenerator: jsonKey<TowerOfHanoiState>(),
     limit: {
-      maxIterations: 1000, // High limit - should explore everything
-      maxStates: 500, // Reasonable limit for visualization
+      maxIterations: 1000,
+      maxStates: 500,
     },
   });
 
-  // Analyze the state space
-  console.log(`\n📊 State Space Analysis:`);
-  console.log(`  Total reachable states: ${markovGraph.size}`);
-  console.log(
-    `  Theoretical maximum states: ${Math.pow(
-      2,
-      numberOfDisks * 3
-    )} (unrestricted)`
-  );
+  console.log("Profile:", JSON.stringify(profile, null, 2));
 
-  // Calculate transitions and branching factor
-  let totalTransitions = 0;
-  let maxBranching = 0;
-  let minBranching = Infinity;
-  const branchingFactors: number[] = [];
-
-  for (const [stateKey, transitions] of markovGraph) {
-    const branchingFactor = Object.keys(transitions).length;
-    totalTransitions += branchingFactor;
-    branchingFactors.push(branchingFactor);
-    maxBranching = Math.max(maxBranching, branchingFactor);
-    minBranching = Math.min(minBranching, branchingFactor);
-  }
-
-  const avgBranching = totalTransitions / markovGraph.size;
-
-  console.log(`  Total transitions: ${totalTransitions}`);
-  console.log(`  Average branching factor: ${avgBranching.toFixed(2)}`);
-  console.log(`  Max branching factor: ${maxBranching}`);
-  console.log(
-    `  Min branching factor: ${minBranching === Infinity ? 0 : minBranching}`
-  );
-
-  // Find the goal state (all disks on peg C)
-  const goalState = await jsonKey<TowerOfHanoiState>().encode({
-    pegA: [],
-    pegB: [],
-    pegC: Array.from({ length: numberOfDisks }, (_, i) => numberOfDisks - i),
-  });
-
-  const hasGoalState = markovGraph.has(goalState);
-  console.log(`  Goal state reachable: ${hasGoalState ? "✅ Yes" : "❌ No"}`);
-
-  // Show some interesting states
-  console.log(`\n🔍 Sample states and transitions:`);
-  let sampleCount = 0;
-  for (const [stateKey, transitions] of markovGraph) {
-    if (sampleCount >= 3) break;
-
-    const state = await jsonKey<TowerOfHanoiState>().decode(stateKey);
-    const transitionCount = Object.keys(transitions).length;
-    const transitionNames = Object.values(transitions).map((t) => t.ruleName);
-
-    console.log(`  State ${sampleCount + 1}: ${transitionCount} transitions`);
-    console.log(`    Pegs: A=${state.pegA} B=${state.pegB} C=${state.pegC}`);
-    console.log(`    Available moves: ${transitionNames.join(", ")}`);
-    sampleCount++;
-  }
-
-  return markovGraph.size;
+  return profile.totalStates;
 }
 
 // Explore different numbers of disks to see how state space grows

@@ -52,6 +52,7 @@ function createMoveRule(
       // Move the top disk from source to destination
       const diskToMove = state[source][state[source].length - 1];
       return {
+        ...state,
         [source]: state[source].slice(0, -1),
         [destination]: [...state[destination], diskToMove],
       };
