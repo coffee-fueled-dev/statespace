@@ -60,7 +60,6 @@ const apiTransitionRules: TransitionRules<SystemState> = {
         },
       },
     }),
-    cost: 0, // No API call, just UI action
   },
 
   // User submits the draft post to the backend
@@ -130,7 +129,6 @@ const apiTransitionRules: TransitionRules<SystemState> = {
         loading: false,
       },
     }),
-    cost: 0, // Completion is free
   },
 
   // Backend operation: seed initial data (simulates existing data)
@@ -161,7 +159,6 @@ const apiTransitionRules: TransitionRules<SystemState> = {
         nextId: 3,
       },
     }),
-    cost: 0, // Seeding is free (happens at startup)
   },
 };
 

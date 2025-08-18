@@ -14,8 +14,8 @@ export interface TransitionRule<TSystem extends System> {
    * to create the next state. It must pass runtime validation.
    */
   effect: Effect<TSystem>;
-  /** A function to calculate the cost of applying this rule. */
-  cost: number | Cost<TSystem>;
+  /** A function to calculate the cost of applying this rule. Defaults to 0. */
+  cost?: number | Cost<TSystem> | null | undefined;
 }
 
 /**

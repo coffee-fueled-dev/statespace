@@ -19,7 +19,7 @@ export function applyTransition<TSchema extends z.ZodRawShape>(
 ): TransitionResult<System<TSchema>> {
   // Calculate the transition cost
   const transitionCost =
-    typeof rule.cost === "function" ? rule.cost(currentState) : rule.cost;
+    typeof rule.cost === "function" ? rule.cost(currentState) : rule.cost || 0;
 
   // Check the constraint for the rule
   const constraintResult = rule.constraint(currentState, transitionCost);

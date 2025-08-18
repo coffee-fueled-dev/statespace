@@ -35,7 +35,6 @@ export const transitionRules: TransitionRules<ShoppingSystem> = {
         },
       };
     },
-    cost: 1,
   },
   goToCheckout: {
     constraint: (systemState) => {
@@ -54,7 +53,6 @@ export const transitionRules: TransitionRules<ShoppingSystem> = {
         page: "checkout",
       },
     }),
-    cost: 1,
   },
   completeCheckout: {
     constraint: (systemState) => {
@@ -74,6 +72,5 @@ export const transitionRules: TransitionRules<ShoppingSystem> = {
         total: 0,
       },
     }),
-    cost: 1,
   },
 };
