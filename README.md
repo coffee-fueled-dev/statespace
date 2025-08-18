@@ -1,12 +1,12 @@
 # State Space Explorer
 
-A configurable framework for generating and analyzing combinatorial state graphs. This project uses **Lehmer encoding** for efficient state representation and **rule-based transitions** to explore systems modeled as elements moving between containers.
+A configurable framework for generating and analyzing combinatorial state graphs. This project uses **rule-based transitions** to explore systems modeled as elements moving between containers.
 
 ---
 
 ## Work in Progress
 
-Please note that this repository is currently a **work in progress**. While the core **bijective encoding** (Lehmer numbers) and **transitional rules engine** are intended to be robust, some advanced algorithms (e.g., in `@statespace/analysis`) and certain aspects of data persistence (e.g., duplication in graph edges for `@statespace/adapters/memgraph`) have not been extensively tested and may contain issues. Use at your own risk.
+Please note that this repository is currently a **work in progress**.
 
 ---
 
@@ -14,10 +14,16 @@ Please note that this repository is currently a **work in progress**. While the 
 
 This framework helps you model dynamic systems to:
 
-- **Explore possibilities**: Understand all reachable states and how to get there.
 - **Find optimal paths**: Identify shortest routes between states.
 - **Detect issues**: Locate dead ends or specific system configurations.
 - **Analyze behavior**: Gain insights into system dynamics through automated exploration.
+
+**Current examples demonstrate:**
+
+- **Shopping workflows**: E-commerce state transitions and optimal paths
+- **Classic puzzles**: Tower of Hanoi solver with complete state space analysis
+- **API modeling**: Frontend/backend communication patterns and data flow
+- **Graph exploration**: Combinatorial state space growth and branching analysis
 
 **Potential applications include:**
 
@@ -25,6 +31,7 @@ This framework helps you model dynamic systems to:
 - Logistics and workflow optimization
 - Puzzle solving and game AI
 - Process analysis and validation
+- API workflow testing and optimization
 
 ---
 
@@ -36,41 +43,51 @@ To get started, first install dependencies:
 bun install
 ```
 
-Then, try out an example:
+Then, try out the examples:
 
 ```bash
-# Run the card game example (TypeScript config)
-bun run example:card-game:ts
+# Shopping system: Find optimal path through a commerce workflow
+bun run example:shopping-system:shortest-path
 
-# Run the generic system example (YAML config)
-bun run example:generic-system:yaml
+# Tower of Hanoi: Classic puzzle solver using BFS
+bun run example:tower-of-hanoi:shortest-path
 
-# Explore graph database persistence (requires Memgraph)
-bun run example:persistence:memgraph
+# Tower of Hanoi: Explore the complete state space and analyze growth patterns
+bun run example:tower-of-hanoi:explore
 
-# Run a path search analysis
-bun run example:card-game:bounded-path-search
+# API Workflow: Model frontend/backend communication with realistic data flow
+bun run example:json-api
 ```
 
 ---
 
 ## Project Structure
 
-- **`packages/core/`**: The main framework, including encoding/decoding and transition engines.
-- **`packages/adapters/`**: Integrations for graph databases (currently Memgraph).
-- **`packages/analysis/`**: Advanced algorithms for graph exploration and analysis.
-- **`packages/position-handlers/`**: Reusable logic for element placement within containers.
-- **`examples/`**: Practical demonstrations of the framework's capabilities.
-- **`docs/`**: Project documentation and goals.
+- **`packages/core/`**: The main framework with simplified API for state space exploration
+  - BFS algorithms for optimal pathfinding
+  - State space mapping and analysis tools
+  - Zod-based type-safe state modeling
+  - Transition rules with constraints and effects
+- **`packages/core/examples/`**: Practical demonstrations of the framework's capabilities
+  - Shopping system workflow optimization
+  - Tower of Hanoi puzzle solving and analysis
+  - API frontend/backend communication modeling
 
 ---
 
 ## Getting Started
 
-1.  **Explore the examples**: Look at the `examples/` directory to see how different systems are modeled.
-2.  **Read the core README**: Understand the foundational concepts in `packages/core/README.md`.
-3.  **Try graph persistence**: Run the Memgraph example (`bun run example:persistence:memgraph`) to see database integration.
-4.  **Build your own system**: Use the examples as a starting point for your own state space exploration.
+1. **Try the examples**: Run the example commands above to see different types of state space exploration
+2. **Read the core README**: Understand the foundational concepts in `packages/core/README.md`
+3. **Explore the code**: Check out `packages/core/src/examples/` to see how systems are modeled
+4. **Build your own**: Use the simplified API to model your own state spaces with Zod schemas and transition rules
+
+### Example Categories
+
+- **Pathfinding**: Use BFS to find optimal routes (Tower of Hanoi, Shopping workflows)
+- **State Analysis**: Explore complete state spaces and analyze growth patterns
+- **System Modeling**: Model complex interactions like API communication flows
+- **Constraint Solving**: Define rules and constraints to guide valid transitions
 
 ---
 
