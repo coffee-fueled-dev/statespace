@@ -10,7 +10,7 @@ services:
     volumes:
       - memgraph_data:/var/lib/memgraph
     networks:
-      - tkn-network
+      - statespace
     restart: unless-stopped
 
   memgraph-lab:
@@ -24,7 +24,7 @@ services:
     depends_on:
       - memgraph
     networks:
-      - tkn-network
+      - statespace
     restart: unless-stopped
 
 
@@ -32,5 +32,5 @@ volumes:
   memgraph_data:
 
 networks:
-  tkn-network:
+  statespace:
     driver: bridge 
