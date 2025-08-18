@@ -6,10 +6,11 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "example:shopping-system:shortest-path": "bun run src/examples/shopping-system/shortest-path.ts",
-    "example:tower-of-hanoi:shortest-path": "bun run src/examples/tower-of-hanoi/shortest-path.ts",
-    "example:tower-of-hanoi:explore": "bun run src/examples/tower-of-hanoi/explore.ts",
-    "example:json-api": "bun run examples/json-placeholder-api/config.ts"
+    "example:shopping:bfs": "bun run examples/shopping-system/bfs.ts",
+    "example:hanoi:bfs": "bun run examples/tower-of-hanoi/bfs.ts",
+    "example:hanoi:explore": "bun run examples/tower-of-hanoi/explore.ts",
+    "example:api:bfs": "bun run examples/json-placeholder-api/bfs.ts",
+    "example:api:explore": "bun run examples/json-placeholder-api/explore.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"

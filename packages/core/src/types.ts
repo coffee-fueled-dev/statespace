@@ -36,9 +36,7 @@ export type Constraint<TSystem extends System> = (
 ) => { allowed: boolean; errors?: string[] };
 
 /**
- * Defines the state changes caused by a transition. It returns the proposed
- * partial state that will be validated and applied.
+ * Defines the state changes caused by a transition. It returns the complete
+ * next state that will be validated and applied.
  */
-export type Effect<TSystem extends System> = (
-  systemState: TSystem
-) => Partial<TSystem>;
+export type Effect<TSystem extends System> = (systemState: TSystem) => TSystem;

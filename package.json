@@ -9,10 +9,11 @@
   ],
   "scripts": {
     "context": "bun run scripts/context.ts",
-    "example:shopping-system:shortest-path": "bun run --elide-lines 0 --filter @statespace/core example:shopping-system:shortest-path",
-    "example:tower-of-hanoi:shortest-path": "bun run --elide-lines 0 --filter @statespace/core example:tower-of-hanoi:shortest-path",
-    "example:tower-of-hanoi:explore": "bun run --elide-lines 0 --filter @statespace/core example:tower-of-hanoi:explore",
-    "example:json-api": "bun run --elide-lines 0 --filter @statespace/core example:json-api"
+    "example:shopping:explore": "bun run --elide-lines 0 --filter @statespace/core example:shopping:explore",
+    "example:hanoi:bfs": "bun run --elide-lines 0 --filter @statespace/core example:hanoi:bfs",
+    "example:hanoi:explore": "bun run --elide-lines 0 --filter @statespace/core example:hanoi:explore",
+    "example:api:bfs": "bun run --elide-lines 0 --filter @statespace/core example:api:bfs",
+    "example:api:explore": "bun run --elide-lines 0 --filter @statespace/core example:api:explore"
   },
   "devDependencies": {
     "@types/bun": "latest",

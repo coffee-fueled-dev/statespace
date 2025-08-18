@@ -29,6 +29,7 @@ export const transitionRules: TransitionRules<ShoppingSystem> = {
       const { cart } = systemState;
       const newItem = "widget";
       return {
+        ...systemState,
         cart: {
           items: [...cart.items, newItem],
           total: cart.total + 10,
@@ -48,7 +49,8 @@ export const transitionRules: TransitionRules<ShoppingSystem> = {
       }
       return { allowed: errors.length === 0, errors };
     },
-    effect: () => ({
+    effect: (systemState) => ({
+      ...systemState,
       ui: {
         page: "checkout",
       },
@@ -63,7 +65,8 @@ export const transitionRules: TransitionRules<ShoppingSystem> = {
       }
       return { allowed: errors.length === 0, errors };
     },
-    effect: () => ({
+    effect: (systemState) => ({
+      ...systemState,
       ui: {
         page: "confirmation",
       },

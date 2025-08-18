@@ -1,3 +1,7 @@
+// =============================================================================
+// SHOPPING SYSTEM BREADTH FIRST SEARCH SOLVER
+// =============================================================================
+
 import { BFS, jsonKey } from "../../src";
 import {
   shoppingSystemSchema,

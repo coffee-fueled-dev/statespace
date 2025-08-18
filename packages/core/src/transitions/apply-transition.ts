@@ -1,7 +1,6 @@
 import z from "zod";
 import type { System } from "../types";
 import type { TransitionResult, TransitionRules } from "./types";
-import merge from "lodash.merge";
 
 /**
  * Applies a single transition rule to a system state.
@@ -33,8 +32,7 @@ export function applyTransition<TSchema extends z.ZodRawShape>(
   }
 
   // Apply the effect to generate the next state
-  const proposedPartialState = rule.effect(currentState);
-  const nextState = merge({}, currentState, proposedPartialState);
+  const nextState = rule.effect(currentState);
 
   // Runtime validation of the new state
   const validationResult = systemSchema.safeParse(nextState);
