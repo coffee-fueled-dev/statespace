@@ -46,17 +46,17 @@ bun install
 Then, try out the examples:
 
 ```bash
-# Shopping system: Find optimal path through a commerce workflow
-bun run example:shopping-system:shortest-path
-
 # Tower of Hanoi: Classic puzzle solver using BFS
-bun run example:tower-of-hanoi:shortest-path
+bun run example:hanoi:bfs
 
 # Tower of Hanoi: Explore the complete state space and analyze growth patterns
-bun run example:tower-of-hanoi:explore
+bun run example:hanoi:explore
 
-# API Workflow: Model frontend/backend communication with realistic data flow
-bun run example:json-api
+# API Workflow: Find the optimal path to an application state using the JSON Placeholder API
+bun run example:api:bfs
+
+# API Workflow: Explore the state space to configured limits and analyze available actions at various states
+bun run example:api:explore
 ```
 
 ---

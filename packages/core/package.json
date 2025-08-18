@@ -6,7 +6,6 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "example:shopping:bfs": "bun run examples/shopping-system/bfs.ts",
     "example:hanoi:bfs": "bun run examples/tower-of-hanoi/bfs.ts",
     "example:hanoi:explore": "bun run examples/tower-of-hanoi/explore.ts",
     "example:api:bfs": "bun run examples/json-placeholder-api/bfs.ts",

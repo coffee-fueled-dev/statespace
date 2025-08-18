@@ -106,18 +106,6 @@ async function exploreApiWorkflow() {
     sampleCount++;
   }
 
-  // Analyze workflow complexity
-  console.log(`\n📈 Workflow Complexity:`);
-  console.log(`  The API workflow has ${profile.totalStates} distinct states`);
-  console.log(
-    `  Each state has an average of ${profile.averageBranchingFactor.toFixed(
-      1
-    )} possible actions`
-  );
-  console.log(
-    `  This represents the complexity of coordinating frontend/backend state`
-  );
-
   return profile.totalStates;
 }
 

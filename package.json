@@ -9,7 +9,6 @@
   ],
   "scripts": {
     "context": "bun run scripts/context.ts",
-    "example:shopping:explore": "bun run --elide-lines 0 --filter @statespace/core example:shopping:explore",
     "example:hanoi:bfs": "bun run --elide-lines 0 --filter @statespace/core example:hanoi:bfs",
     "example:hanoi:explore": "bun run --elide-lines 0 --filter @statespace/core example:hanoi:explore",
     "example:api:bfs": "bun run --elide-lines 0 --filter @statespace/core example:api:bfs",
