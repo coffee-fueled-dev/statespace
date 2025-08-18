@@ -7,8 +7,7 @@ import {
   TowerOfHanoiTransitionRules,
   type TowerOfHanoiState,
 } from "./config";
-import { BFS } from "../../src/algorithms";
-import { jsonKey } from "../../src/key-generators/json-key";
+import { BFS, jsonKey } from "../../src";
 
 // Number of disks to solve
 const numberOfDisks = 3;
@@ -25,22 +24,19 @@ const targetCondition = (state: TowerOfHanoiState) => {
   return state.pegC.length === numberOfDisks;
 };
 
-// Configure the BFS search
-const config = {
-  systemSchema: TowerOfHanoiStateSchema,
-  initialState,
-  transitionRules: TowerOfHanoiTransitionRules,
-  targetCondition,
-  keyGenerator: jsonKey<TowerOfHanoiState>(),
-};
-
 // Main function to run the example
 async function solveHanoi() {
   console.log(`Solving Tower of Hanoi with ${numberOfDisks} disks...`);
   console.log("Initial State:", initialState);
 
   // Run the BFS search to find the optimal path
-  const result = await BFS(config);
+  const result = await BFS({
+    systemSchema: TowerOfHanoiStateSchema,
+    initialState,
+    transitionRules: TowerOfHanoiTransitionRules,
+    targetCondition,
+    keyGenerator: jsonKey<TowerOfHanoiState>(),
+  });
 
   if (result) {
     console.log("\n✅ Solution Found!");

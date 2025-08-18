@@ -1,8 +1,5 @@
 import { z } from "zod";
-import type {
-  TransitionRule,
-  TransitionRules,
-} from "../../src/transitions/types";
+import type { TransitionRule, TransitionRules } from "../../src";
 
 // =============================================================================
 // DEFINE THE SYSTEM STATE

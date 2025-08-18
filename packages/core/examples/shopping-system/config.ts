@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { TransitionRules } from "../../src/transitions/types";
+import type { TransitionRules } from "../../src";
 
 export type ShoppingSystem = z.infer<typeof shoppingSystemSchema>;
 export const shoppingSystemSchema = z.object({

@@ -1,5 +1,4 @@
-import { BFS } from "../../src/algorithms";
-import { jsonKey } from "../../src/key-generators/json-key";
+import { BFS, jsonKey } from "../../src";
 import {
   shoppingSystemSchema,
   transitionRules,

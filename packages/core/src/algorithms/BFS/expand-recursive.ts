@@ -4,7 +4,6 @@ import type { TransitionRules } from "../../transitions";
 import type { KeyGenerator } from "../../key-generators";
 import { generateBreadth } from "./bfs";
 
-export type Cost = number;
 export type StateKey = string;
 
 export interface State<TSchema extends z.ZodRawShape> {
@@ -17,7 +16,7 @@ export type TransitionEvent<TSchema extends z.ZodRawShape> = {
   fromState: State<TSchema>;
   toState: State<TSchema>;
   ruleName: string;
-  cost: Cost;
+  cost: number;
 };
 
 export interface ExpansionConfig<TSchema extends z.ZodRawShape> {

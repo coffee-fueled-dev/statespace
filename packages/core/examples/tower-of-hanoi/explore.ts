@@ -7,8 +7,7 @@ import {
   TowerOfHanoiTransitionRules,
   type TowerOfHanoiState,
 } from "./config";
-import { mapStateSpace } from "../../src/algorithms";
-import { jsonKey } from "../../src/key-generators/json-key";
+import { mapStateSpace, jsonKey } from "../../src";
 
 console.log("=== Tower of Hanoi State Space Explorer ===");
 

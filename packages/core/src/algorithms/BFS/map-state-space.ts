@@ -1,7 +1,6 @@
 import type z from "zod";
 import {
   expandRecursive,
-  type Cost,
   type StateKey,
   type ExpansionConfig,
 } from "./expand-recursive";
@@ -13,7 +12,7 @@ export type StateSpaceExplorationConfig<TSchema extends z.ZodRawShape> = Omit<
 
 type MarkovGraph = Map<
   StateKey,
-  Record<StateKey, { cost: Cost; ruleName: string }>
+  Record<StateKey, { cost: number; ruleName: string }>
 >;
 
 export async function mapStateSpace<TSchema extends z.ZodRawShape>(

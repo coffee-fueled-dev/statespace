@@ -11,7 +11,8 @@
     "context": "bun run scripts/context.ts",
     "example:shopping-system:shortest-path": "bun run --elide-lines 0 --filter @statespace/core example:shopping-system:shortest-path",
     "example:tower-of-hanoi:shortest-path": "bun run --elide-lines 0 --filter @statespace/core example:tower-of-hanoi:shortest-path",
-    "example:tower-of-hanoi:explore": "bun run --elide-lines 0 --filter @statespace/core example:tower-of-hanoi:explore"
+    "example:tower-of-hanoi:explore": "bun run --elide-lines 0 --filter @statespace/core example:tower-of-hanoi:explore",
+    "example:json-api": "bun run --elide-lines 0 --filter @statespace/core example:json-api"
   },
   "devDependencies": {
     "@types/bun": "latest",
