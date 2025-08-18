@@ -84,7 +84,7 @@ bun run example:api:explore
 
 ### Example Categories
 
-- **Pathfinding**: Use BFS to find optimal routes (Tower of Hanoi, Shopping workflows)
+- **Pathfinding**: Use BFS to find optimal routes
 - **State Analysis**: Explore complete state spaces and analyze growth patterns
 - **System Modeling**: Model complex interactions like API communication flows
 - **Constraint Solving**: Define rules and constraints to guide valid transitions
