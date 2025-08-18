@@ -1,4 +1,11 @@
-export { encode, decode } from "./codec";
-export * as transitionEngines from "./transition-engines";
-export * from "./util";
+// Core types
 export * from "./types";
+
+// Transition system
+export * from "./transitions";
+
+// BFS algorithms
+export * from "./algorithms";
+
+// Key generators for state serialization
+export * from "./key-generators";
