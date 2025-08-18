@@ -1,6 +1,6 @@
 # State Space Explorer
 
-A configurable framework for generating and analyzing combinatorial state graphs. This project uses **Lehmer encoding** for efficient state representation and **rule-based transitions** to explore systems modeled as elements moving between containers.
+A configurable framework for generating and analyzing combinatorial state graphs. This project uses **rule-based transitions** to explore systems modeled as elements moving between containers.
 
 ---
 

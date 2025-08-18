@@ -1,75 +1,44 @@
-// Core types for the Lehmer-based state space exploration framework
+import { z } from "zod";
 
-import type {
-  PositionType,
-  PositionReference,
-  PositionHandler,
-} from "@statespace/position-handlers";
-
-// Internal container format with actual slot arrays for processing
-export interface InternalContainer {
-  id: string;
-  slots: Element[];
-  metadata?: Record<string, any>;
-  allowedTransitions: TransitionRule[];
-  positionHandlers?: Record<PositionType, PositionHandler>;
-}
-
-// Internal system state for processing
-export interface InternalSystemState {
-  containers: InternalContainer[];
-}
-
-export type Element = string | boolean;
-export type Permutation = Element[];
+/**
+ * A simple numeric type intended for unique identification. Its purpose is to act
+ * as a unique identifier for elements within the system, similar to an index in
+ * a list or array.
+ */
 export type LexicalIndex = number;
 
-// Generic transition type - can be any string defined by the user
-export type TransitionType = string;
+/**
+ * A utility type to represent the system's state based on a Zod schema.
+ */
+export type System<TSchema extends z.ZodRawShape = z.ZodRawShape> = z.infer<
+  z.ZodObject<TSchema>
+>;
 
-export interface TransitionRule {
-  targetId: string;
-  from: PositionReference;
-  to: PositionReference;
-  transitionType?: TransitionType;
-  cost?: number | ((state: InternalSystemState) => number) | null;
-  metadata?: Record<string, any>;
-}
+/**
+ * A utility type that creates a partial version of a System type based on the Zod schema.
+ */
+export type PartialSystem<TSchema extends z.ZodRawShape = z.ZodRawShape> =
+  Partial<z.infer<z.ZodObject<TSchema>>>;
 
-// Transition represents a move between states with optional cost for graph edge weighting
-// Cost can be a fixed number, a function of the current state, or null for equal-weight edges
-export interface Transition {
-  element: Element;
-  cost?: number | ((state: InternalSystemState) => number) | null;
-}
+/**
+ * A function that calculates the cost of a transition based on the system's
+ * state.
+ */
+export type Cost<TSystem> = (systemState: TSystem) => number;
 
-export interface Container {
-  id: string;
-  slots: number;
-  metadata?: Record<string, any>;
-  allowedTransitions: TransitionRule[];
-  positionHandlers?: Record<PositionType, PositionHandler>;
-}
+/**
+ * Represents a constraint that a transition must satisfy. It returns a result
+ * indicating if the transition is allowed and any errors if not.
+ */
+export type Constraint<TSystem extends System> = (
+  systemState: TSystem,
+  transitionCost: number
+) => { allowed: boolean; errors?: string[] };
 
-export interface SystemState {
-  containers: Container[];
-}
-
-export interface StateTransition {
-  element: Element;
-  fromContainer: string;
-  toContainer: string;
-  transitionType: TransitionType;
-  resultingState: SystemState;
-  lexicalIndex: LexicalIndex;
-  cost?: number | null;
-  metadata?: Record<string, any>;
-}
-
-export interface StatespaceConfig {
-  name: string;
-  description: string;
-  containers: Container[];
-  elements: string[]; // Only non-false elements
-  metadata?: Record<string, any>;
-}
+/**
+ * Defines the state changes caused by a transition. It returns the proposed
+ * partial state that will be validated and applied.
+ */
+export type Effect<TSystem extends System> = (
+  systemState: TSystem
+) => Partial<TSystem>;

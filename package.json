@@ -9,12 +9,9 @@
   ],
   "scripts": {
     "context": "bun run scripts/context.ts",
-    "example:card-game:ts": "bun run --elide-lines 0 --filter @statespace/example-card-game start:ts",
-    "example:card-game:yaml": "bun run --elide-lines 0 --filter @statespace/example-card-game start:yaml",
-    "example:card-game:bounded-path-search": "bun run --elide-lines 0 --filter @statespace/example-card-game start:bounded-path-search",
-    "example:generic-system:ts": "bun run --elide-lines 0 --filter @statespace/example-generic-system start:ts",
-    "example:generic-system:yaml": "bun run --elide-lines 0 --filter @statespace/example-generic-system start:yaml",
-    "example:persistence:memgraph": "bun run --elide-lines 0 --filter @statespace/example-persistence start:memgraph"
+    "example:shopping-system:shortest-path": "bun run --elide-lines 0 --filter @statespace/core example:shopping-system:shortest-path",
+    "example:tower-of-hanoi:shortest-path": "bun run --elide-lines 0 --filter @statespace/core example:tower-of-hanoi:shortest-path",
+    "example:tower-of-hanoi:explore": "bun run --elide-lines 0 --filter @statespace/core example:tower-of-hanoi:explore"
   },
   "devDependencies": {
     "@types/bun": "latest",
@@ -23,5 +20,7 @@
     "parse-gitignore": "^2.0.0"
   },
   "peerDependencies": {},
-  "dependencies": {}
+  "dependencies": {
+    "zod": "^4.0.17"
+  }
 }
