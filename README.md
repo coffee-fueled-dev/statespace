@@ -80,7 +80,7 @@ bun run example:api:explore
 1. **Try the examples**: Run the example commands above to see different types of state space exploration
 2. **Read the core README**: Understand the foundational concepts in `packages/core/README.md`
 3. **Explore the code**: Check out `packages/core/src/examples/` to see how systems are modeled
-4. **Build your own**: Use the simplified API to model your own state spaces with Zod schemas and transition rules
+4. **Build your own**: Model your own state spaces with Zod schemas and transition rules
 
 ### Example Categories
 
