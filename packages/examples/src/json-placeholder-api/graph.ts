@@ -77,6 +77,8 @@ async function exploreJsonPlaceholder() {
         cost: Number(event.cost),
         ruleName: event.ruleName,
         metadata: event.metadata ? JSON.stringify(event.metadata) : undefined,
+        codex: jsonCodex<SystemState>().key,
+        hash: event.hash,
       },
     });
   }

@@ -21,6 +21,8 @@ type Transition @relationshipProperties {
   cost: Float!
   rule_name: String!
   metadata: String
+  hash: String!
+  codex: Codex!
   timestamp_created: BigInt! @populatedBy(callback: "now", operations: [CREATE])
   timestamp_updated: BigInt @populatedBy(callback: "now", operations: [UPDATE])
   api_version: String!
@@ -45,6 +47,8 @@ type UpsertInfo {
 input CreateTransitionInput {
   rootStateHash: String!
   nextStateHashes: [String!]!
+  hash: String!
+  codex: Codex!
   cost: Float!
   ruleName: String!
   metadata: String
@@ -61,37 +65,40 @@ type Mutation {
     @cypher(
       statement: """
       MATCH (root:State {hash: $input.rootStateHash})
-      WITH root, $input AS input,
-          $apiVersion AS apiVersion,
-          timestamp() AS now
+      WITH root, $input AS input, $apiVersion AS apiVersion, timestamp() AS now
 
-      // Expand target hashes; if empty, keep one null so we still return a row
-      UNWIND (CASE
-                WHEN input.nextStateHashes IS NULL OR size(input.nextStateHashes) = 0
-                  THEN [NULL]
-                ELSE input.nextStateHashes
-              END) AS h
+      UNWIND (
+        CASE
+          WHEN input.nextStateHashes IS NULL OR size(input.nextStateHashes) = 0
+            THEN [NULL]
+          ELSE input.nextStateHashes
+        END
+      ) AS h
 
       OPTIONAL MATCH (next:State {hash: h})
       WITH root, input, apiVersion, now, next, h
       WHERE h IS NOT NULL AND next IS NOT NULL
 
       CALL uuid_generator.get() YIELD uuid
-      CREATE (root)-[rel:NEXT {
-        id: uuid,
-        timestamp_created: now,
-        cost: input.cost,
-        rule_name: input.ruleName,
-        api_version: apiVersion
-      }]->(next)
 
+      // Deduplicate by {hash, codex} for this (root,next) pair
+      MERGE (root)-[rel:NEXT { hash: input.hash, codex: input.codex }]->(next)
+      ON CREATE SET
+        rel.id = uuid,
+        rel.timestamp_created = now
+
+      // Common updates (both create & match)
       SET
+        rel.cost = input.cost,
+        rel.rule_name = input.ruleName,
+        rel.timestamp_updated = now,
+        rel.api_version = coalesce(apiVersion, rel.api_version),
         root.api_version = coalesce(apiVersion, root.api_version),
         root.timestamp_updated = now,
         next.api_version = coalesce(apiVersion, next.api_version),
         next.timestamp_updated = now
 
-      // set metadata only if provided
+      // Only set metadata when provided
       FOREACH (_ IN CASE WHEN input.metadata IS NOT NULL THEN [1] ELSE [] END |
         SET rel.metadata = input.metadata
       )

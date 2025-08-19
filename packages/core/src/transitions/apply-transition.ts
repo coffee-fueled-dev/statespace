@@ -53,5 +53,6 @@ export function applyTransition<TSchema extends z.ZodRawShape>(
     systemState: validationResult.data,
     cost: transitionCost,
     success: true,
+    metadata: rule.metadata,
   };
 }

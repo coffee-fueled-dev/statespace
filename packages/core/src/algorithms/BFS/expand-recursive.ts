@@ -16,7 +16,7 @@ export interface ExpansionConfig<TSchema extends z.ZodRawShape> {
   systemSchema: z.ZodObject<TSchema>;
   initialState: System<TSchema>;
   transitionRules: TransitionRules<System<TSchema>>;
-  codex: Codex<System<TSchema>>;
+  codex: Codex;
   limit: {
     maxIterations: number;
     maxStates?: number; // Optional limit on number of states to explore
@@ -48,13 +48,18 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
   states.set(initialHash, initialState);
   explorationQueue.push({ state: initialState, hash: initialHash });
 
-  // Emit initial state discovery
-  onTransition?.({
+  const transitionPayload = {
     fromState: { value: initialState, hash: initialHash, isNew: true },
     toState: { value: initialState, hash: initialHash, isNew: true },
     ruleName: "initial",
     cost: 0,
     metadata: undefined,
+  };
+
+  // Emit initial state discovery
+  onTransition?.({
+    ...transitionPayload,
+    hash: await codex.encode(transitionPayload),
   });
 
   let iterationsPerformed = 0;
@@ -83,7 +88,7 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
       const nextStateHash = await codex.encode(result.systemState);
       const isNewState = !states.has(nextStateHash);
 
-      onTransition?.({
+      const transitionPayload = {
         fromState: {
           value: currentState,
           hash: currentStateHash,
@@ -97,6 +102,11 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
         ruleName: result.ruleName,
         cost: result.cost,
         metadata: result.metadata,
+      };
+
+      onTransition?.({
+        ...transitionPayload,
+        hash: await codex.encode(transitionPayload),
       });
 
       if (isNewState) {

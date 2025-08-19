@@ -36,6 +36,7 @@ export type TransitionEvent<TSchema extends z.ZodRawShape> = {
   ruleName: TransitionSuccess<TSchema>["ruleName"];
   cost: TransitionSuccess<TSchema>["cost"];
   metadata: TransitionRule<TSchema>["metadata"];
+  hash: string;
 };
 
 /**
