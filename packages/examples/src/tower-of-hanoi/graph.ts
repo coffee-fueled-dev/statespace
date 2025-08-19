@@ -47,30 +47,37 @@ async function exploreHanoi(numberOfDisks: number) {
     },
     async onTransition(event) {
       queue.push(event);
-      await stateModule.create({
-        input: {
-          hash: event.fromState.hash,
-          codex: jsonCodex<TowerOfHanoiState>().key,
-          states_next: {
-            create: [
-              {
-                edge: {
-                  cost: event.cost,
-                  rule_name: event.ruleName,
-                  metadata: event.metadata
-                    ? JSON.stringify(event.metadata)
-                    : undefined,
-                },
-                node: {
-                  hash: event.toState.hash,
-                  codex: jsonCodex<TowerOfHanoiState>().key,
-                },
-              },
-            ],
-          },
-        },
-      });
-      queue.push(event);
     },
   });
+
+  for (let index = 0; index < queue.length; index++) {
+    const event = queue[index];
+
+    const result = await stateModule.upsertBatch({
+      input: [
+        {
+          hash: event.fromState.hash,
+          codex: jsonCodex<TowerOfHanoiState>().key,
+        },
+        {
+          hash: event.toState.hash,
+          codex: jsonCodex<TowerOfHanoiState>().key,
+        },
+      ],
+    });
+
+    const { states } = result.upsertStates;
+
+    await stateModule.createTransition({
+      input: {
+        rootStateHash: states[0].hash,
+        nextStateHashes: [states[1].hash],
+        cost: Number(event.cost),
+        ruleName: event.ruleName,
+        metadata: event.metadata ? JSON.stringify(event.metadata) : undefined,
+      },
+    });
+  }
 }
+
+await exploreHanoi(3);

@@ -23,7 +23,7 @@ export const getSchema = (
             }
             return ctx.cypherParams!.apiVersion as string;
           },
-          now: Date.now,
+          now: () => String(Date.now()),
         },
       },
       excludeDeprecatedFields: {

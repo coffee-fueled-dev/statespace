@@ -31,21 +31,32 @@ mutation states_createBatch($input: [StateCreateInput!]!) {
   }
 }
 
-mutation states_update($where: StateWhere, $update: StateUpdateInput) {
-  updateStates(where: $where, update: $update) {
+mutation states_upsert($input: StateUpsertInput!) {
+  upsertStates(input: [$input]) {
     states {
       ...StateInfo
     }
     info {
-      ...UpdateInfo
+      ...UpsertInfo
     }
   }
 }
 
-mutation states_upsert($input: [StateUpsertInput!]!) {
+mutation states_upsertBatch($input: [StateUpsertInput!]!) {
   upsertStates(input: $input) {
     states {
       ...StateInfo
+    }
+    info {
+      ...UpsertInfo
+    }
+  }
+}
+
+mutation states_createTransition($input: CreateTransitionInput!) {
+  createTransition(input: $input) {
+    transitions {
+      ...TransitionInfo
     }
   }
 }

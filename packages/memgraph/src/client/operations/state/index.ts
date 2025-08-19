@@ -6,26 +6,35 @@ import {
 } from "../../";
 import {
   StatesListDocument,
-  StatesUpdateDocument,
   StatesCreateDocument,
   StatesCreateBatchDocument,
+  StatesUpsertDocument,
+  StatesUpsertBatchDocument,
+  StatesCreateTransitionDocument,
   type StatesListQuery,
   type StatesListQueryVariables,
   type StatesCreateMutation,
   type StatesCreateMutationVariables,
-  type StatesUpdateMutation,
-  type StatesUpdateMutationVariables,
   type StatesCreateBatchMutation,
   type StatesCreateBatchMutationVariables,
+  type StatesUpsertMutationVariables,
+  type StatesUpsertMutation,
+  type StatesUpsertBatchMutation,
+  type StatesUpsertBatchMutationVariables,
+  type StatesCreateTransitionMutation,
+  type StatesCreateTransitionMutationVariables,
 } from "./operations.generated";
-import type { GraphQLClient } from "graphql-request";
 
 export * from "./operations.generated";
 
-const StatesUpdateDocumentString = print(StatesUpdateDocument);
 const StatesListDocumentString = print(StatesListDocument);
 const StatesCreateDocumentString = print(StatesCreateDocument);
 const StatesCreateBatchDocumentString = print(StatesCreateBatchDocument);
+const StatesUpsertDocumentString = print(StatesUpsertDocument);
+const StatesUpsertBatchDocumentString = print(StatesUpsertBatchDocument);
+const StatesCreateTransitionDocumentString = print(
+  StatesCreateTransitionDocument
+);
 
 export type StateModule = ReturnType<typeof createStateModule>;
 export const createStateModule = (client: ReturnType<typeof createClient>) => ({
@@ -62,13 +71,35 @@ export const createStateModule = (client: ReturnType<typeof createClient>) => ({
       accessToken,
     });
   },
-  update({
+  createTransition({
     accessToken,
     ...variables
-  }: WithAccessToken<StatesUpdateMutationVariables>): Promise<
-    StatespaceResponse<StatesUpdateMutation>
+  }: WithAccessToken<StatesCreateTransitionMutationVariables>): Promise<
+    StatespaceResponse<StatesCreateTransitionMutation>
   > {
-    return client.gql(StatesUpdateDocumentString, {
+    return client.gql(StatesCreateTransitionDocumentString, {
+      ...variables,
+      accessToken,
+    });
+  },
+  upsert({
+    accessToken,
+    ...variables
+  }: WithAccessToken<StatesUpsertMutationVariables>): Promise<
+    StatespaceResponse<StatesUpsertMutation>
+  > {
+    return client.gql(StatesUpsertDocumentString, {
+      ...variables,
+      accessToken,
+    });
+  },
+  upsertBatch({
+    accessToken,
+    ...variables
+  }: WithAccessToken<StatesUpsertBatchMutationVariables>): Promise<
+    StatespaceResponse<StatesUpsertBatchMutation>
+  > {
+    return client.gql(StatesUpsertBatchDocumentString, {
       ...variables,
       accessToken,
     });

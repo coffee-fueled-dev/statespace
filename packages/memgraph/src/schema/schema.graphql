@@ -42,12 +42,80 @@ type UpsertInfo {
   nodesUpdated: Int!
 }
 
+input CreateTransitionInput {
+  rootStateHash: String!
+  nextStateHashes: [String!]!
+  cost: Float!
+  ruleName: String!
+  metadata: String
+}
+
+type CreateTransitionMutationResponse {
+  transitions: [Transition!]!
+}
+
 type Mutation {
+  createTransition(
+    input: CreateTransitionInput!
+  ): CreateTransitionMutationResponse!
+    @cypher(
+      statement: """
+      MATCH (root:State {hash: $input.rootStateHash})
+      WITH root, $input AS input,
+          $apiVersion AS apiVersion,
+          timestamp() AS now
+
+      // Expand target hashes; if empty, keep one null so we still return a row
+      UNWIND (CASE
+                WHEN input.nextStateHashes IS NULL OR size(input.nextStateHashes) = 0
+                  THEN [NULL]
+                ELSE input.nextStateHashes
+              END) AS h
+
+      OPTIONAL MATCH (next:State {hash: h})
+      WITH root, input, apiVersion, now, next, h
+      WHERE h IS NOT NULL AND next IS NOT NULL
+
+      CALL uuid_generator.get() YIELD uuid
+      CREATE (root)-[rel:NEXT {
+        id: uuid,
+        timestamp_created: now,
+        cost: input.cost,
+        rule_name: input.ruleName,
+        api_version: apiVersion
+      }]->(next)
+
+      SET
+        root.api_version = coalesce(apiVersion, root.api_version),
+        root.timestamp_updated = now,
+        next.api_version = coalesce(apiVersion, next.api_version),
+        next.timestamp_updated = now
+
+      // set metadata only if provided
+      FOREACH (_ IN CASE WHEN input.metadata IS NOT NULL THEN [1] ELSE [] END |
+        SET rel.metadata = input.metadata
+      )
+
+      WITH root, collect(rel {
+        id: rel.id,
+        cost: rel.cost,
+        rule_name: rel.rule_name,
+        metadata: rel.metadata,
+        timestamp_created: rel.timestamp_created,
+        timestamp_updated: rel.timestamp_updated,
+        api_version: rel.api_version
+      }) AS transitions
+
+      RETURN { transitions: transitions } AS result
+      """
+      columnName: "result"
+    )
+
   upsertStates(input: [StateUpsertInput!]!): UpsertStatesMutationResponse!
     @cypher(
       statement: """
       UNWIND $input AS input
-      WITH input, timestamp() AS now
+      WITH input, $apiVersion AS apiVersion, timestamp() AS now
       CALL uuid_generator.get() YIELD uuid
       MERGE (s:State {hash: input.hash})
       ON CREATE SET
@@ -56,22 +124,16 @@ type Mutation {
         s.id = uuid
       SET
         s.timestamp_updated = now,
-        s.api_version = $apiVersion
+        s.api_version = coalesce(apiVersion, s.api_version)
 
       WITH s, (s.timestamp_created = now) AS wasCreated
-
       WITH
-        collect({
-          hash: s.hash,
-          id: s.id,
-          codex: s.codex,
-          timestamp_created: s.timestamp_created,
-          timestamp_updated: s.timestamp_updated,
-          api_version: s.api_version
+        collect(s{
+          .hash, .id, .codex,
+          .timestamp_created, .timestamp_updated, .api_version
         }) AS states,
         sum(CASE WHEN wasCreated THEN 1 ELSE 0 END) AS nodesCreated,
         sum(CASE WHEN wasCreated THEN 0 ELSE 1 END) AS nodesUpdated
-
       RETURN {
         states: states,
         info: { nodesCreated: nodesCreated, nodesUpdated: nodesUpdated }

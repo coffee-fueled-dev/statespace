@@ -10,7 +10,13 @@ fragment UpdateInfo on UpdateInfo {
   relationshipsDeleted
 }
 
+fragment UpsertInfo on UpsertInfo {
+  nodesCreated
+  nodesUpdated
+}
+
 fragment StateInfo on State {
+  id
   hash
   codex
   api_version
@@ -19,6 +25,7 @@ fragment StateInfo on State {
 }
 
 fragment TransitionInfo on Transition {
+  id
   rule_name
   cost
   metadata
