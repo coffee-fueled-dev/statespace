@@ -1,4 +1,4 @@
-import type { Constraint, Cost, Effect, System } from "../types";
+import type { ConstraintFn, CostFn, EffectFn, System } from "../types";
 
 /**
  * The core data structure that describes an atomic, valid action in the system.
@@ -8,14 +8,14 @@ export interface TransitionRule<TSystem extends System> {
    * The constraint for this rule to be valid. The search algorithm checks
    * if the current system state satisfies this constraint.
    */
-  constraint: Constraint<TSystem>;
+  constraint: ConstraintFn<TSystem>;
   /**
    * The effect of the rule. This is the state change that will be proposed
    * to create the next state. It must pass runtime validation.
    */
-  effect: Effect<TSystem>;
+  effect: TSystem | EffectFn<TSystem>;
   /** A function to calculate the cost of applying this rule. Defaults to 0. */
-  cost?: number | Cost<TSystem> | null | undefined;
+  cost?: number | CostFn<TSystem> | null | undefined;
 }
 
 /**

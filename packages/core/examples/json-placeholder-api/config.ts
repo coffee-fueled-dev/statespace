@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { BFS, jsonKey } from "../../src";
+import { constraint, effect } from "../../src";
 import type { TransitionRules } from "../../src/transitions/types";
 
 // =============================================================================
@@ -39,130 +39,87 @@ export type SystemState = z.infer<typeof SystemStateSchema>;
 export const apiTransitionRules: TransitionRules<SystemState> = {
   // User starts creating a new post (frontend only)
   "start-new-post": {
-    constraint: (state) => {
-      const errors = [];
-      if (state.frontend.loading) {
-        errors.push("Cannot start new post while API call is in progress");
-      }
-      if (state.frontend.newPostDraft) {
-        errors.push("Already drafting a new post");
-      }
-      return { allowed: errors.length === 0, errors };
-    },
-    effect: (state) => ({
-      ...state,
-      frontend: {
-        ...state.frontend,
-        newPostDraft: {
-          userId: 1,
-          id: 0, // Temporary ID, will be assigned by backend
-          title: "New Post",
-          body: "Post content...",
-        },
-      },
+    constraint: constraint<SystemState>()
+      .path("frontend.loading")
+      .equals(false, "Cannot start new post while API call is in progress")
+      .path("frontend.newPostDraft")
+      .notExists("Already drafting a new post"),
+    effect: effect<SystemState>().path("frontend.newPostDraft").set({
+      userId: 1,
+      id: 0, // Temporary ID, will be assigned by backend
+      title: "New Post",
+      body: "Post content...",
     }),
   },
 
   // User submits the draft post to the backend
   "create-post-api": {
-    constraint: (state) => {
-      const errors = [];
-      if (state.frontend.loading) {
-        errors.push("API call already in progress");
-      }
-      if (!state.frontend.newPostDraft) {
-        errors.push("No draft post to submit");
-      }
-      return { allowed: errors.length === 0, errors };
-    },
-    effect: (state) => {
-      const draft = state.frontend.newPostDraft!;
-      const newPost = {
-        ...draft,
-        id: state.backend.nextId, // Backend assigns real ID
-      };
-      return {
-        ...state,
-        frontend: {
-          ...state.frontend,
-          loading: true,
-          newPostDraft: undefined, // Clear draft
+    constraint: constraint<SystemState>()
+      .path("frontend.loading")
+      .equals(false, "API call already in progress")
+      .path("frontend.newPostDraft")
+      .exists("No draft post to submit"),
+    effect: effect<SystemState>()
+      .path("frontend.loading")
+      .set(true)
+      .path("frontend.newPostDraft")
+      .unset()
+      .path("backend.posts")
+      .transform((currentPosts, originalState) => [
+        ...currentPosts,
+        {
+          ...originalState.frontend.newPostDraft!,
+          id: originalState.backend.nextId, // Backend assigns real ID
         },
-        backend: {
-          posts: [...state.backend.posts, newPost],
-          nextId: state.backend.nextId + 1,
-        },
-      };
-    },
+      ])
+      .path("backend.nextId")
+      .increment(),
     cost: 2, // Creating costs more than reading
   },
 
   // Frontend fetches all posts from backend
   "fetch-posts-api": {
-    constraint: (state) => {
-      const errors = [];
-      if (state.frontend.loading) {
-        errors.push("API call already in progress");
-      }
-      return { allowed: errors.length === 0, errors };
-    },
-    effect: (state) => ({
-      ...state,
-      frontend: {
-        ...state.frontend,
-        loading: true,
-      },
-    }),
+    constraint: constraint<SystemState>()
+      .path("frontend.loading")
+      .equals(false, "API call already in progress"),
+    effect: effect<SystemState>().path("frontend.loading").set(true),
     cost: 1,
   },
 
   // API call completes - posts are loaded into frontend
   "fetch-posts-complete": {
-    constraint: (state) => {
-      const errors = [];
-      if (!state.frontend.loading) {
-        errors.push("No API call in progress");
-      }
-      return { allowed: errors.length === 0, errors };
-    },
-    effect: (state) => ({
-      ...state,
-      frontend: {
-        ...state.frontend,
-        posts: [...state.backend.posts], // Copy all backend posts to frontend
-        loading: false,
-      },
-    }),
+    constraint: constraint<SystemState>()
+      .path("frontend.loading")
+      .equals(true, "No API call in progress"),
+    effect: effect<SystemState>()
+      .path("frontend.posts")
+      .copyFrom("backend.posts")
+      .path("frontend.loading")
+      .set(false),
   },
 
   // Backend operation: seed initial data (simulates existing data)
   "seed-backend": {
-    constraint: (state) => {
-      const errors = [];
-      if (state.backend.posts.length > 0) {
-        errors.push("Backend already has data");
-      }
-      return { allowed: errors.length === 0, errors };
-    },
-    effect: (state) => ({
-      ...state,
-      backend: {
-        posts: [
-          {
-            userId: 1,
-            id: 1,
-            title: "Welcome Post",
-            body: "Welcome to our platform!",
-          },
-          {
-            userId: 2,
-            id: 2,
-            title: "Getting Started",
-            body: "Here's how to get started...",
-          },
-        ],
-        nextId: 3,
-      },
-    }),
+    constraint: constraint<SystemState>()
+      .path("backend.posts")
+      .arrayLengthEquals(0, "Backend already has data"),
+    effect: effect<SystemState>()
+      .path("backend.posts")
+      .set([
+        {
+          userId: 1,
+          id: 1,
+          title: "Welcome Post",
+          body: "Welcome to our platform!",
+        },
+        {
+          userId: 2,
+          id: 2,
+          title: "Getting Started",
+          body: "Here's how to get started...",
+        },
+      ])
+      .path("backend.nextId")
+      .set(3),
   },
 };

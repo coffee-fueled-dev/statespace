@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { constraint, effect } from "../../src";
 import type { TransitionRule, TransitionRules } from "../../src";
 
 // =============================================================================
@@ -17,13 +18,10 @@ export const TowerOfHanoiStateSchema = z.object({
 
 export type TowerOfHanoiState = z.infer<typeof TowerOfHanoiStateSchema>;
 
-// Helper function to check if a move is valid
-function canMove(sourcePeg: number[], destinationPeg: number[]): boolean {
-  // A disk can only be moved from a non-empty peg.
-  if (sourcePeg.length === 0) {
-    return false;
-  }
-  // A larger disk cannot be placed on top of a smaller disk.
+function validPlacement(
+  sourcePeg: number[],
+  destinationPeg: number[]
+): boolean {
   const sourceDisk = sourcePeg[sourcePeg.length - 1];
   const destinationDisk = destinationPeg[destinationPeg.length - 1];
   return destinationPeg.length === 0 || sourceDisk < destinationDisk;
@@ -33,32 +31,27 @@ function canMove(sourcePeg: number[], destinationPeg: number[]): boolean {
 // DEFINE THE TRANSITION RULES
 // =============================================================================
 
-// TransitionRule factory to create move rules between any two pegs.
 function createMoveRule(
   source: keyof TowerOfHanoiState,
   destination: keyof TowerOfHanoiState
 ): TransitionRule<TowerOfHanoiState> {
   return {
-    // The constraint checks if the move is valid
-    constraint: (state) => {
-      // Create copies to simulate the move without modifying the original state
-      const sourcePeg = [...state[source]];
-      const destinationPeg = [...state[destination]];
-      const allowed = canMove(sourcePeg, destinationPeg);
-      return { allowed: allowed };
-    },
-    // The effect defines the state changes when the rule is applied
-    effect: (state) => {
-      // Move the top disk from source to destination
-      const diskToMove = state[source][state[source].length - 1];
-      return {
-        ...state,
-        [source]: state[source].slice(0, -1),
-        [destination]: [...state[destination], diskToMove],
-      };
-    },
-    // The cost of each move is 1, as we want to find the shortest path
-    cost: 1,
+    constraint: constraint<TowerOfHanoiState>()
+      .path(source)
+      .isNotEmpty(`Source peg ${source} must have at least one disk`)
+      .custom(
+        (state) => validPlacement(state[source], state[destination]),
+        `Cannot place larger disk on smaller disk (${source} -> ${destination})`
+      ),
+
+    effect: effect<TowerOfHanoiState>()
+      .path(source)
+      .transform((sourcePeg) => sourcePeg.slice(0, -1)) // Remove top disk
+      .path(destination)
+      .transform((destPeg, originalState) => [
+        ...destPeg,
+        originalState[source][originalState[source].length - 1], // Get disk from original state
+      ]),
   };
 }
 
