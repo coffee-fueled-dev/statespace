@@ -55,8 +55,8 @@ async function exploreApiWorkflow() {
   let statesWithBackendData = 0;
   let statesWithFrontendData = 0;
 
-  for (const [stateKey] of markovGraph) {
-    const state = await jsonCodex<SystemState>().decode(stateKey);
+  for (const [hash] of markovGraph) {
+    const state = await jsonCodex<SystemState>().decode(hash);
 
     if (!state.frontend.loading && !state.frontend.newPostDraft) idleStates++;
     if (state.frontend.loading) loadingStates++;
@@ -73,10 +73,10 @@ async function exploreApiWorkflow() {
 
   // Find goal states (states where frontend has posts and isn't loading)
   const goalStates: string[] = [];
-  for (const [stateKey] of markovGraph) {
-    const state = await jsonCodex<SystemState>().decode(stateKey);
+  for (const [hash] of markovGraph) {
+    const state = await jsonCodex<SystemState>().decode(hash);
     if (state.frontend.posts.length > 0 && !state.frontend.loading) {
-      goalStates.push(stateKey);
+      goalStates.push(hash);
     }
   }
 
@@ -87,10 +87,10 @@ async function exploreApiWorkflow() {
   // Show some interesting workflow paths
   console.log(`\n🔍 Sample states and available actions:`);
   let sampleCount = 0;
-  for (const [stateKey, transitions] of markovGraph) {
+  for (const [hash, transitions] of markovGraph) {
     if (sampleCount >= 5) break;
 
-    const state = await jsonCodex<SystemState>().decode(stateKey);
+    const state = await jsonCodex<SystemState>().decode(hash);
     const transitionCount = Object.keys(transitions).length;
     const transitionNames = Object.values(transitions).map((t) => t.ruleName);
 

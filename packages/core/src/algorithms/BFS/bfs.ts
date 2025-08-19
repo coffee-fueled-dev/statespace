@@ -32,12 +32,12 @@ function insertNodeByPriority<TSystem>(
  * Checks if a new path to a state is better than existing path
  */
 function shouldAddNode(
-  stateKey: string,
+  hash: string,
   newCost: number,
   visitedCosts: Map<string, number>,
   shouldReplace: (existingCost: number, newCost: number) => boolean
 ): boolean {
-  const existingCost = visitedCosts.get(stateKey);
+  const existingCost = visitedCosts.get(hash);
   return existingCost === undefined || shouldReplace(existingCost, newCost);
 }
 
@@ -143,12 +143,10 @@ export async function BFS<TSchema extends z.ZodRawShape>(
         result.cost
       );
 
-      const stateKey = await codex.encode(result.systemState);
+      const hash = await codex.encode(result.systemState);
 
-      if (
-        shouldAddNode(stateKey, childNode.cost, visitedCosts, shouldReplace)
-      ) {
-        visitedCosts.set(stateKey, childNode.cost);
+      if (shouldAddNode(hash, childNode.cost, visitedCosts, shouldReplace)) {
+        visitedCosts.set(hash, childNode.cost);
         enqueueNode(childNode);
       }
     }

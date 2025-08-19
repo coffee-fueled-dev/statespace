@@ -4,11 +4,11 @@ import type { TransitionRules } from "../../transitions";
 import type { Codex } from "../../codex";
 import { generateBreadth } from "./bfs";
 
-export type StateKey = string;
+export type Hash = string;
 
 export interface State<TSchema extends z.ZodRawShape> {
   value: System<TSchema>;
-  stateKey: StateKey;
+  hash: Hash;
   isNew: boolean;
 }
 
@@ -46,19 +46,19 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
     onTransition,
   } = config;
 
-  const states = new Map<StateKey, System<TSchema>>();
+  const states = new Map<Hash, System<TSchema>>();
 
-  const explorationQueue: Array<{ state: System<TSchema>; key: StateKey }> = [];
+  const explorationQueue: Array<{ state: System<TSchema>; hash: Hash }> = [];
 
   // Initialize with the starting state
-  const initialKey = await codex.encode(initialState);
-  states.set(initialKey, initialState);
-  explorationQueue.push({ state: initialState, key: initialKey });
+  const initialHash = await codex.encode(initialState);
+  states.set(initialHash, initialState);
+  explorationQueue.push({ state: initialState, hash: initialHash });
 
   // Emit initial state discovery
   onTransition?.({
-    fromState: { value: initialState, stateKey: initialKey, isNew: true },
-    toState: { value: initialState, stateKey: initialKey, isNew: true },
+    fromState: { value: initialState, hash: initialHash, isNew: true },
+    toState: { value: initialState, hash: initialHash, isNew: true },
     ruleName: "initial",
     cost: 0,
   });
@@ -70,7 +70,7 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
     iterationsPerformed < maxIterations &&
     states.size < maxStates
   ) {
-    const { state: currentState, key: currentStateKey } =
+    const { state: currentState, hash: currentStateHash } =
       explorationQueue.shift()!;
     iterationsPerformed++;
 
@@ -86,18 +86,18 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
         break;
       }
 
-      const nextStateKey = await codex.encode(result.systemState);
-      const isNewState = !states.has(nextStateKey);
+      const nextStateHash = await codex.encode(result.systemState);
+      const isNewState = !states.has(nextStateHash);
 
       onTransition?.({
         fromState: {
           value: currentState,
-          stateKey: currentStateKey,
+          hash: currentStateHash,
           isNew: false,
         },
         toState: {
           value: result.systemState,
-          stateKey: nextStateKey,
+          hash: nextStateHash,
           isNew: isNewState,
         },
         ruleName: result.ruleName,
@@ -105,8 +105,11 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
       });
 
       if (isNewState) {
-        states.set(nextStateKey, result.systemState);
-        explorationQueue.push({ state: result.systemState, key: nextStateKey });
+        states.set(nextStateHash, result.systemState);
+        explorationQueue.push({
+          state: result.systemState,
+          hash: nextStateHash,
+        });
       }
     }
   }

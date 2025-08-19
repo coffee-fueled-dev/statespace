@@ -1,7 +1,7 @@
 import type z from "zod";
 import {
   expandRecursive,
-  type StateKey,
+  type Hash,
   type ExpansionConfig,
 } from "./expand-recursive";
 import type { TransitionRule } from "../../transitions";
@@ -13,8 +13,8 @@ export type ExploreInMemoryConfig<TSchema extends z.ZodRawShape> = Omit<
 >;
 
 export type MarkovChain = [
-  StateKey,
-  StateKey,
+  Hash,
+  Hash,
   {
     cost: number;
     ruleName: string;
@@ -52,7 +52,7 @@ export async function exploreInMemory<TSchema extends z.ZodRawShape>(
   const markovChains: MarkovGraph = new Map();
 
   // Online profiling data
-  const stateTransitionCounts = new Map<StateKey, number>();
+  const stateTransitionCounts = new Map<Hash, number>();
   let totalTransitions = 0;
   let maxBranching = 0;
   let minBranching = Infinity;
@@ -68,28 +68,28 @@ export async function exploreInMemory<TSchema extends z.ZodRawShape>(
       if (event.ruleName === "initial") {
         // Initial state discovery
         statesExplored = 1;
-        stateTransitionCounts.set(fromState.stateKey, 0);
+        stateTransitionCounts.set(fromState.hash, 0);
         return;
       }
 
       iterationsPerformed++;
 
       // Get existing transitions for this state or create new object
-      const existingTransitions = markovChains.get(fromState.stateKey) || {};
+      const existingTransitions = markovChains.get(fromState.hash) || {};
 
       // Add the new transition
       const updatedTransitions = {
         ...existingTransitions,
-        [toState.stateKey]: event,
+        [toState.hash]: event,
       };
-      markovChains.set(fromState.stateKey, updatedTransitions);
+      markovChains.set(fromState.hash, updatedTransitions);
 
       // Update branching factor tracking
       const currentBranchingFactor = Object.keys(updatedTransitions).length;
       const previousBranchingFactor =
-        stateTransitionCounts.get(fromState.stateKey) || 0;
+        stateTransitionCounts.get(fromState.hash) || 0;
 
-      stateTransitionCounts.set(fromState.stateKey, currentBranchingFactor);
+      stateTransitionCounts.set(fromState.hash, currentBranchingFactor);
 
       // Update aggregated metrics
       totalTransitions += currentBranchingFactor - previousBranchingFactor;
@@ -101,7 +101,7 @@ export async function exploreInMemory<TSchema extends z.ZodRawShape>(
       // Track if new state discovered
       if (toState.isNew) {
         statesExplored++;
-        stateTransitionCounts.set(toState.stateKey, 0);
+        stateTransitionCounts.set(toState.hash, 0);
       }
 
       // Check if we hit limits (these will be detected in the next iteration)
