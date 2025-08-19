@@ -16,14 +16,14 @@ export const getSchema = (
       populatedBy: {
         callbacks: {
           apiVersion: (_parent, _args, ctx) => {
-            const customCtx = ctx as { version: string };
-            if (!customCtx.version) {
+            if (ctx.cypherParams?.apiVersion === undefined) {
               console.warn(
-                "context.version must exist during Neo4j callback execution"
+                "context.cypherParams.apiVersion must exist during Neo4j callback execution"
               );
             }
-            return customCtx.version;
+            return ctx.cypherParams!.apiVersion as string;
           },
+          now: Date.now,
         },
       },
       excludeDeprecatedFields: {

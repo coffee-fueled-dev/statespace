@@ -6,8 +6,8 @@ type State @node {
   id: ID! @id
   hash: String!
   codex: Codex!
-  datetime_created: DateTime! @timestamp
-  datetime_updated: DateTime! @timestamp
+  timestamp_created: BigInt! @populatedBy(callback: "now", operations: [CREATE])
+  timestamp_updated: BigInt @populatedBy(callback: "now", operations: [UPDATE])
   api_version: String!
     @populatedBy(callback: "apiVersion", operations: [CREATE, UPDATE])
   states_next: [State!]!
@@ -21,8 +21,62 @@ type Transition @relationshipProperties {
   cost: Float!
   rule_name: String!
   metadata: String
-  datetime_created: DateTime! @timestamp
-  datetime_updated: DateTime! @timestamp
+  timestamp_created: BigInt! @populatedBy(callback: "now", operations: [CREATE])
+  timestamp_updated: BigInt @populatedBy(callback: "now", operations: [UPDATE])
   api_version: String!
     @populatedBy(callback: "apiVersion", operations: [CREATE, UPDATE])
+}
+
+input StateUpsertInput {
+  hash: String!
+  codex: Codex!
+}
+
+type UpsertStatesMutationResponse {
+  states: [State!]!
+  info: UpsertInfo!
+}
+
+type UpsertInfo {
+  nodesCreated: Int!
+  nodesUpdated: Int!
+}
+
+type Mutation {
+  upsertStates(input: [StateUpsertInput!]!): UpsertStatesMutationResponse!
+    @cypher(
+      statement: """
+      UNWIND $input AS input
+      WITH input, timestamp() AS now
+      CALL uuid_generator.get() YIELD uuid
+      MERGE (s:State {hash: input.hash})
+      ON CREATE SET
+        s.codex = input.codex,
+        s.timestamp_created = now,
+        s.id = uuid
+      SET
+        s.timestamp_updated = now,
+        s.api_version = $apiVersion
+
+      WITH s, (s.timestamp_created = now) AS wasCreated
+
+      WITH
+        collect({
+          hash: s.hash,
+          id: s.id,
+          codex: s.codex,
+          timestamp_created: s.timestamp_created,
+          timestamp_updated: s.timestamp_updated,
+          api_version: s.api_version
+        }) AS states,
+        sum(CASE WHEN wasCreated THEN 1 ELSE 0 END) AS nodesCreated,
+        sum(CASE WHEN wasCreated THEN 0 ELSE 1 END) AS nodesUpdated
+
+      RETURN {
+        states: states,
+        info: { nodesCreated: nodesCreated, nodesUpdated: nodesUpdated }
+      } AS result
+      """
+      columnName: "result"
+    )
 }

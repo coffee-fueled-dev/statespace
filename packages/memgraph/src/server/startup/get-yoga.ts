@@ -21,7 +21,6 @@ interface YogaParams {
 
 interface ExtendedContext extends YogaInitialContext {
   executionContext: Session;
-  version: string;
   yoga: YogaServerInstance<{}, ExtendedContext>;
 }
 
@@ -42,7 +41,9 @@ export const getYoga = async ({
       context: (initialContext) => ({
         ...initialContext,
         executionContext: driver.session({ database: MEMGRAPH_DATABASE_NAME }),
-        version: pkg.version,
+        cypherParams: {
+          apiVersion: pkg.version,
+        },
         cypherQueryOptions: {
           addVersionPrefix: false,
         },

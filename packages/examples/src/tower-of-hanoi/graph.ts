@@ -2,7 +2,7 @@
 // TOWER OF HANOI STATE SPACE EXPLORER
 // =============================================================================
 
-import { createClient, createStateModule, Codex } from "@statespace/memgraph";
+import { createClient, createStateModule } from "@statespace/memgraph";
 import {
   TowerOfHanoiStateSchema,
   TowerOfHanoiTransitionRules,
@@ -46,6 +46,7 @@ async function exploreHanoi(numberOfDisks: number) {
       maxStates: 500,
     },
     async onTransition(event) {
+      queue.push(event);
       await stateModule.create({
         input: {
           hash: event.fromState.hash,

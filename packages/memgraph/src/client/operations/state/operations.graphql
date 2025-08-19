@@ -41,3 +41,11 @@ mutation states_update($where: StateWhere, $update: StateUpdateInput) {
     }
   }
 }
+
+mutation states_upsert($input: [StateUpsertInput!]!) {
+  upsertStates(input: $input) {
+    states {
+      ...StateInfo
+    }
+  }
+}

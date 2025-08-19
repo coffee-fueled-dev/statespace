@@ -14,8 +14,8 @@ fragment StateInfo on State {
   hash
   codex
   api_version
-  datetime_created
-  datetime_updated
+  timestamp_created
+  timestamp_updated
 }
 
 fragment TransitionInfo on Transition {
@@ -23,4 +23,6 @@ fragment TransitionInfo on Transition {
   cost
   metadata
   api_version
+  timestamp_created
+  timestamp_updated
 }
