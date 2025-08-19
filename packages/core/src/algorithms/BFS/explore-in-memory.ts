@@ -4,16 +4,25 @@ import {
   type StateKey,
   type ExpansionConfig,
 } from "./expand-recursive";
+import type { TransitionRule } from "../../transitions";
+import type { System } from "../../types";
 
 export type ExploreInMemoryConfig<TSchema extends z.ZodRawShape> = Omit<
   ExpansionConfig<TSchema>,
   "onTransition"
 >;
 
-type MarkovGraph = Map<
+export type MarkovChain = [
   StateKey,
-  Record<StateKey, { cost: number; ruleName: string }>
->;
+  StateKey,
+  {
+    cost: number;
+    ruleName: string;
+    metadata?: TransitionRule<System>["metadata"];
+  }
+];
+
+type MarkovGraph = Map<MarkovChain[0], Record<MarkovChain[1], MarkovChain[2]>>;
 
 export interface ExploreInMemoryProfile {
   totalStates: number;

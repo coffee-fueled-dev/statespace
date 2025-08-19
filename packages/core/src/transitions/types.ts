@@ -16,6 +16,8 @@ export interface TransitionRule<TSystem extends System> {
   effect: TSystem | EffectFn<TSystem>;
   /** A function to calculate the cost of applying this rule. Defaults to 0. */
   cost?: number | CostFn<TSystem> | null | undefined;
+  /** Metadata for the transition */
+  metadata?: Record<string, unknown> | null | undefined;
 }
 
 /**

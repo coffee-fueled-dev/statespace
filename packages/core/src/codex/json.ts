@@ -10,6 +10,7 @@ const gunzipAsync = promisify(gunzip);
  * This is crucial for the visitedCosts map to work correctly.
  */
 export const jsonCodex = <T>(): Codex<T> => ({
+  key: "json",
   encode: async (systemState) => {
     const jsonString = JSON.stringify(systemState);
     const compressed = await gzipAsync(Buffer.from(jsonString, "utf8"));

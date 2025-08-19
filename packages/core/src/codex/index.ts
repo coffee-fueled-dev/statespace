@@ -1,2 +1,2 @@
-export { jsonCodex } from "./json-key";
+export { jsonCodex } from "./json";
 export type { Codex } from "./types";
