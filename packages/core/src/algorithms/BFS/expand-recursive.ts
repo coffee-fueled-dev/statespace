@@ -1,4 +1,4 @@
-import type z from "zod";
+import z from "zod";
 import type { System } from "../../types";
 import type { TransitionEvent, TransitionRules } from "../../transitions";
 import type { Codex } from "../../codex";
@@ -39,6 +39,8 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
     onTransition,
   } = config;
 
+  const systemHash = await codex.encode(z.toJSONSchema(systemSchema));
+
   const states = new Map<Hash, System<TSchema>>();
 
   const explorationQueue: Array<{ state: System<TSchema>; hash: Hash }> = [];
@@ -60,6 +62,7 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
   onTransition?.({
     ...transitionPayload,
     hash: await codex.encode(transitionPayload),
+    systemHash,
   });
 
   let iterationsPerformed = 0;
@@ -107,6 +110,7 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
       onTransition?.({
         ...transitionPayload,
         hash: await codex.encode(transitionPayload),
+        systemHash,
       });
 
       if (isNewState) {

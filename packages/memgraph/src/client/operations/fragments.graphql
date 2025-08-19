@@ -19,6 +19,7 @@ fragment StateInfo on State {
   id
   hash
   codex
+  system_hash
   api_version
   timestamp_created
   timestamp_updated

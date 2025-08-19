@@ -5,6 +5,7 @@ enum Codex {
 type State @node {
   id: ID! @id
   hash: String!
+  system_hash: String!
   codex: Codex!
   timestamp_created: BigInt! @populatedBy(callback: "now", operations: [CREATE])
   timestamp_updated: BigInt @populatedBy(callback: "now", operations: [UPDATE])
@@ -32,6 +33,7 @@ type Transition @relationshipProperties {
 input StateUpsertInput {
   hash: String!
   codex: Codex!
+  system_hash: String!
 }
 
 type UpsertStatesMutationResponse {
@@ -44,14 +46,18 @@ type UpsertInfo {
   nodesUpdated: Int!
 }
 
-input CreateTransitionInput {
-  rootStateHash: String!
-  nextStateHashes: [String!]!
+input TransitionInfo {
   hash: String!
   codex: Codex!
   cost: Float!
   ruleName: String!
   metadata: String
+}
+
+input CreateTransitionInput {
+  rootState: StateUpsertInput!
+  nextStates: [StateUpsertInput!]!
+  transition: TransitionInfo!
 }
 
 type CreateTransitionMutationResponse {
@@ -64,33 +70,33 @@ type Mutation {
   ): CreateTransitionMutationResponse!
     @cypher(
       statement: """
-      MATCH (root:State {hash: $input.rootStateHash})
+      MATCH (root:State {hash: $input.rootState.hash, codex: $input.rootState.codex, system_hash: $input.rootState.system_hash})
       WITH root, $input AS input, $apiVersion AS apiVersion, timestamp() AS now
 
       UNWIND (
         CASE
-          WHEN input.nextStateHashes IS NULL OR size(input.nextStateHashes) = 0
+          WHEN input.nextStates IS NULL OR size(input.nextStates) = 0
             THEN [NULL]
-          ELSE input.nextStateHashes
+          ELSE input.nextStates
         END
-      ) AS h
+      ) AS nextState
 
-      OPTIONAL MATCH (next:State {hash: h})
-      WITH root, input, apiVersion, now, next, h
-      WHERE h IS NOT NULL AND next IS NOT NULL
+      OPTIONAL MATCH (next:State {hash: nextState.hash, codex: nextState.codex, system_hash: nextState.system_hash})
+      WITH root, input, apiVersion, now, next, nextState
+      WHERE nextState IS NOT NULL AND next IS NOT NULL
 
       CALL uuid_generator.get() YIELD uuid
 
       // Deduplicate by {hash, codex} for this (root,next) pair
-      MERGE (root)-[rel:NEXT { hash: input.hash, codex: input.codex }]->(next)
+      MERGE (root)-[rel:NEXT { hash: input.transition.hash, codex: input.transition.codex }]->(next)
       ON CREATE SET
         rel.id = uuid,
         rel.timestamp_created = now
 
       // Common updates (both create & match)
       SET
-        rel.cost = input.cost,
-        rel.rule_name = input.ruleName,
+        rel.cost = input.transition.cost,
+        rel.rule_name = input.transition.ruleName,
         rel.timestamp_updated = now,
         rel.api_version = coalesce(apiVersion, rel.api_version),
         root.api_version = coalesce(apiVersion, root.api_version),
@@ -99,18 +105,18 @@ type Mutation {
         next.timestamp_updated = now
 
       // Only set metadata when provided
-      FOREACH (_ IN CASE WHEN input.metadata IS NOT NULL THEN [1] ELSE [] END |
-        SET rel.metadata = input.metadata
+      FOREACH (_ IN CASE WHEN input.transition.metadata IS NOT NULL THEN [1] ELSE [] END |
+        SET rel.metadata = input.transition.metadata
       )
 
       WITH root, collect(rel {
-        id: rel.id,
-        cost: rel.cost,
-        rule_name: rel.rule_name,
-        metadata: rel.metadata,
-        timestamp_created: rel.timestamp_created,
-        timestamp_updated: rel.timestamp_updated,
-        api_version: rel.api_version
+        .id,
+        .cost,
+        .rule_name,
+        .metadata,
+        .timestamp_created,
+        .timestamp_updated,
+        .api_version
       }) AS transitions
 
       RETURN { transitions: transitions } AS result
@@ -124,7 +130,7 @@ type Mutation {
       UNWIND $input AS input
       WITH input, $apiVersion AS apiVersion, timestamp() AS now
       CALL uuid_generator.get() YIELD uuid
-      MERGE (s:State {hash: input.hash})
+      MERGE (s:State {hash: input.hash, codex: input.codex, system_hash: input.system_hash})
       ON CREATE SET
         s.codex = input.codex,
         s.timestamp_created = now,
@@ -136,7 +142,7 @@ type Mutation {
       WITH s, (s.timestamp_created = now) AS wasCreated
       WITH
         collect(s{
-          .hash, .id, .codex,
+          .hash, .id, .codex, .system_hash,
           .timestamp_created, .timestamp_updated, .api_version
         }) AS states,
         sum(CASE WHEN wasCreated THEN 1 ELSE 0 END) AS nodesCreated,

@@ -54,10 +54,12 @@ async function exploreHanoi(numberOfDisks: number) {
         {
           hash: event.fromState.hash,
           codex: jsonCodex<SystemState>().key,
+          system_hash: event.systemHash,
         },
         {
           hash: event.toState.hash,
           codex: jsonCodex<SystemState>().key,
+          system_hash: event.systemHash,
         },
       ],
     });
@@ -66,13 +68,25 @@ async function exploreHanoi(numberOfDisks: number) {
 
     await stateModule.createTransition({
       input: {
-        rootStateHash: states[0].hash,
-        nextStateHashes: [states[1].hash],
-        cost: Number(event.cost),
-        ruleName: event.ruleName,
-        metadata: event.metadata ? JSON.stringify(event.metadata) : undefined,
-        codex: jsonCodex<SystemState>().key,
-        hash: event.hash,
+        rootState: {
+          hash: states[0].hash,
+          codex: jsonCodex<SystemState>().key,
+          system_hash: event.systemHash,
+        },
+        nextStates: [
+          {
+            hash: states[1].hash,
+            codex: jsonCodex<SystemState>().key,
+            system_hash: event.systemHash,
+          },
+        ],
+        transition: {
+          hash: event.hash,
+          codex: jsonCodex<SystemState>().key,
+          cost: Number(event.cost),
+          ruleName: event.ruleName,
+          metadata: event.metadata ? JSON.stringify(event.metadata) : undefined,
+        },
       },
     });
   }
