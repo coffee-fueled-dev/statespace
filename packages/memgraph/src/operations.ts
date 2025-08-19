@@ -1,3 +1,0 @@
-export const BATCH_UPSERT_STATES_AND_TRANSITIONS_QUERY = `
-  
-`;

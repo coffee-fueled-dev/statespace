@@ -1,0 +1,24 @@
+enum Codex {
+  JSON
+}
+
+type State @node {
+  hash: String!
+  codex: Codex!
+  states_next: [State!]!
+    @relationship(type: "NEXT", properties: "Transition", direction: OUT)
+  states_previous: [State!]!
+    @relationship(type: "NEXT", properties: "Transition", direction: IN)
+  datetime_created: DateTime!
+  datetime_updated: DateTime!
+  api_version: String!
+    @populatedBy(callback: "apiVersion", operations: [CREATE, UPDATE])
+}
+
+type Transition @relationshipProperties {
+  cost: Float!
+  rule_name: String!
+  metadata: String
+  api_version: String!
+    @populatedBy(callback: "apiVersion", operations: [CREATE, UPDATE])
+}
