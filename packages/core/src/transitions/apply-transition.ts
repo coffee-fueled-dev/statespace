@@ -32,7 +32,8 @@ export function applyTransition<TSchema extends z.ZodRawShape>(
   }
 
   // Apply the effect to generate the next state
-  const nextState = rule.effect(currentState);
+  const nextState =
+    typeof rule.effect === "function" ? rule.effect(currentState) : rule.effect;
 
   // Runtime validation of the new state
   const validationResult = systemSchema.safeParse(nextState);
@@ -52,5 +53,6 @@ export function applyTransition<TSchema extends z.ZodRawShape>(
     systemState: validationResult.data,
     cost: transitionCost,
     success: true,
+    metadata: rule.metadata,
   };
 }

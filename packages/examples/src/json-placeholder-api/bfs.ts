@@ -1,14 +1,11 @@
-import { BFS, jsonKey } from "../../src";
+import { jsonCodex } from "@statespace/core";
+import { BFS } from "@statespace/core";
 
 // =============================================================================
 // JSON PLACEHOLDER API BREADTH FIRST SEARCH SOLVER
 // =============================================================================
 
-import {
-  apiTransitionRules,
-  SystemStateSchema,
-  type SystemState,
-} from "./config";
+import { transitionRules, SystemStateSchema, type SystemState } from "./config";
 
 // Set the initial system state: empty frontend, empty backend
 const initialState: SystemState = {
@@ -38,9 +35,9 @@ async function exploreApiWorkflow() {
   const result = await BFS({
     systemSchema: SystemStateSchema,
     initialState,
-    transitionRules: apiTransitionRules,
+    transitionRules,
     targetCondition,
-    keyGenerator: jsonKey<SystemState>(),
+    codex: jsonCodex<SystemState>(),
   });
 
   if (result) {

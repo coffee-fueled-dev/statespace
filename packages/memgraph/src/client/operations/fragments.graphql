@@ -1,0 +1,36 @@
+fragment CreateInfo on CreateInfo {
+  nodesCreated
+  relationshipsCreated
+}
+
+fragment UpdateInfo on UpdateInfo {
+  nodesCreated
+  nodesDeleted
+  relationshipsCreated
+  relationshipsDeleted
+}
+
+fragment UpsertInfo on UpsertInfo {
+  nodesCreated
+  nodesUpdated
+}
+
+fragment StateInfo on State {
+  id
+  hash
+  codex
+  system_hash
+  api_version
+  timestamp_created
+  timestamp_updated
+}
+
+fragment TransitionInfo on Transition {
+  id
+  rule_name
+  cost
+  metadata
+  api_version
+  timestamp_created
+  timestamp_updated
+}

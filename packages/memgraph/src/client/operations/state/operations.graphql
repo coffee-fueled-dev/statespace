@@ -1,0 +1,62 @@
+query states_list(
+  $where: StateWhere
+  $limit: Int
+  $offset: Int
+  $sort: [StateSort!]
+) {
+  states(where: $where, limit: $limit, offset: $offset, sort: $sort) {
+    ...StateInfo
+  }
+}
+
+mutation states_create($input: StateCreateInput!) {
+  createStates(input: [$input]) {
+    states {
+      ...StateInfo
+    }
+    info {
+      ...CreateInfo
+    }
+  }
+}
+
+mutation states_createBatch($input: [StateCreateInput!]!) {
+  createStates(input: $input) {
+    states {
+      ...StateInfo
+    }
+    info {
+      ...CreateInfo
+    }
+  }
+}
+
+mutation states_upsert($input: StateUpsertInput!) {
+  upsertStates(input: [$input]) {
+    states {
+      ...StateInfo
+    }
+    info {
+      ...UpsertInfo
+    }
+  }
+}
+
+mutation states_upsertBatch($input: [StateUpsertInput!]!) {
+  upsertStates(input: $input) {
+    states {
+      ...StateInfo
+    }
+    info {
+      ...UpsertInfo
+    }
+  }
+}
+
+mutation states_createTransition($input: CreateTransitionInput!) {
+  createTransition(input: $input) {
+    transitions {
+      ...TransitionInfo
+    }
+  }
+}

@@ -1,6 +1,7 @@
 import { gzip, gunzip } from "zlib";
 import { promisify } from "util";
-import type { KeyGenerator } from "./types";
+import type { Codex } from "./types";
+import { Codex as StatespaceCodex } from "@statespace/memgraph";
 
 const gzipAsync = promisify(gzip);
 const gunzipAsync = promisify(gunzip);
@@ -9,7 +10,8 @@ const gunzipAsync = promisify(gunzip);
  * A helper function to create a unique string key for a system state.
  * This is crucial for the visitedCosts map to work correctly.
  */
-export const jsonKey = <T>(): KeyGenerator<T> => ({
+export const jsonCodex = <T>(): Codex<T> => ({
+  key: StatespaceCodex.Json,
   encode: async (systemState) => {
     const jsonString = JSON.stringify(systemState);
     const compressed = await gzipAsync(Buffer.from(jsonString, "utf8"));

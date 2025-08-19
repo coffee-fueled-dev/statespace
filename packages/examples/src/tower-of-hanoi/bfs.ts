@@ -2,25 +2,21 @@
 // TOWER OF HANOI BREADTH FIRST SEARCH SOLVER
 // =============================================================================
 
-import {
-  TowerOfHanoiStateSchema,
-  TowerOfHanoiTransitionRules,
-  type TowerOfHanoiState,
-} from "./config";
-import { BFS, jsonKey } from "../../src";
+import { SystemStateSchema, transitionRules, type SystemState } from "./config";
+import { BFS, jsonCodex } from "@statespace/core";
 
 // Number of disks to solve
 const numberOfDisks = 3;
 
 // Set the initial state: all disks are on peg A.
-const initialState: TowerOfHanoiState = {
+const initialState: SystemState = {
   pegA: Array.from({ length: numberOfDisks }, (_, i) => numberOfDisks - i),
   pegB: [],
   pegC: [],
 };
 
 // Define the target condition: all disks are on peg C.
-const targetCondition = (state: TowerOfHanoiState) => {
+const targetCondition = (state: SystemState) => {
   return state.pegC.length === numberOfDisks;
 };
 
@@ -31,11 +27,11 @@ async function solveHanoi() {
 
   // Run the BFS search to find the optimal path
   const result = await BFS({
-    systemSchema: TowerOfHanoiStateSchema,
+    systemSchema: SystemStateSchema,
     initialState,
-    transitionRules: TowerOfHanoiTransitionRules,
+    transitionRules,
     targetCondition,
-    keyGenerator: jsonKey<TowerOfHanoiState>(),
+    codex: jsonCodex<SystemState>(),
   });
 
   if (result) {

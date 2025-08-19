@@ -2,15 +2,11 @@
   "name": "@statespace/core",
   "module": "index.ts",
   "type": "module",
+  "version": "0.0.1",
   "exports": {
     ".": "./src/index.ts"
   },
-  "scripts": {
-    "example:hanoi:bfs": "bun run examples/tower-of-hanoi/bfs.ts",
-    "example:hanoi:explore": "bun run examples/tower-of-hanoi/explore.ts",
-    "example:api:bfs": "bun run examples/json-placeholder-api/bfs.ts",
-    "example:api:explore": "bun run examples/json-placeholder-api/explore.ts"
-  },
+  "scripts": {},
   "devDependencies": {
     "@types/bun": "latest"
   },
@@ -18,11 +14,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@types/js-yaml": "^4.0.9",
-    "@types/lodash.merge": "^4.6.9",
-    "bitset": "^5.1.1",
-    "js-yaml": "^4.1.0",
-    "lodash.merge": "^4.6.2",
-    "zod": "^4.0.17"
+    "zod": "^4.0.17",
+    "@statespace/memgraph": "workspace:*"
   }
 }

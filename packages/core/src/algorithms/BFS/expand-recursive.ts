@@ -1,29 +1,22 @@
-import type z from "zod";
+import z from "zod";
 import type { System } from "../../types";
-import type { TransitionRules } from "../../transitions";
-import type { KeyGenerator } from "../../key-generators";
+import type { TransitionEvent, TransitionRules } from "../../transitions";
+import type { Codex } from "../../codex";
 import { generateBreadth } from "./bfs";
 
-export type StateKey = string;
+export type Hash = string;
 
 export interface State<TSchema extends z.ZodRawShape> {
   value: System<TSchema>;
-  stateKey: StateKey;
+  hash: Hash;
   isNew: boolean;
 }
-
-export type TransitionEvent<TSchema extends z.ZodRawShape> = {
-  fromState: State<TSchema>;
-  toState: State<TSchema>;
-  ruleName: string;
-  cost: number;
-};
 
 export interface ExpansionConfig<TSchema extends z.ZodRawShape> {
   systemSchema: z.ZodObject<TSchema>;
   initialState: System<TSchema>;
   transitionRules: TransitionRules<System<TSchema>>;
-  keyGenerator: KeyGenerator<System<TSchema>>;
+  codex: Codex;
   limit: {
     maxIterations: number;
     maxStates?: number; // Optional limit on number of states to explore
@@ -41,26 +34,35 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
     systemSchema,
     initialState,
     transitionRules,
-    keyGenerator,
+    codex,
     limit: { maxIterations, maxStates = Infinity },
     onTransition,
   } = config;
 
-  const states = new Map<StateKey, System<TSchema>>();
+  const systemHash = await codex.encode(z.toJSONSchema(systemSchema));
 
-  const explorationQueue: Array<{ state: System<TSchema>; key: StateKey }> = [];
+  const states = new Map<Hash, System<TSchema>>();
+
+  const explorationQueue: Array<{ state: System<TSchema>; hash: Hash }> = [];
 
   // Initialize with the starting state
-  const initialKey = await keyGenerator.encode(initialState);
-  states.set(initialKey, initialState);
-  explorationQueue.push({ state: initialState, key: initialKey });
+  const initialHash = await codex.encode(initialState);
+  states.set(initialHash, initialState);
+  explorationQueue.push({ state: initialState, hash: initialHash });
+
+  const transitionPayload = {
+    fromState: { value: initialState, hash: initialHash, isNew: true },
+    toState: { value: initialState, hash: initialHash, isNew: true },
+    ruleName: "initial",
+    cost: 0,
+    metadata: undefined,
+  };
 
   // Emit initial state discovery
   onTransition?.({
-    fromState: { value: initialState, stateKey: initialKey, isNew: true },
-    toState: { value: initialState, stateKey: initialKey, isNew: true },
-    ruleName: "initial",
-    cost: 0,
+    ...transitionPayload,
+    hash: await codex.encode(transitionPayload),
+    systemHash,
   });
 
   let iterationsPerformed = 0;
@@ -70,7 +72,7 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
     iterationsPerformed < maxIterations &&
     states.size < maxStates
   ) {
-    const { state: currentState, key: currentStateKey } =
+    const { state: currentState, hash: currentStateHash } =
       explorationQueue.shift()!;
     iterationsPerformed++;
 
@@ -86,27 +88,37 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
         break;
       }
 
-      const nextStateKey = await keyGenerator.encode(result.systemState);
-      const isNewState = !states.has(nextStateKey);
+      const nextStateHash = await codex.encode(result.systemState);
+      const isNewState = !states.has(nextStateHash);
 
-      onTransition?.({
+      const transitionPayload = {
         fromState: {
           value: currentState,
-          stateKey: currentStateKey,
+          hash: currentStateHash,
           isNew: false,
         },
         toState: {
           value: result.systemState,
-          stateKey: nextStateKey,
+          hash: nextStateHash,
           isNew: isNewState,
         },
         ruleName: result.ruleName,
         cost: result.cost,
+        metadata: result.metadata,
+      };
+
+      onTransition?.({
+        ...transitionPayload,
+        hash: await codex.encode(transitionPayload),
+        systemHash,
       });
 
       if (isNewState) {
-        states.set(nextStateKey, result.systemState);
-        explorationQueue.push({ state: result.systemState, key: nextStateKey });
+        states.set(nextStateHash, result.systemState);
+        explorationQueue.push({
+          state: result.systemState,
+          hash: nextStateHash,
+        });
       }
     }
   }

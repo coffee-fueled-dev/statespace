@@ -1,0 +1,35 @@
+{
+  "name": "@statespace/memgraph",
+  "module": "index.ts",
+  "type": "module",
+  "version": "0.0.1",
+  "exports": {
+    ".": "./src/client/index.ts"
+  },
+  "scripts": {
+    "codegen": "bun run src/schema/codegen.ts",
+    "build": "bun run codegen",
+    "start": "bun run src/server/main.ts",
+    "dev": "bun run codegen && bun run start"
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.7",
+    "@graphql-codegen/near-operation-file-preset": "^3.1.0",
+    "@graphql-codegen/typescript": "^4.1.6",
+    "@graphql-codegen/typescript-operations": "^4.6.1",
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@escape.tech/graphql-armor": "^3.1.6",
+    "@graphql-yoga/plugin-response-cache": "^3.17.1",
+    "@neo4j/graphql": "7.2.0",
+    "@statespace/core": "workspace:*",
+    "fast-glob": "^3.3.3",
+    "graphql-yoga": "^5.15.1",
+    "neo4j-driver": "^5.28.1",
+    "pino": "^9.9.0"
+  }
+}

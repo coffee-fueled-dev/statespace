@@ -2,12 +2,8 @@
 // JSON PLACEHOLDER API STATE SPACE EXPLORER
 // =============================================================================
 
-import { exploreInMemory, jsonKey } from "../../src";
-import {
-  apiTransitionRules,
-  SystemStateSchema,
-  type SystemState,
-} from "./config";
+import { transitionRules, SystemStateSchema, type SystemState } from "./config";
+import { exploreInMemory, jsonCodex } from "@statespace/core";
 
 console.log("=== JSON Placeholder API State Space Explorer ===");
 
@@ -37,8 +33,8 @@ async function exploreApiWorkflow() {
   } = await exploreInMemory({
     systemSchema: SystemStateSchema,
     initialState,
-    transitionRules: apiTransitionRules,
-    keyGenerator: jsonKey<SystemState>(),
+    transitionRules,
+    codex: jsonCodex<SystemState>(),
     limit: {
       maxIterations: 1000,
       maxStates: 100,
@@ -55,8 +51,8 @@ async function exploreApiWorkflow() {
   let statesWithBackendData = 0;
   let statesWithFrontendData = 0;
 
-  for (const [stateKey, transitions] of markovGraph) {
-    const state = await jsonKey<SystemState>().decode(stateKey);
+  for (const [hash] of markovGraph) {
+    const state = await jsonCodex<SystemState>().decode(hash);
 
     if (!state.frontend.loading && !state.frontend.newPostDraft) idleStates++;
     if (state.frontend.loading) loadingStates++;
@@ -73,10 +69,10 @@ async function exploreApiWorkflow() {
 
   // Find goal states (states where frontend has posts and isn't loading)
   const goalStates: string[] = [];
-  for (const [stateKey, transitions] of markovGraph) {
-    const state = await jsonKey<SystemState>().decode(stateKey);
+  for (const [hash] of markovGraph) {
+    const state = await jsonCodex<SystemState>().decode(hash);
     if (state.frontend.posts.length > 0 && !state.frontend.loading) {
-      goalStates.push(stateKey);
+      goalStates.push(hash);
     }
   }
 
@@ -87,10 +83,10 @@ async function exploreApiWorkflow() {
   // Show some interesting workflow paths
   console.log(`\n🔍 Sample states and available actions:`);
   let sampleCount = 0;
-  for (const [stateKey, transitions] of markovGraph) {
+  for (const [hash, transitions] of markovGraph) {
     if (sampleCount >= 5) break;
 
-    const state = await jsonKey<SystemState>().decode(stateKey);
+    const state = await jsonCodex<SystemState>().decode(hash);
     const transitionCount = Object.keys(transitions).length;
     const transitionNames = Object.values(transitions).map((t) => t.ruleName);
 
