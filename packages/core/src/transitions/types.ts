@@ -1,3 +1,5 @@
+import type z from "zod";
+import type { State } from "../algorithms/BFS/expand-recursive";
 import type { ConstraintFn, CostFn, EffectFn, System } from "../types";
 
 /**
@@ -28,6 +30,14 @@ export type TransitionRules<TSystem extends System> = Record<
   TransitionRule<TSystem>
 >;
 
+export type TransitionEvent<TSchema extends z.ZodRawShape> = {
+  fromState: State<TSchema>;
+  toState: State<TSchema>;
+  ruleName: TransitionSuccess<TSchema>["ruleName"];
+  cost: TransitionSuccess<TSchema>["cost"];
+  metadata: TransitionRule<TSchema>["metadata"];
+};
+
 /**
  * Represents the result of applying a transition rule.
  */
@@ -40,6 +50,8 @@ export interface TransitionSuccess<TSystem extends System> {
   cost: number;
   /** Whether the transition was successful */
   success: true;
+  /** Metadata for the transition */
+  metadata: TransitionRule<TSystem>["metadata"];
 }
 
 /**

@@ -16,9 +16,13 @@ const getPaths = (ROOT: string) => {
   const pathIn = (target: string) => path.join(ROOT, target);
   return {
     output: {
+      examples: {
+        sdl: path.join(pathOut("packages/examples/src"), "sdl.graphql"),
+      },
       memgraph: {
         client: {
           types: path.join(pathOut("packages/memgraph/src/client"), "types.ts"),
+          operations: pathOut("packages/memgraph/src/client"),
         },
         server: {
           sdl: path.join(
@@ -30,6 +34,10 @@ const getPaths = (ROOT: string) => {
     },
     input: {
       sdl: path.join(pathIn("packages/memgraph/src/schema"), "**/*.graphql"),
+      operations: path.join(
+        pathIn("packages/memgraph/src/client"),
+        "**/*.graphql"
+      ),
     },
   };
 };
@@ -51,6 +59,7 @@ const getConfig = (
 ): CodegenConfig => ({
   overwrite: true,
   schema: printSchema(schema),
+  documents: [paths.input.operations],
   verbose: false,
   noSilentErrors: false,
   ignoreNoDocuments: true,
@@ -59,6 +68,26 @@ const getConfig = (
   generates: {
     [paths.output.memgraph.client.types]: {
       plugins: ["typescript"],
+    },
+    [paths.output.examples.sdl]: {
+      plugins: ["schema-ast"],
+    },
+    [paths.output.memgraph.client.operations]: {
+      preset: "near-operation-file",
+      plugins: ["typescript-operations", "typed-document-node"],
+      presetConfig: {
+        baseTypesPath: "types.ts",
+        fileName: "operations",
+      },
+      config: {
+        namingConvention: {
+          typeNames: "change-case-all#pascalCase",
+          enumValues: "change-case-all#pascalCase",
+        },
+        scalars: {
+          DateTime: "string",
+        },
+      },
     },
   },
 });

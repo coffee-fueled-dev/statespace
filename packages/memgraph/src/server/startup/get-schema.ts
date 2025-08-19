@@ -3,11 +3,11 @@ import { type GraphQLSchema } from "graphql";
 import type { Driver } from "neo4j-driver";
 import { NODE_ENV } from "../environment";
 
-export const getSchema = async (
+export const getSchema = (
   SDL: string,
   driver?: Driver
-): Promise<GraphQLSchema> => {
-  const neoSchema = new Neo4jGraphQL({
+): Promise<GraphQLSchema> =>
+  new Neo4jGraphQL({
     validate: false,
     typeDefs: SDL,
     driver,
@@ -34,8 +34,4 @@ export const getSchema = async (
         attributeFilters: true,
       },
     },
-  });
-  const schema = await neoSchema.getSchema();
-
-  return schema;
-};
+  }).getSchema();

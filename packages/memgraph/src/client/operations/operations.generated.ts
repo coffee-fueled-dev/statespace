@@ -1,0 +1,15 @@
+import * as Types from '../generated/types';
+
+import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
+export type CreateInfoFragment = { __typename?: 'CreateInfo', nodesCreated: number, relationshipsCreated: number };
+
+export type UpdateInfoFragment = { __typename?: 'UpdateInfo', nodesCreated: number, nodesDeleted: number, relationshipsCreated: number, relationshipsDeleted: number };
+
+export type StateInfoFragment = { __typename?: 'State', hash: string, codex: Types.Codex, api_version: string, datetime_created: string, datetime_updated: string };
+
+export type TransitionInfoFragment = { __typename?: 'Transition', rule_name: string, cost: number, metadata?: string | null, api_version: string };
+
+export const CreateInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"CreateInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"CreateInfo"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodesCreated"}},{"kind":"Field","name":{"kind":"Name","value":"relationshipsCreated"}}]}}]} as unknown as DocumentNode<CreateInfoFragment, unknown>;
+export const UpdateInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"UpdateInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"UpdateInfo"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"nodesCreated"}},{"kind":"Field","name":{"kind":"Name","value":"nodesDeleted"}},{"kind":"Field","name":{"kind":"Name","value":"relationshipsCreated"}},{"kind":"Field","name":{"kind":"Name","value":"relationshipsDeleted"}}]}}]} as unknown as DocumentNode<UpdateInfoFragment, unknown>;
+export const StateInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"StateInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"State"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hash"}},{"kind":"Field","name":{"kind":"Name","value":"codex"}},{"kind":"Field","name":{"kind":"Name","value":"api_version"}},{"kind":"Field","name":{"kind":"Name","value":"datetime_created"}},{"kind":"Field","name":{"kind":"Name","value":"datetime_updated"}}]}}]} as unknown as DocumentNode<StateInfoFragment, unknown>;
+export const TransitionInfoFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"TransitionInfo"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Transition"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"rule_name"}},{"kind":"Field","name":{"kind":"Name","value":"cost"}},{"kind":"Field","name":{"kind":"Name","value":"metadata"}},{"kind":"Field","name":{"kind":"Name","value":"api_version"}}]}}]} as unknown as DocumentNode<TransitionInfoFragment, unknown>;

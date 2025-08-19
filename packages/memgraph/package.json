@@ -3,6 +3,9 @@
   "module": "index.ts",
   "type": "module",
   "version": "0.0.1",
+  "exports": {
+    ".": "./src/client/index.ts"
+  },
   "scripts": {
     "codegen": "bun run src/schema/codegen.ts",
     "build": "bun run codegen",
@@ -10,6 +13,10 @@
     "dev": "bun run codegen && bun run start"
   },
   "devDependencies": {
+    "@graphql-codegen/cli": "^5.0.7",
+    "@graphql-codegen/near-operation-file-preset": "^3.1.0",
+    "@graphql-codegen/typescript": "^4.1.6",
+    "@graphql-codegen/typescript-operations": "^4.6.1",
     "@types/bun": "latest"
   },
   "peerDependencies": {
@@ -17,7 +24,6 @@
   },
   "dependencies": {
     "@escape.tech/graphql-armor": "^3.1.6",
-    "@graphql-codegen/cli": "^5.0.7",
     "@graphql-yoga/plugin-response-cache": "^3.17.1",
     "@neo4j/graphql": "^7.2.8",
     "@statespace/core": "workspace:*",

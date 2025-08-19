@@ -1,5 +1,5 @@
 # Dependencies stage - install all dependencies
-FROM oven/bun:1 as deps
+FROM oven/bun:1 AS deps
 WORKDIR /app
 
 # Copy root package files for workspace resolution
@@ -11,7 +11,7 @@ COPY packages/core/package.json ./packages/core/
 RUN bun install
 
 # Codegen stage - generate GraphQL schema and types
-FROM deps as codegen
+FROM deps AS codegen
 WORKDIR /app
 
 # Copy source files needed for codegen
@@ -48,7 +48,7 @@ WORKDIR /app/packages/memgraph
 RUN bun run codegen
 
 # Production stage
-FROM oven/bun:1-slim as production
+FROM oven/bun:1-slim AS production
 WORKDIR /app
 
 # Copy only production dependencies (Bun workspaces install everything to root node_modules)

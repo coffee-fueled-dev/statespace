@@ -3,22 +3,26 @@ enum Codex {
 }
 
 type State @node {
+  id: ID! @id
   hash: String!
   codex: Codex!
+  datetime_created: DateTime! @timestamp
+  datetime_updated: DateTime! @timestamp
+  api_version: String!
+    @populatedBy(callback: "apiVersion", operations: [CREATE, UPDATE])
   states_next: [State!]!
     @relationship(type: "NEXT", properties: "Transition", direction: OUT)
   states_previous: [State!]!
     @relationship(type: "NEXT", properties: "Transition", direction: IN)
-  datetime_created: DateTime!
-  datetime_updated: DateTime!
-  api_version: String!
-    @populatedBy(callback: "apiVersion", operations: [CREATE, UPDATE])
 }
 
 type Transition @relationshipProperties {
+  id: ID! @id
   cost: Float!
   rule_name: String!
   metadata: String
+  datetime_created: DateTime! @timestamp
+  datetime_updated: DateTime! @timestamp
   api_version: String!
     @populatedBy(callback: "apiVersion", operations: [CREATE, UPDATE])
 }

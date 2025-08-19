@@ -1,6 +1,6 @@
 import type z from "zod";
 import type { System } from "../../types";
-import type { TransitionRules } from "../../transitions";
+import type { TransitionEvent, TransitionRules } from "../../transitions";
 import type { Codex } from "../../codex";
 import { generateBreadth } from "./bfs";
 
@@ -11,13 +11,6 @@ export interface State<TSchema extends z.ZodRawShape> {
   hash: Hash;
   isNew: boolean;
 }
-
-export type TransitionEvent<TSchema extends z.ZodRawShape> = {
-  fromState: State<TSchema>;
-  toState: State<TSchema>;
-  ruleName: string;
-  cost: number;
-};
 
 export interface ExpansionConfig<TSchema extends z.ZodRawShape> {
   systemSchema: z.ZodObject<TSchema>;
@@ -61,6 +54,7 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
     toState: { value: initialState, hash: initialHash, isNew: true },
     ruleName: "initial",
     cost: 0,
+    metadata: undefined,
   });
 
   let iterationsPerformed = 0;
@@ -102,6 +96,7 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
         },
         ruleName: result.ruleName,
         cost: result.cost,
+        metadata: result.metadata,
       });
 
       if (isNewState) {
