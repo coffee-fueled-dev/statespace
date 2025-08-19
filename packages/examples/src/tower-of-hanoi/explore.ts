@@ -7,7 +7,7 @@ import {
   TowerOfHanoiTransitionRules,
   type TowerOfHanoiState,
 } from "./config";
-import { exploreInMemory, jsonKey } from "../../src";
+import { exploreInMemory, jsonCodex } from "@statespace/core";
 
 console.log("=== Tower of Hanoi State Space Explorer ===");
 
@@ -30,7 +30,7 @@ async function exploreHanoi(numberOfDisks: number) {
     systemSchema: TowerOfHanoiStateSchema,
     initialState,
     transitionRules: TowerOfHanoiTransitionRules,
-    keyGenerator: jsonKey<TowerOfHanoiState>(),
+    codex: jsonCodex<TowerOfHanoiState>(),
     limit: {
       maxIterations: 1000,
       maxStates: 500,

@@ -5,12 +5,7 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "scripts": {
-    "example:hanoi:bfs": "bun run examples/tower-of-hanoi/bfs.ts",
-    "example:hanoi:explore": "bun run examples/tower-of-hanoi/explore.ts",
-    "example:api:bfs": "bun run examples/json-placeholder-api/bfs.ts",
-    "example:api:explore": "bun run examples/json-placeholder-api/explore.ts"
-  },
+  "scripts": {},
   "devDependencies": {
     "@types/bun": "latest"
   },

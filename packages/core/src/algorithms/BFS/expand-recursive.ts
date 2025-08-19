@@ -1,7 +1,7 @@
 import type z from "zod";
 import type { System } from "../../types";
 import type { TransitionRules } from "../../transitions";
-import type { KeyGenerator } from "../../key-generators";
+import type { Codex } from "../../codex";
 import { generateBreadth } from "./bfs";
 
 export type StateKey = string;
@@ -23,7 +23,7 @@ export interface ExpansionConfig<TSchema extends z.ZodRawShape> {
   systemSchema: z.ZodObject<TSchema>;
   initialState: System<TSchema>;
   transitionRules: TransitionRules<System<TSchema>>;
-  keyGenerator: KeyGenerator<System<TSchema>>;
+  codex: Codex<System<TSchema>>;
   limit: {
     maxIterations: number;
     maxStates?: number; // Optional limit on number of states to explore
@@ -41,7 +41,7 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
     systemSchema,
     initialState,
     transitionRules,
-    keyGenerator,
+    codex,
     limit: { maxIterations, maxStates = Infinity },
     onTransition,
   } = config;
@@ -51,7 +51,7 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
   const explorationQueue: Array<{ state: System<TSchema>; key: StateKey }> = [];
 
   // Initialize with the starting state
-  const initialKey = await keyGenerator.encode(initialState);
+  const initialKey = await codex.encode(initialState);
   states.set(initialKey, initialState);
   explorationQueue.push({ state: initialState, key: initialKey });
 
@@ -86,7 +86,7 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
         break;
       }
 
-      const nextStateKey = await keyGenerator.encode(result.systemState);
+      const nextStateKey = await codex.encode(result.systemState);
       const isNewState = !states.has(nextStateKey);
 
       onTransition?.({

@@ -14,4 +14,4 @@ export * from "./transitions";
 export * from "./algorithms";
 
 // Key generators for state serialization
-export * from "./key-generators";
+export * from "./codex";

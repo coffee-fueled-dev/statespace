@@ -41,5 +41,5 @@ These types are crucial for configuring and interacting with the APIs.
 - **TransitionRule\<TSystem\>**: The core interface for a single state transition, including constraint, effect, and cost.
 - **TransitionRules\<TSystem\>**: A record type for a collection of named TransitionRules.
 - **BFSConfig\<TSchema\>**: The configuration object for the BFS search algorithm.
-- **KeyGenerator\<T\>**: An interface for encoding a system state into a unique string key. This is the interface for implementing the bijective encoding method (e.g., Lehmer numbers) to ensure state keys are consistent and efficient.
+- **Codex\<T\>**: An interface for encoding a system state into a unique string key. This is the interface for implementing the bijective encoding method (e.g., Lehmer numbers) to ensure state keys are consistent and efficient.
 - **TransitionResult\<TSystem\>**: A union type representing the outcome of applying a transition, which can be either a TransitionSuccess or TransitionFailure.

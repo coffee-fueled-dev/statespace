@@ -1,4 +1,5 @@
-import { BFS, jsonKey } from "../../src";
+import { jsonCodex } from "@statespace/core";
+import { BFS } from "@statespace/core";
 
 // =============================================================================
 // JSON PLACEHOLDER API BREADTH FIRST SEARCH SOLVER
@@ -40,7 +41,7 @@ async function exploreApiWorkflow() {
     initialState,
     transitionRules: apiTransitionRules,
     targetCondition,
-    keyGenerator: jsonKey<SystemState>(),
+    codex: jsonCodex<SystemState>(),
   });
 
   if (result) {

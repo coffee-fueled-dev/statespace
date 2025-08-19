@@ -1,5 +1,5 @@
 {
-  "name": "@statespace/adapters",
+  "name": "@statespace/memgraph",
   "module": "index.ts",
   "type": "module",
   "exports": {
@@ -13,6 +13,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@statespace/core": "workspace:*"
+    "@statespace/core": "workspace:*",
+    "neo4j-driver": "^5.28.1"
   }
 }

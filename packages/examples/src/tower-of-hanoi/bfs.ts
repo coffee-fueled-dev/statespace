@@ -7,7 +7,7 @@ import {
   TowerOfHanoiTransitionRules,
   type TowerOfHanoiState,
 } from "./config";
-import { BFS, jsonKey } from "../../src";
+import { BFS, jsonCodex } from "@statespace/core";
 
 // Number of disks to solve
 const numberOfDisks = 3;
@@ -35,7 +35,7 @@ async function solveHanoi() {
     initialState,
     transitionRules: TowerOfHanoiTransitionRules,
     targetCondition,
-    keyGenerator: jsonKey<TowerOfHanoiState>(),
+    codex: jsonCodex<TowerOfHanoiState>(),
   });
 
   if (result) {

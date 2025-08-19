@@ -4,7 +4,7 @@ import type {
   TransitionRules,
   TransitionSuccess,
 } from "../../transitions/types";
-import type { KeyGenerator } from "../../key-generators";
+import type { Codex } from "../../codex";
 import { applyTransition } from "../../transitions/apply-transition";
 
 /**
@@ -74,7 +74,7 @@ export interface BFSConfig<TSchema extends z.ZodRawShape> {
   initialState: System<TSchema>;
   transitionRules: TransitionRules<System<TSchema>>;
   targetCondition: (systemState: System<TSchema>) => boolean;
-  keyGenerator: KeyGenerator<System<TSchema>>;
+  codex: Codex<System<TSchema>>;
   /** Optional function to determine node priority (lower = higher priority). If not provided, uses FIFO queue. */
   priorityFunction?: (node: BFSNode<System<TSchema>>) => number;
   /** Optional function to decide whether to add a node to the queue when a cheaper path exists */
@@ -93,7 +93,7 @@ export async function BFS<TSchema extends z.ZodRawShape>(
     initialState,
     transitionRules,
     targetCondition,
-    keyGenerator,
+    codex,
     priorityFunction,
     shouldReplace = (existingCost, newCost) => newCost < existingCost,
   } = config;
@@ -112,7 +112,7 @@ export async function BFS<TSchema extends z.ZodRawShape>(
   };
 
   queue.push(startNode);
-  visitedCosts.set(await keyGenerator.encode(initialState), 0);
+  visitedCosts.set(await codex.encode(initialState), 0);
 
   // Queue management functions
   const enqueueNode = (node: BFSNode<System<TSchema>>) => {
@@ -143,7 +143,7 @@ export async function BFS<TSchema extends z.ZodRawShape>(
         result.cost
       );
 
-      const stateKey = await keyGenerator.encode(result.systemState);
+      const stateKey = await codex.encode(result.systemState);
 
       if (
         shouldAddNode(stateKey, childNode.cost, visitedCosts, shouldReplace)

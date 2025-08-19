@@ -1,6 +1,10 @@
 import { z } from "zod";
-import { constraint, effect } from "../../src";
-import type { TransitionRule, TransitionRules } from "../../src";
+import {
+  type TransitionRule,
+  type TransitionRules,
+  constraint,
+  effect,
+} from "@statespace/core";
 
 // =============================================================================
 // DEFINE THE SYSTEM STATE
