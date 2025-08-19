@@ -78,6 +78,9 @@ bun run example:api:graph
   - Shopping system workflow optimization
   - Tower of Hanoi puzzle solving and analysis
   - API frontend/backend communication modeling
+- **`packages/core/memgraph/`**: Adapter to persist states and transitions in a Memgraph (or Neo4j) database
+  - De-duplicates states and transitions
+  - Completely recoverable states and configurations from database entities
 
 ---
 
