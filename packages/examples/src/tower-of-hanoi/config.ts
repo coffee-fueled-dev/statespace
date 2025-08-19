@@ -14,13 +14,13 @@ import {
 // The state consists of three pegs (A, B, C), each holding an array of disk sizes.
 // The disks are represented by numbers (1 = smallest disk, n = largest disk).
 // The arrays are ordered from the bottom of the peg to the top.
-export const TowerOfHanoiStateSchema = z.object({
+export const SystemStateSchema = z.object({
   pegA: z.array(z.number()),
   pegB: z.array(z.number()),
   pegC: z.array(z.number()),
 });
 
-export type TowerOfHanoiState = z.infer<typeof TowerOfHanoiStateSchema>;
+export type SystemState = z.infer<typeof SystemStateSchema>;
 
 function validPlacement(
   sourcePeg: number[],
@@ -36,11 +36,11 @@ function validPlacement(
 // =============================================================================
 
 function createMoveRule(
-  source: keyof TowerOfHanoiState,
-  destination: keyof TowerOfHanoiState
-): TransitionRule<TowerOfHanoiState> {
+  source: keyof SystemState,
+  destination: keyof SystemState
+): TransitionRule<SystemState> {
   return {
-    constraint: constraint<TowerOfHanoiState>()
+    constraint: constraint<SystemState>()
       .path(source)
       .isNotEmpty(`Source peg ${source} must have at least one disk`)
       .custom(
@@ -48,7 +48,7 @@ function createMoveRule(
         `Cannot place larger disk on smaller disk (${source} -> ${destination})`
       ),
 
-    effect: effect<TowerOfHanoiState>()
+    effect: effect<SystemState>()
       .path(source)
       .transform((sourcePeg) => sourcePeg.slice(0, -1)) // Remove top disk
       .path(destination)
@@ -60,7 +60,7 @@ function createMoveRule(
 }
 
 // Define all possible transition rules for a 3-peg system.
-export const TowerOfHanoiTransitionRules: TransitionRules<TowerOfHanoiState> = {
+export const transitionRules: TransitionRules<SystemState> = {
   // Move from A to B
   "A->B": createMoveRule("pegA", "pegB"),
   // Move from A to C

@@ -2,11 +2,7 @@
 // TOWER OF HANOI STATE SPACE EXPLORER
 // =============================================================================
 
-import {
-  TowerOfHanoiStateSchema,
-  TowerOfHanoiTransitionRules,
-  type TowerOfHanoiState,
-} from "./config";
+import { SystemStateSchema, transitionRules, type SystemState } from "./config";
 import { exploreInMemory, jsonCodex } from "@statespace/core";
 
 console.log("=== Tower of Hanoi State Space Explorer ===");
@@ -16,7 +12,7 @@ async function exploreHanoi(numberOfDisks: number) {
   console.log(`\n🔍 Exploring ${numberOfDisks}-disk Tower of Hanoi...`);
 
   // Set the initial state: all disks are on peg A
-  const initialState: TowerOfHanoiState = {
+  const initialState: SystemState = {
     pegA: Array.from({ length: numberOfDisks }, (_, i) => numberOfDisks - i),
     pegB: [],
     pegC: [],
@@ -27,10 +23,10 @@ async function exploreHanoi(numberOfDisks: number) {
   const {
     profile: { branchingFactorDistribution, ...profile },
   } = await exploreInMemory({
-    systemSchema: TowerOfHanoiStateSchema,
+    systemSchema: SystemStateSchema,
     initialState,
-    transitionRules: TowerOfHanoiTransitionRules,
-    codex: jsonCodex<TowerOfHanoiState>(),
+    transitionRules,
+    codex: jsonCodex<SystemState>(),
     limit: {
       maxIterations: 1000,
       maxStates: 500,

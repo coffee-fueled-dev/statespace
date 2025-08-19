@@ -11,7 +11,8 @@
     "hanoi:explore": "bun run src/tower-of-hanoi/explore.ts",
     "hanoi:graph": "bun run src/tower-of-hanoi/graph.ts",
     "api:bfs": "bun run src/json-placeholder-api/bfs.ts",
-    "api:explore": "bun run src/json-placeholder-api/explore.ts"
+    "api:explore": "bun run src/json-placeholder-api/explore.ts",
+    "api:graph": "bun run src/json-placeholder-api/graph.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"

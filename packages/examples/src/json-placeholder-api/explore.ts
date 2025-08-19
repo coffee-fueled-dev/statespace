@@ -2,11 +2,7 @@
 // JSON PLACEHOLDER API STATE SPACE EXPLORER
 // =============================================================================
 
-import {
-  apiTransitionRules,
-  SystemStateSchema,
-  type SystemState,
-} from "./config";
+import { transitionRules, SystemStateSchema, type SystemState } from "./config";
 import { exploreInMemory, jsonCodex } from "@statespace/core";
 
 console.log("=== JSON Placeholder API State Space Explorer ===");
@@ -37,7 +33,7 @@ async function exploreApiWorkflow() {
   } = await exploreInMemory({
     systemSchema: SystemStateSchema,
     initialState,
-    transitionRules: apiTransitionRules,
+    transitionRules,
     codex: jsonCodex<SystemState>(),
     limit: {
       maxIterations: 1000,

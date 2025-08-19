@@ -1,9 +1,9 @@
 // =============================================================================
-// TOWER OF HANOI STATE SPACE EXPLORER
+// JSON PLACEHOLDER API STATE SPACE EXPLORER
 // =============================================================================
 
 import { createClient, createStateModule } from "@statespace/memgraph";
-import { SystemStateSchema, transitionRules, type SystemState } from "./config";
+import { transitionRules, SystemStateSchema, type SystemState } from "./config";
 import {
   expandRecursive,
   jsonCodex,
@@ -15,17 +15,23 @@ const statespace = createClient({
 });
 const stateModule = createStateModule(statespace);
 
-console.log("=== Tower of Hanoi State Space Explorer ===");
+console.log("=== JSON Placeholder API State Space Explorer ===");
 
 // Function to explore state space for different numbers of disks
-async function exploreHanoi(numberOfDisks: number) {
-  console.log(`\n🔍 Exploring ${numberOfDisks}-disk Tower of Hanoi...`);
+async function exploreJsonPlaceholder() {
+  console.log(`\n🔍 Exploring JSON Placeholder API...`);
 
   // Set the initial state: all disks are on peg A
   const initialState: SystemState = {
-    pegA: Array.from({ length: numberOfDisks }, (_, i) => numberOfDisks - i),
-    pegB: [],
-    pegC: [],
+    frontend: {
+      posts: [],
+      loading: false,
+      newPostDraft: undefined,
+    },
+    backend: {
+      posts: [],
+      nextId: 1,
+    },
   };
 
   console.log("Initial State:", initialState);
@@ -76,4 +82,4 @@ async function exploreHanoi(numberOfDisks: number) {
   }
 }
 
-await exploreHanoi(3);
+await exploreJsonPlaceholder();

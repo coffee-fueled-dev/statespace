@@ -35,7 +35,7 @@ export type SystemState = z.infer<typeof SystemStateSchema>;
 // DEFINE THE API TRANSITIONS (Frontend ↔ Backend Communication)
 // =============================================================================
 
-export const apiTransitionRules: TransitionRules<SystemState> = {
+export const transitionRules: TransitionRules<SystemState> = {
   // User starts creating a new post (frontend only)
   "start-new-post": {
     constraint: constraint<SystemState>()

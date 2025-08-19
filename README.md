@@ -52,11 +52,17 @@ bun run example:hanoi:bfs
 # Tower of Hanoi: Explore the complete state space and analyze growth patterns
 bun run example:hanoi:explore
 
+# Tower of Hanoi: Explore the complete state space build a persistent graph using memgraph
+bun run example:hanoi:graph
+
 # API Workflow: Find the optimal path to an application state using the JSON Placeholder API
 bun run example:api:bfs
 
-# API Workflow: Explore the state space to configured limits and analyze available actions at various states
+# API Workflow: Explore the partial state space to configured limits and analyze available actions at various states
 bun run example:api:explore
+
+# API Workflow: Explore the partial state space build a persistent graph using memgraph
+bun run example:api:graph
 ```
 
 ---
