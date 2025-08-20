@@ -12,9 +12,11 @@
     "memgraph:codegen": "bun run --env-file=.env --filter @statespace/memgraph codegen",
     "memgraph:start": "bun run --env-file=.env --filter @statespace/memgraph start",
     "example:hanoi:bfs": "bun run --elide-lines 0 --filter @statespace/examples hanoi:bfs",
+    "example:hanoi:dfs": "bun run --elide-lines 0 --filter @statespace/examples hanoi:dfs",
     "example:hanoi:explore": "bun run --elide-lines 0 --filter @statespace/examples hanoi:explore",
     "example:hanoi:graph": "bun run --elide-lines 0 --filter @statespace/examples hanoi:graph",
     "example:api:bfs": "bun run --elide-lines 0 --filter @statespace/examples api:bfs",
+    "example:api:dfs": "bun run --elide-lines 0 --filter @statespace/examples api:dfs",
     "example:api:explore": "bun run --elide-lines 0 --filter @statespace/examples api:explore",
     "example:api:graph": "bun run --elide-lines 0 --filter @statespace/examples api:graph"
   },

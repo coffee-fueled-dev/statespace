@@ -1,0 +1,109 @@
+import z from "zod";
+import type { System } from "../../types";
+import type { TransitionRules } from "../../transitions/types";
+import type { Codex } from "../../codex";
+import { generateDepthIterator, type DFSNode } from "./dfs";
+
+/**
+ * Configuration for cycle detection DFS.
+ */
+export interface CycleDetectionConfig<TSchema extends z.ZodRawShape> {
+  systemSchema: z.ZodObject<TSchema>;
+  initialState: System<TSchema>;
+  transitionRules: TransitionRules<System<TSchema>>;
+  codex: Codex<System<TSchema>>;
+  /** Maximum depth to search */
+  maxDepth?: number;
+}
+
+/**
+ * True DFS-based cycle detection algorithm using recursion.
+ * @returns The first cycle found (sequence of rule names) and total cost, or null if no cycle is found.
+ */
+export async function detectCycle<TSchema extends z.ZodRawShape>(
+  config: CycleDetectionConfig<TSchema>
+): Promise<{ cycle: string[]; cost: number } | null> {
+  const {
+    systemSchema,
+    initialState,
+    transitionRules,
+    codex,
+    maxDepth = 100, // Default reasonable limit for cycle detection
+  } = config;
+
+  // Map to track states in current path and their information
+  const pathStates = new Map<string, { path: string[]; cost: number }>();
+
+  // Recursive DFS helper function
+  async function dfsForCycle(
+    state: System<TSchema>,
+    path: string[],
+    cost: number,
+    depth: number
+  ): Promise<{ cycle: string[]; cost: number } | null> {
+    // Check if we've reached max depth
+    if (depth >= maxDepth) {
+      return null;
+    }
+
+    const stateHash = await codex.encode(state);
+
+    // Check if we've found a cycle (state already in current path)
+    if (pathStates.has(stateHash)) {
+      const visitedInfo = pathStates.get(stateHash)!;
+      // Found a cycle - return the cycle portion
+      const cycleStart = visitedInfo.path.length;
+      const cycle = path.slice(cycleStart);
+      const cycleCost = cost - visitedInfo.cost;
+
+      return { cycle, cost: cycleCost };
+    }
+
+    // Add current state to path
+    pathStates.set(stateHash, { path: [...path], cost });
+
+    try {
+      // Generate transitions one at a time (true DFS behavior)
+      const transitionIterator = generateDepthIterator(
+        systemSchema,
+        state,
+        transitionRules
+      );
+
+      // Try each transition one at a time (true DFS behavior)
+      for (const result of transitionIterator) {
+        const childPath = [...path, result.ruleName];
+        const childCost = cost + result.cost;
+
+        // Recursively explore this path deeply
+        const cycleResult = await dfsForCycle(
+          result.systemState,
+          childPath,
+          childCost,
+          depth + 1
+        );
+
+        if (cycleResult) {
+          return cycleResult; // Found cycle, return immediately
+        }
+        // If not found, continue to next transition (true lazy evaluation)
+      }
+
+      return null; // No cycle found from this state
+    } finally {
+      // Backtrack: remove from current path
+      pathStates.delete(stateHash);
+    }
+  }
+
+  // Start the recursive search
+  const result = await dfsForCycle(initialState, [], 0, 0);
+
+  if (result) {
+    console.log("Cycle detected!");
+    return result;
+  } else {
+    console.log("Search finished. No cycle found.");
+    return null;
+  }
+}

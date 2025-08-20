@@ -1,16 +1,8 @@
 import z from "zod";
 import type { System } from "../../types";
-import type { TransitionEvent, TransitionRules } from "../../transitions";
+import type { Hash, TransitionEvent, TransitionRules } from "../../transitions";
 import type { Codex } from "../../codex";
 import { generateBreadth } from "./bfs";
-
-export type Hash = string;
-
-export interface State<TSchema extends z.ZodRawShape> {
-  value: System<TSchema>;
-  hash: Hash;
-  isNew: boolean;
-}
 
 export interface ExpansionConfig<TSchema extends z.ZodRawShape> {
   systemSchema: z.ZodObject<TSchema>;
@@ -22,6 +14,14 @@ export interface ExpansionConfig<TSchema extends z.ZodRawShape> {
     maxStates?: number; // Optional limit on number of states to explore
   };
   onTransition?: (event: TransitionEvent<TSchema>) => void;
+  onCycleDetected?: (cycle: {
+    fromHash: Hash;
+    toHash: Hash;
+    ruleName: string;
+    cost: number;
+    fromState: System<TSchema>;
+    toState: System<TSchema>;
+  }) => void;
 }
 
 /**
@@ -37,6 +37,7 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
     codex,
     limit: { maxIterations, maxStates = Infinity },
     onTransition,
+    onCycleDetected,
   } = config;
 
   const systemHash = await codex.encode(z.toJSONSchema(systemSchema));
@@ -90,6 +91,18 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
 
       const nextStateHash = await codex.encode(result.systemState);
       const isNewState = !states.has(nextStateHash);
+
+      // Detect cycle: if we're transitioning to an already visited state
+      if (!isNewState && onCycleDetected) {
+        onCycleDetected({
+          fromHash: currentStateHash,
+          toHash: nextStateHash,
+          ruleName: result.ruleName,
+          cost: result.cost,
+          fromState: currentState,
+          toState: result.systemState,
+        });
+      }
 
       const transitionPayload = {
         fromState: {

@@ -1,6 +1,13 @@
 import type z from "zod";
-import type { State } from "../algorithms/BFS/expand-recursive";
 import type { ConstraintFn, CostFn, EffectFn, System } from "../types";
+
+export type Hash = string;
+
+export interface TransitionState<TSchema extends z.ZodRawShape> {
+  value: System<TSchema>;
+  hash: Hash;
+  isNew: boolean;
+}
 
 /**
  * The core data structure that describes an atomic, valid action in the system.
@@ -31,8 +38,8 @@ export type TransitionRules<TSystem extends System> = Record<
 >;
 
 export type TransitionEvent<TSchema extends z.ZodRawShape> = {
-  fromState: State<TSchema>;
-  toState: State<TSchema>;
+  fromState: TransitionState<TSchema>;
+  toState: TransitionState<TSchema>;
   ruleName: TransitionSuccess<TSchema>["ruleName"];
   cost: TransitionSuccess<TSchema>["cost"];
   metadata: TransitionRule<TSchema>["metadata"];
