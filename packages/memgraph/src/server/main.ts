@@ -1,8 +1,6 @@
 import { getYoga, onListen, createDriver, getSchema } from "./startup/index.js";
 import type { Server } from "bun";
 import type { Driver as Neo4jDriver } from "neo4j-driver";
-import path from "path";
-import { fileURLToPath } from "url";
 import { pino } from "pino";
 
 const { PORT = 4000 } = process.env;
@@ -36,7 +34,7 @@ async function stopServer(
   }
 }
 
-async function initializeServer(SDL: string) {
+async function initializeServer() {
   let protoServer: Server | null = null;
   let neo4jDriver: Neo4jDriver | null = null;
 
@@ -46,7 +44,7 @@ async function initializeServer(SDL: string) {
       throw error;
     });
 
-    const schema = await getSchema(SDL, neo4jDriver).catch((error) => {
+    const schema = await getSchema(neo4jDriver).catch((error) => {
       logger.error("Failed to generate schema: %O", error);
       throw error;
     });
@@ -84,20 +82,7 @@ async function initializeServer(SDL: string) {
 }
 
 if (import.meta.main) {
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = path.dirname(__filename);
-  const PACKAGE = path.resolve(__dirname);
-
-  const compiledSDLPath = path.join(PACKAGE, "generated", "sdl.graphql");
-
-  const compiledSDL = await Bun.file(compiledSDLPath)
-    .text()
-    .catch((error) => {
-      logger.error("Failed to read compiled SDL: %O", error);
-      process.exit(1);
-    });
-
-  await initializeServer(compiledSDL).catch((error) => {
+  await initializeServer().catch((error) => {
     logger.error("Failed to initialize server: %O", error);
     process.exit(1);
   });

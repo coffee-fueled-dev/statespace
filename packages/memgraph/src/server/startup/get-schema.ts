@@ -2,11 +2,9 @@ import { Neo4jGraphQL } from "@neo4j/graphql";
 import { type GraphQLSchema } from "graphql";
 import type { Driver } from "neo4j-driver";
 import { NODE_ENV } from "../environment";
+import { SDL } from "../../schema/schema";
 
-export const getSchema = (
-  SDL: string,
-  driver?: Driver
-): Promise<GraphQLSchema> =>
+export const getSchema = (driver?: Driver): Promise<GraphQLSchema> =>
   new Neo4jGraphQL({
     validate: false,
     typeDefs: SDL,
