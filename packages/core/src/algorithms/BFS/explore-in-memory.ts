@@ -1,10 +1,6 @@
 import type z from "zod";
-import {
-  expandRecursive,
-  type Hash,
-  type ExpansionConfig,
-} from "./expand-recursive";
-import type { TransitionRule } from "../../transitions";
+import { expandRecursive, type ExpansionConfig } from "./expand-recursive";
+import type { Hash, TransitionRule } from "../../transitions";
 import type { System } from "../../types";
 
 export type ExploreInMemoryConfig<TSchema extends z.ZodRawShape> = Omit<
