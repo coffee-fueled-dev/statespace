@@ -7,11 +7,9 @@ import { exploreInMemory, jsonCodex } from "@statespace/core";
 
 console.log("=== JSON Placeholder API State Space Explorer ===");
 
-// Function to explore the API workflow state space
 async function exploreApiWorkflow() {
   console.log("\n🔍 Exploring API workflow state space...");
 
-  // Initial state: Clean slate - no posts anywhere, no loading
   const initialState: SystemState = {
     frontend: {
       posts: [],
@@ -26,7 +24,6 @@ async function exploreApiWorkflow() {
 
   console.log("Initial State:", JSON.stringify(initialState, null, 2));
 
-  // Map the entire reachable state space with profiling
   const {
     markovGraph,
     profile: { branchingFactorDistribution, ...profile },
@@ -105,7 +102,6 @@ async function exploreApiWorkflow() {
   return profile.totalStates;
 }
 
-// Main function to run the exploration
 async function main() {
   try {
     const stateCount = await exploreApiWorkflow();

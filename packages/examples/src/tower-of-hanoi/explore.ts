@@ -7,7 +7,6 @@ import { exploreInMemory, jsonCodex } from "@statespace/core";
 
 console.log("=== Tower of Hanoi State Space Explorer ===");
 
-// Function to explore state space for different numbers of disks
 async function exploreHanoi(numberOfDisks: number) {
   console.log(`\n🔍 Exploring ${numberOfDisks}-disk Tower of Hanoi...`);
 
@@ -38,7 +37,6 @@ async function exploreHanoi(numberOfDisks: number) {
   return profile.totalStates;
 }
 
-// Explore different numbers of disks to see how state space grows
 async function main() {
   const results: { disks: number; states: number }[] = [];
 
