@@ -85,7 +85,7 @@ export interface BFSConfig<TSchema extends z.ZodRawShape> {
  * Generic BFS implementation that can be extended for different search strategies.
  * @returns The optimal path (sequence of rule names) and total cost, or null if no path is found.
  */
-export async function BFS<TSchema extends z.ZodRawShape>(
+export async function optimalPath<TSchema extends z.ZodRawShape>(
   config: BFSConfig<TSchema>
 ): Promise<{ path: string[]; cost: number } | null> {
   const {

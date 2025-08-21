@@ -3,7 +3,7 @@
 // =============================================================================
 
 import { SystemStateSchema, transitionRules, type SystemState } from "./config";
-import { BFS, jsonCodex } from "@statespace/core";
+import { optimalPath, jsonCodex } from "@statespace/core";
 
 // Number of disks to solve
 const numberOfDisks = 3;
@@ -25,8 +25,7 @@ async function solveHanoi() {
   console.log(`Solving Tower of Hanoi with ${numberOfDisks} disks...`);
   console.log("Initial State:", initialState);
 
-  // Run the BFS search to find the optimal path
-  const result = await BFS({
+  const result = await optimalPath({
     systemSchema: SystemStateSchema,
     initialState,
     transitionRules,

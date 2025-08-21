@@ -1,5 +1,5 @@
 import { jsonCodex } from "@statespace/core";
-import { BFS } from "@statespace/core";
+import { optimalPath } from "@statespace/core";
 
 // =============================================================================
 // JSON PLACEHOLDER API BREADTH FIRST SEARCH SOLVER
@@ -31,8 +31,7 @@ async function exploreApiWorkflow() {
   console.log("Initial State:", JSON.stringify(initialState, null, 2));
   console.log("\nFinding optimal path to load posts in frontend...");
 
-  // Run the BFS search to find the optimal path to our goal state.
-  const result = await BFS({
+  const result = await optimalPath({
     systemSchema: SystemStateSchema,
     initialState,
     transitionRules,
