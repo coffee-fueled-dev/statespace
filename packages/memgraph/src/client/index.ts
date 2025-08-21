@@ -23,8 +23,7 @@ export interface ClientOptions {
   accessToken?: string;
 }
 
-// Custom JSON serializer that handles BigInt
-const serializeVariables = (variables: any): any => {
+const serializeVariables = (variables: Variables): Variables => {
   return JSON.parse(
     JSON.stringify(variables, (key, value) =>
       typeof value === "bigint" ? value.toString() : value
