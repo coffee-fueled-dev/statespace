@@ -8,132 +8,54 @@ import type {
   LogicalOperator,
   PathValue,
 } from "./types";
+import { createConstraintFromConfig } from "./schema.zod";
 
 /**
- * Utility function to get a value from an object using dot notation
- */
-function getValueByPath<T>(obj: T, path: string): any {
-  return path.split(".").reduce((current: any, key: string) => {
-    return current && typeof current === "object" ? current[key] : undefined;
-  }, obj);
-}
-
-/**
- * Evaluates a single constraint condition
+ * Convert builder constraint condition to JSON format and use schema-based evaluation
  */
 function evaluateCondition<TSystem extends System>(
   state: TSystem,
   condition: ConstraintCondition<TSystem>
 ): { passed: boolean; error?: string } {
-  const value = condition.path
-    ? getValueByPath(state, condition.path)
-    : undefined;
-  const {
-    operator,
-    value: expectedValue,
-    message,
-    customValidator,
-  } = condition;
-
-  let passed = false;
-  let defaultMessage = "";
-
-  switch (operator) {
-    case "equals":
-      passed = value === expectedValue;
-      defaultMessage = `Expected ${condition.path} to equal ${expectedValue}, got ${value}`;
-      break;
-    case "notEquals":
-      passed = value !== expectedValue;
-      defaultMessage = `Expected ${condition.path} to not equal ${expectedValue}`;
-      break;
-    case "greaterThan":
-      passed = value > expectedValue;
-      defaultMessage = `Expected ${condition.path} (${value}) to be greater than ${expectedValue}`;
-      break;
-    case "lessThan":
-      passed = value < expectedValue;
-      defaultMessage = `Expected ${condition.path} (${value}) to be less than ${expectedValue}`;
-      break;
-    case "greaterThanOrEqual":
-      passed = value >= expectedValue;
-      defaultMessage = `Expected ${condition.path} (${value}) to be >= ${expectedValue}`;
-      break;
-    case "lessThanOrEqual":
-      passed = value <= expectedValue;
-      defaultMessage = `Expected ${condition.path} (${value}) to be <= ${expectedValue}`;
-      break;
-    case "exists":
-      passed = value !== undefined && value !== null;
-      defaultMessage = `Expected ${condition.path} to exist`;
-      break;
-    case "notExists":
-      passed = value === undefined || value === null;
-      defaultMessage = `Expected ${condition.path} to not exist`;
-      break;
-    case "arrayLengthEquals":
-      passed = Array.isArray(value) && value.length === expectedValue;
-      defaultMessage = `Expected ${
-        condition.path
-      } array length to equal ${expectedValue}, got ${
-        Array.isArray(value) ? value.length : "not an array"
-      }`;
-      break;
-    case "arrayLengthGreaterThan":
-      passed = Array.isArray(value) && value.length > expectedValue;
-      defaultMessage = `Expected ${
-        condition.path
-      } array length to be > ${expectedValue}, got ${
-        Array.isArray(value) ? value.length : "not an array"
-      }`;
-      break;
-    case "arrayLengthLessThan":
-      passed = Array.isArray(value) && value.length < expectedValue;
-      defaultMessage = `Expected ${
-        condition.path
-      } array length to be < ${expectedValue}, got ${
-        Array.isArray(value) ? value.length : "not an array"
-      }`;
-      break;
-    case "isEmpty":
-      if (Array.isArray(value)) {
-        passed = value.length === 0;
-        defaultMessage = `Expected ${condition.path} array to be empty, got length ${value.length}`;
-      } else if (typeof value === "string") {
-        passed = value === "";
-        defaultMessage = `Expected ${condition.path} string to be empty`;
-      } else {
-        passed = !value;
-        defaultMessage = `Expected ${condition.path} to be empty/falsy`;
-      }
-      break;
-    case "isNotEmpty":
-      if (Array.isArray(value)) {
-        passed = value.length > 0;
-        defaultMessage = `Expected ${condition.path} array to not be empty`;
-      } else if (typeof value === "string") {
-        passed = value !== "";
-        defaultMessage = `Expected ${condition.path} string to not be empty`;
-      } else {
-        passed = !!value;
-        defaultMessage = `Expected ${condition.path} to not be empty/falsy`;
-      }
-      break;
-    case "custom":
-      if (!customValidator) {
-        throw new Error(
-          "customValidator function is required for custom operator"
-        );
-      }
-      passed = customValidator(state);
-      defaultMessage = message || "Custom validation failed";
-      break;
+  // Handle custom function-based validators (not available in JSON schema)
+  if (condition.operator === "custom" && condition.customValidator) {
+    const passed = condition.customValidator(state);
+    return {
+      passed,
+      error: passed
+        ? undefined
+        : condition.message || "Custom validation failed",
+    };
   }
 
-  return {
-    passed,
-    error: passed ? undefined : message || defaultMessage,
+  // Convert to JSON format for schema-based processing
+  const jsonCondition: any = {
+    operator: condition.operator,
+    path: condition.path as string,
+    value: condition.value,
+    message: condition.message,
   };
+
+  // Handle predefined custom validators
+  if (condition.operator === "custom" && condition.validatorType) {
+    jsonCondition.validatorType = condition.validatorType;
+    jsonCondition.validatorValue = condition.validatorValue;
+  }
+
+  // Use the schema's evaluation logic
+  try {
+    const constraintFn = createConstraintFromConfig<TSystem>(jsonCondition);
+    const result = constraintFn(state);
+    return {
+      passed: result.allowed,
+      error: result.errors?.[0],
+    };
+  } catch (error) {
+    return {
+      passed: false,
+      error: `Constraint evaluation failed: ${error}`,
+    };
+  }
 }
 
 /**
@@ -230,6 +152,37 @@ class ConstraintBuilderImpl<TSystem extends System> {
       customValidator: validator,
       message,
     } as ConstraintCondition<TSystem>);
+    return this;
+  }
+
+  /**
+   * Add a predefined custom validator (JSON-compatible)
+   */
+  customValidator(
+    validatorType:
+      | "isEmail"
+      | "isUrl"
+      | "isUuid"
+      | "isPositiveNumber"
+      | "isNegativeNumber"
+      | "isInteger"
+      | "isEven"
+      | "isOdd"
+      | "isDateString"
+      | "isJsonString"
+      | "isAlphanumeric"
+      | "hasMinLength"
+      | "hasMaxLength"
+      | "matchesRegex",
+    validatorValue?: any,
+    message?: string
+  ): this {
+    this.addCondition({
+      operator: "custom",
+      validatorType,
+      validatorValue,
+      message,
+    } as unknown as ConstraintCondition<TSystem>);
     return this;
   }
 
@@ -394,6 +347,72 @@ export class PathConstraintBuilder<TSystem extends System, TValue> {
 
   isNotEmpty(message?: string): ConstraintBuilder<TSystem> {
     return this.addCondition("isNotEmpty", undefined, message);
+  }
+
+  // Predefined custom validator methods
+  isEmail(message?: string): ConstraintBuilder<TSystem> {
+    this.parent.addCondition({
+      path: this.path as DeepKeys<TSystem>,
+      operator: "custom",
+      validatorType: "isEmail",
+      message,
+    } as unknown as ConstraintCondition<TSystem>);
+    return this.parent;
+  }
+
+  isUrl(message?: string): ConstraintBuilder<TSystem> {
+    this.parent.addCondition({
+      path: this.path as DeepKeys<TSystem>,
+      operator: "custom",
+      validatorType: "isUrl",
+      message,
+    } as unknown as ConstraintCondition<TSystem>);
+    return this.parent;
+  }
+
+  isUuid(message?: string): ConstraintBuilder<TSystem> {
+    this.parent.addCondition({
+      path: this.path as DeepKeys<TSystem>,
+      operator: "custom",
+      validatorType: "isUuid",
+      message,
+    } as unknown as ConstraintCondition<TSystem>);
+    return this.parent;
+  }
+
+  isPositiveNumber(message?: string): ConstraintBuilder<TSystem> {
+    this.parent.addCondition({
+      path: this.path as DeepKeys<TSystem>,
+      operator: "custom",
+      validatorType: "isPositiveNumber",
+      message,
+    } as unknown as ConstraintCondition<TSystem>);
+    return this.parent;
+  }
+
+  matchesRegex(pattern: string, message?: string): ConstraintBuilder<TSystem> {
+    this.parent.addCondition({
+      path: this.path as DeepKeys<TSystem>,
+      operator: "custom",
+      validatorType: "matchesRegex",
+      validatorValue: pattern,
+      message,
+    } as unknown as ConstraintCondition<TSystem>);
+    return this.parent;
+  }
+
+  hasMinLength(
+    minLength: number,
+    message?: string
+  ): ConstraintBuilder<TSystem> {
+    this.parent.addCondition({
+      path: this.path as DeepKeys<TSystem>,
+      operator: "custom",
+      validatorType: "hasMinLength",
+      validatorValue: minLength,
+      message,
+    } as unknown as ConstraintCondition<TSystem>);
+    return this.parent;
   }
 }
 

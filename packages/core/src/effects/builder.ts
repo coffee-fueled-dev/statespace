@@ -4,144 +4,85 @@ import type {
   EffectInstruction,
   EffectDefinition,
   EffectOperation,
+  TransformType,
 } from "./types";
+import { createEffectFromConfig } from "./schema.zod";
+import { getValueByPath, setValueByPath } from "../shared/schema.zod";
+
+// Condition evaluation removed - use transition constraints instead
 
 /**
- * Utility function to set a value at a path in an object
- */
-function setValueByPath<T>(obj: T, path: string, value: any): T {
-  const pathParts = path.split(".");
-  const result = JSON.parse(JSON.stringify(obj)); // Deep clone
-
-  let current = result;
-  for (let i = 0; i < pathParts.length - 1; i++) {
-    const part = pathParts[i];
-    if (!(part in current) || typeof current[part] !== "object") {
-      current[part] = {};
-    }
-    current = current[part];
-  }
-
-  const lastPart = pathParts[pathParts.length - 1];
-  current[lastPart] = value;
-
-  return result;
-}
-
-/**
- * Utility function to get a value from an object using dot notation
- */
-function getValueByPath<T>(obj: T, path: string): any {
-  return path.split(".").reduce((current: any, key: string) => {
-    return current && typeof current === "object" ? current[key] : undefined;
-  }, obj);
-}
-
-/**
- * Apply a single effect instruction to the state
+ * Apply a single effect instruction using schema-based processing
  */
 function applyInstruction<TSystem extends System>(
   currentState: TSystem,
   instruction: EffectInstruction<TSystem>,
   originalState: TSystem
 ): TSystem {
-  const { path, operation, value, sourcePath, transformFn, condition } =
-    instruction;
+  // Convert to JSON format for schema-based processing
+  const jsonInstruction: any = {
+    path: instruction.path as string,
+    operation: instruction.operation,
+    value: instruction.value,
+    sourcePath: instruction.sourcePath as string,
+  };
 
-  // Check condition if provided (use original state for condition)
-  if (condition && !condition(originalState)) {
-    return currentState;
+  // Handle transform operations
+  if (instruction.operation === "transform") {
+    if (instruction.transformFn) {
+      // Custom transform function - handle manually
+      const currentValue = getValueByPath(
+        currentState,
+        instruction.path as string
+      );
+      const newValue = instruction.transformFn(currentValue, originalState);
+      return setValueByPath(currentState, instruction.path as string, newValue);
+    } else if (instruction.transformType) {
+      // Predefined transform - use schema processing
+      jsonInstruction.transformType = instruction.transformType;
+    } else {
+      throw new Error(
+        "Transform operation requires either transformFn or transformType"
+      );
+    }
   }
 
-  const currentValue = getValueByPath(currentState, path);
+  // Use the schema's createEffectFromConfig to process the instruction
+  // This leverages all the validation and processing logic from the schema
+  try {
+    const effect = createEffectFromConfig<TSystem>(jsonInstruction);
+    return effect(currentState);
+  } catch (error) {
+    // Fallback to manual processing for operations that need original state context
+    return applyInstructionManual(currentState, instruction, originalState);
+  }
+}
+
+/**
+ * Manual instruction processing for cases that need original state context
+ */
+function applyInstructionManual<TSystem extends System>(
+  currentState: TSystem,
+  instruction: EffectInstruction<TSystem>,
+  originalState: TSystem
+): TSystem {
+  const { path, operation, sourcePath } = instruction;
   let newValue: any;
 
   switch (operation) {
-    case "set":
-      newValue = value;
-      break;
-
-    case "unset":
-      newValue = undefined;
-      break;
-
     case "copy":
       if (!sourcePath)
         throw new Error("sourcePath required for copy operation");
-      // Copy from original state, not current state
-      newValue = getValueByPath(originalState, sourcePath);
-      break;
-
-    case "increment":
-      newValue =
-        (typeof currentValue === "number" ? currentValue : 0) + (value || 1);
-      break;
-
-    case "decrement":
-      newValue =
-        (typeof currentValue === "number" ? currentValue : 0) - (value || 1);
-      break;
-
-    case "append":
-      if (!Array.isArray(currentValue)) {
-        newValue = Array.isArray(value) ? value : [value];
-      } else {
-        newValue = Array.isArray(value)
-          ? [...currentValue, ...value]
-          : [...currentValue, value];
-      }
-      break;
-
-    case "prepend":
-      if (!Array.isArray(currentValue)) {
-        newValue = Array.isArray(value) ? value : [value];
-      } else {
-        newValue = Array.isArray(value)
-          ? [...value, ...currentValue]
-          : [value, ...currentValue];
-      }
-      break;
-
-    case "remove":
-      if (!Array.isArray(currentValue)) {
-        newValue = [];
-      } else {
-        if (typeof value === "function") {
-          newValue = currentValue.filter((item) => !value(item));
-        } else {
-          newValue = currentValue.filter((item) => item !== value);
-        }
-      }
-      break;
-
-    case "clear":
-      newValue = [];
-      break;
-
-    case "merge":
-      if (
-        typeof currentValue === "object" &&
-        currentValue !== null &&
-        !Array.isArray(currentValue)
-      ) {
-        newValue = { ...currentValue, ...value };
-      } else {
-        newValue = value;
-      }
-      break;
-
-    case "transform":
-      if (!transformFn)
-        throw new Error("transformFn required for transform operation");
-      // Pass both current value and original state to transform function
-      newValue = transformFn(currentValue, originalState);
+      newValue = getValueByPath(originalState, sourcePath as string);
       break;
 
     default:
-      throw new Error(`Unknown operation: ${operation}`);
+      throw new Error(
+        `Unsupported operation for manual processing: ${operation}`
+      );
   }
 
-  return setValueByPath(currentState, path, newValue);
+  return setValueByPath(currentState, path as string, newValue);
 }
 
 /**
@@ -190,7 +131,8 @@ class EffectBuilderImpl<TSystem extends System> {
   }
 
   /**
-   * Create a conditional effect
+   * Create a conditional effect with a function-based condition
+   * NOTE: For JSON configs, use transition constraints instead
    */
   when(
     condition: (state: TSystem) => boolean,
@@ -209,6 +151,8 @@ class EffectBuilderImpl<TSystem extends System> {
 
     return this;
   }
+
+  // Conditional effects removed - use transition constraints instead
 
   /**
    * Get the effect function
@@ -247,7 +191,8 @@ export class PathEffectBuilder<TSystem extends System, TValue> {
     operation: EffectOperation,
     value?: any,
     sourcePath?: string,
-    transformFn?: (currentValue: any, state: TSystem) => any
+    transformFn?: (currentValue: any, state: TSystem) => any,
+    transformType?: TransformType
   ): EffectBuilder<TSystem> {
     this.parent.addInstruction({
       path: this.path as DeepKeys<TSystem>,
@@ -255,6 +200,7 @@ export class PathEffectBuilder<TSystem extends System, TValue> {
       value,
       sourcePath: sourcePath as DeepKeys<TSystem>,
       transformFn,
+      transformType,
     });
     return this.parent;
   }
@@ -297,12 +243,25 @@ export class PathEffectBuilder<TSystem extends System, TValue> {
   }
 
   /**
-   * Apply a custom transformation
+   * Apply a custom transformation function
    */
   transform(
     transformFn: (currentValue: TValue, state: TSystem) => TValue
   ): EffectBuilder<TSystem> {
     return this.addInstruction("transform", undefined, undefined, transformFn);
+  }
+
+  /**
+   * Apply a predefined transformation
+   */
+  transformWith(transformType: TransformType): EffectBuilder<TSystem> {
+    return this.addInstruction(
+      "transform",
+      undefined,
+      undefined,
+      undefined,
+      transformType
+    );
   }
 
   // Array-specific methods

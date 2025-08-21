@@ -1,4 +1,8 @@
 import type { System } from "../types";
+import type {
+  JsonConstraintCondition,
+  JsonConstraintGroup,
+} from "./schema.zod";
 
 /**
  * Utility type to create dot notation paths for nested objects
@@ -25,42 +29,45 @@ export type PathValue<T, Path extends string> = Path extends keyof T
   : never;
 
 /**
- * Constraint operator types
+ * Constraint operator types - inferred from Zod schema
  */
-export type ConstraintOperator =
-  | "equals"
-  | "notEquals"
-  | "greaterThan"
-  | "lessThan"
-  | "greaterThanOrEqual"
-  | "lessThanOrEqual"
-  | "exists"
-  | "notExists"
-  | "arrayLengthEquals"
-  | "arrayLengthGreaterThan"
-  | "arrayLengthLessThan"
-  | "isEmpty"
-  | "isNotEmpty"
-  | "custom";
+export type ConstraintOperator = JsonConstraintCondition["operator"];
 
 /**
- * Individual constraint condition
+ * Logical operators - inferred from Zod schema
+ */
+export type LogicalOperator = JsonConstraintGroup["operator"];
+
+/**
+ * Enhanced constraint condition with type-safe paths and optional custom validators
+ * NOTE: For JSON configs, custom validators are limited to predefined functions
  */
 export interface ConstraintCondition<TSystem extends System> {
   path?: DeepKeys<TSystem>; // Optional for custom validators
   operator: ConstraintOperator;
   value?: any;
   message?: string;
-  customValidator?: (state: TSystem) => boolean;
+  customValidator?: (state: TSystem) => boolean; // Function-based validator (for programmatic use)
+  validatorType?:
+    | "isEmail"
+    | "isUrl"
+    | "isUuid"
+    | "isPositiveNumber"
+    | "isNegativeNumber"
+    | "isInteger"
+    | "isEven"
+    | "isOdd"
+    | "isDateString"
+    | "isJsonString"
+    | "isAlphanumeric"
+    | "hasMinLength"
+    | "hasMaxLength"
+    | "matchesRegex"; // Predefined validator
+  validatorValue?: any; // Additional value for parameterized validators
 }
 
 /**
- * Logical operators for combining constraints
- */
-export type LogicalOperator = "and" | "or";
-
-/**
- * Constraint group for complex logic
+ * Enhanced constraint group with type-safe paths
  */
 export interface ConstraintGroup<TSystem extends System> {
   conditions: (ConstraintCondition<TSystem> | ConstraintGroup<TSystem>)[];
@@ -68,8 +75,17 @@ export interface ConstraintGroup<TSystem extends System> {
 }
 
 /**
- * Root constraint definition
+ * Root constraint definition with type-safe paths
  */
 export type ConstraintDefinition<TSystem extends System> =
   | ConstraintCondition<TSystem>
   | ConstraintGroup<TSystem>;
+
+/**
+ * Re-export JSON types from schema for external use
+ */
+export type {
+  JsonConstraintCondition,
+  JsonConstraintGroup,
+  JsonConstraintDefinition,
+} from "./schema.zod";

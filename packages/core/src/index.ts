@@ -1,6 +1,15 @@
 // Core types
 export * from "./types";
 
+// Shared schema utilities
+export {
+  getValueByPath,
+  setValueByPath,
+  createPathSchema,
+  type DeepKeys,
+  type PathValue,
+} from "./shared/schema.zod";
+
 // Constraint builders
 export * from "./constraints";
 
