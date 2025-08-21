@@ -17,7 +17,7 @@ The @statespace/core package is the foundational component of the State Space Ex
 
 These functions are the primary entry points for performing state-space searches and explorations.
 
-- BFS(config: BFSConfig\<TSchema\>): Promise\<{ path: string\[\]; cost: number } | null\>  
+- optimalPath(config: BFSConfig\<TSchema\>): Promise\<{ path: string\[\]; cost: number } | null\>  
   Finds the optimal path from an initial state to a target state. The search can be configured to act as a standard BFS or an A\* search by providing a priorityFunction. It returns an object containing the optimal path and total cost, or null if no path is found.
 - expandRecursive(config: ExpansionConfig\<TSchema\>): Promise\<void\>  
   Recursively explores the state space from a given state, useful for generating a complete graph of all reachable states. It does not return a value but uses an onTransition callback to emit events as new states and transitions are discovered.
