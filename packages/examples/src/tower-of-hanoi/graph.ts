@@ -30,7 +30,7 @@ async function exploreHanoi(numberOfDisks: number) {
 
   console.log("Initial State:", initialState);
 
-  const queue: TransitionEvent<typeof SystemStateSchema.def.shape>[] = [];
+  const queue: TransitionEvent<SystemState>[] = [];
 
   await expandRecursive({
     systemSchema: SystemStateSchema,
@@ -52,12 +52,12 @@ async function exploreHanoi(numberOfDisks: number) {
     const result = await stateModule.upsertBatch({
       input: [
         {
-          hash: event.fromState.hash,
+          hash: event.currentState.hash,
           codex: jsonCodex<SystemState>().key,
           system_hash: event.systemHash,
         },
         {
-          hash: event.toState.hash,
+          hash: event.nextState.hash,
           codex: jsonCodex<SystemState>().key,
           system_hash: event.systemHash,
         },

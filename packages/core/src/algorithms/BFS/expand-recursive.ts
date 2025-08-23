@@ -13,7 +13,7 @@ export interface ExpansionConfig<TSchema extends z.ZodRawShape> {
     maxIterations: number;
     maxStates?: number; // Optional limit on number of states to explore
   };
-  onTransition?: (event: TransitionEvent<TSchema>) => void;
+  onTransition?: (event: TransitionEvent<System<TSchema>>) => void;
   onCycleDetected?: (cycle: {
     fromHash: Hash;
     toHash: Hash;
@@ -52,8 +52,8 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
   explorationQueue.push({ state: initialState, hash: initialHash });
 
   const transitionPayload = {
-    fromState: { value: initialState, hash: initialHash, isNew: true },
-    toState: { value: initialState, hash: initialHash, isNew: true },
+    currentState: { value: initialState, hash: initialHash, isNew: true },
+    nextState: { value: initialState, hash: initialHash, isNew: true },
     ruleName: "initial",
     cost: 0,
     metadata: undefined,
@@ -105,12 +105,12 @@ export async function expandRecursive<TSchema extends z.ZodRawShape>(
       }
 
       const transitionPayload = {
-        fromState: {
+        currentState: {
           value: currentState,
           hash: currentStateHash,
           isNew: false,
         },
-        toState: {
+        nextState: {
           value: result.systemState,
           hash: nextStateHash,
           isNew: isNewState,

@@ -12,7 +12,7 @@ export type MarkovChain = [
   Hash,
   Hash,
   {
-    cost: number;
+    cost?: number | null | undefined;
     ruleName: string;
     metadata?: TransitionRule<System>["metadata"];
   }
@@ -59,33 +59,33 @@ export async function exploreInMemory<TSchema extends z.ZodRawShape>(
 
   await expandRecursive({
     ...config,
-    onTransition: ({ fromState, toState, ...event }) => {
+    onTransition: ({ currentState, nextState, ...event }) => {
       // Track iteration metrics
       if (event.ruleName === "initial") {
         // Initial state discovery
         statesExplored = 1;
-        stateTransitionCounts.set(fromState.hash, 0);
+        stateTransitionCounts.set(currentState.hash, 0);
         return;
       }
 
       iterationsPerformed++;
 
       // Get existing transitions for this state or create new object
-      const existingTransitions = markovChains.get(fromState.hash) || {};
+      const existingTransitions = markovChains.get(currentState.hash) || {};
 
       // Add the new transition
       const updatedTransitions = {
         ...existingTransitions,
-        [toState.hash]: event,
+        [nextState.hash]: event,
       };
-      markovChains.set(fromState.hash, updatedTransitions);
+      markovChains.set(currentState.hash, updatedTransitions);
 
       // Update branching factor tracking
       const currentBranchingFactor = Object.keys(updatedTransitions).length;
       const previousBranchingFactor =
-        stateTransitionCounts.get(fromState.hash) || 0;
+        stateTransitionCounts.get(currentState.hash) || 0;
 
-      stateTransitionCounts.set(fromState.hash, currentBranchingFactor);
+      stateTransitionCounts.set(currentState.hash, currentBranchingFactor);
 
       // Update aggregated metrics
       totalTransitions += currentBranchingFactor - previousBranchingFactor;
@@ -95,9 +95,9 @@ export async function exploreInMemory<TSchema extends z.ZodRawShape>(
       }
 
       // Track if new state discovered
-      if (toState.isNew) {
+      if (nextState.isNew) {
         statesExplored++;
-        stateTransitionCounts.set(toState.hash, 0);
+        stateTransitionCounts.set(nextState.hash, 0);
       }
 
       // Check if we hit limits (these will be detected in the next iteration)
