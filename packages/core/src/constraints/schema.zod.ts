@@ -1,8 +1,6 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 import type { System } from "../shared/types";
-import type { TransitionEvent } from "../transitions";
 import type { ConstraintFn } from "./types";
-import { getDotPaths } from "./get-dot-paths";
 
 export type Phase = z.infer<typeof PhaseSchema>;
 export const PhaseSchema = z
@@ -121,26 +119,24 @@ export const ValidationSchema = z.discriminatedUnion("type", [
   ArrayValidationSchema,
 ]);
 
-export type PathConstraint = z.infer<ReturnType<typeof createPathConstraint>>;
-export const createPathConstraint = <TSystem extends System>(
-  transitionEvent: TransitionEvent<TSystem>
-) => {
-  const paths = getDotPaths<TSystem>(
-    transitionEvent.nextState.value as TSystem
-  );
-  // Ensure we have at least one path for z.enum, and convert to tuple
-  const pathsTuple =
-    paths.length > 0
-      ? ([paths[0], ...paths.slice(1)] as const)
-      : ([""] as const);
-
-  return z.object({
-    phase: z.optional(PhaseSchema),
-    type: z.literal("path"),
-    path: z.enum(pathsTuple as [string, ...string[]]),
-    require: ValidationSchema,
-  });
-};
+export type PathConstraint = z.infer<typeof PathConstraintSchema>;
+export const PathConstraintSchema = z.object({
+  phase: z
+    .optional(PhaseSchema)
+    .describe(
+      "The phase of the transition during which the constraint is evaluated. " +
+        "before_transition is evaluated before state is applied. " +
+        "This is useful for limiting the ability to apply a transition based on what is currently true in the system. " +
+        "after_transition is evaluated against the proposed new state. " +
+        "This is useful for limiting the ability to apply a transition based on what will be true in the system after the transition is applied. " +
+        "Defaults to before_transition."
+    ),
+  type: z.literal("path"),
+  path: z
+    .string()
+    .describe("The dot-notation path to the state property to validate."),
+  require: ValidationSchema,
+});
 
 export type CostConstraint = z.infer<typeof CostConstraintSchema>;
 export const CostConstraintSchema = z.object({
