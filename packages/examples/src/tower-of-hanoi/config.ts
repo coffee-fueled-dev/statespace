@@ -2,7 +2,7 @@ import { z } from "zod";
 import {
   type TransitionRule,
   type TransitionRules,
-  constraint,
+  createConstraintFunction,
   effect,
 } from "@statespace/core";
 
@@ -22,6 +22,7 @@ export const SystemStateSchema = z.object({
 
 export type SystemState = z.infer<typeof SystemStateSchema>;
 
+// Helper function to check if a disk can be placed on a destination peg
 function validPlacement(
   sourcePeg: number[],
   destinationPeg: number[]
@@ -40,13 +41,31 @@ function createMoveRule(
   destination: keyof SystemState
 ): TransitionRule<SystemState> {
   return {
-    constraint: constraint<SystemState>()
-      .path(source)
-      .isNotEmpty(`Source peg ${source} must have at least one disk`)
-      .custom(
-        (state) => validPlacement(state[source], state[destination]),
-        `Cannot place larger disk on smaller disk (${source} -> ${destination})`
-      ),
+    name: `${source}->${destination}`,
+    constraint: createConstraintFunction({
+      constraints: [
+        {
+          type: "path",
+          path: source,
+          require: {
+            type: "array",
+            require: [{ operator: "nonempty" }],
+          },
+        },
+        {
+          type: "custom",
+          require: {
+            type: "custom",
+            require: (transitionEvent) => ({
+              allowed: validPlacement(
+                transitionEvent.nextState[source],
+                transitionEvent.nextState[destination]
+              ),
+            }),
+          },
+        },
+      ],
+    }),
 
     effect: effect<SystemState>()
       .path(source)

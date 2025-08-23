@@ -1,5 +1,9 @@
 import { z } from "zod";
-import { constraint, effect, type TransitionRules } from "@statespace/core";
+import {
+  createConstraintFunction,
+  effect,
+  type TransitionRules,
+} from "@statespace/core";
 
 // =============================================================================
 // DEFINE THE SYSTEM STATE (Frontend + Backend)
@@ -38,11 +42,26 @@ export type SystemState = z.infer<typeof SystemStateSchema>;
 export const transitionRules: TransitionRules<SystemState> = {
   // User starts creating a new post (frontend only)
   "start-new-post": {
-    constraint: constraint<SystemState>()
-      .path("frontend.loading")
-      .equals(false, "Cannot start new post while API call is in progress")
-      .path("frontend.newPostDraft")
-      .notExists("Already drafting a new post"),
+    name: "start-new-post",
+    constraint: createConstraintFunction({
+      constraints: [
+        {
+          type: "path",
+          path: "frontend.loading",
+          require: {
+            type: "boolean",
+            require: { operator: "false" },
+          },
+        },
+        {
+          type: "path",
+          path: "frontend.newPostDraft",
+          require: {
+            type: "undefined",
+          },
+        },
+      ],
+    }),
     effect: effect<SystemState>().path("frontend.newPostDraft").set({
       userId: 1,
       id: 0, // Temporary ID, will be assigned by backend
@@ -53,11 +72,19 @@ export const transitionRules: TransitionRules<SystemState> = {
 
   // User submits the draft post to the backend
   "create-post-api": {
-    constraint: constraint<SystemState>()
-      .path("frontend.loading")
-      .equals(false, "API call already in progress")
-      .path("frontend.newPostDraft")
-      .exists("No draft post to submit"),
+    name: "create-post-api",
+    constraint: createConstraintFunction({
+      constraints: [
+        {
+          type: "path",
+          path: "frontend.loading",
+          require: {
+            type: "boolean",
+            require: { operator: "false" },
+          },
+        },
+      ],
+    }),
     effect: effect<SystemState>()
       .path("frontend.loading")
       .set(true)
@@ -78,18 +105,38 @@ export const transitionRules: TransitionRules<SystemState> = {
 
   // Frontend fetches all posts from backend
   "fetch-posts-api": {
-    constraint: constraint<SystemState>()
-      .path("frontend.loading")
-      .equals(false, "API call already in progress"),
+    name: "fetch-posts-api",
+    constraint: createConstraintFunction({
+      constraints: [
+        {
+          type: "path",
+          path: "frontend.loading",
+          require: {
+            type: "boolean",
+            require: { operator: "false" },
+          },
+        },
+      ],
+    }),
     effect: effect<SystemState>().path("frontend.loading").set(true),
     cost: 1,
   },
 
   // API call completes - posts are loaded into frontend
   "fetch-posts-complete": {
-    constraint: constraint<SystemState>()
-      .path("frontend.loading")
-      .equals(true, "No API call in progress"),
+    name: "fetch-posts-complete",
+    constraint: createConstraintFunction({
+      constraints: [
+        {
+          type: "path",
+          path: "frontend.loading",
+          require: {
+            type: "boolean",
+            require: { operator: "true" },
+          },
+        },
+      ],
+    }),
     effect: effect<SystemState>()
       .path("frontend.posts")
       .copyFrom("backend.posts")
@@ -99,9 +146,19 @@ export const transitionRules: TransitionRules<SystemState> = {
 
   // Backend operation: seed initial data (simulates existing data)
   "seed-backend": {
-    constraint: constraint<SystemState>()
-      .path("backend.posts")
-      .arrayLengthEquals(0, "Backend already has data"),
+    name: "seed-backend",
+    constraint: createConstraintFunction({
+      constraints: [
+        {
+          type: "path",
+          path: "backend.posts",
+          require: {
+            type: "array",
+            require: [{ operator: "nonempty" }],
+          },
+        },
+      ],
+    }),
     effect: effect<SystemState>()
       .path("backend.posts")
       .set([

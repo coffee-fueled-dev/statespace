@@ -1,10 +1,10 @@
-import type z from "zod";
-import type { ConstraintFn, CostFn, EffectFn, System } from "../types";
+import type { CostFn, EffectFn, System } from "../types";
+import type { ConstraintFn } from "../constraints";
 
 export type Hash = string;
 
-export interface TransitionState<TSchema extends z.ZodRawShape> {
-  value: System<TSchema>;
+export interface TransitionState<TSystem extends System> {
+  value: TSystem;
   hash: Hash;
   isNew: boolean;
 }
@@ -13,6 +13,10 @@ export interface TransitionState<TSchema extends z.ZodRawShape> {
  * The core data structure that describes an atomic, valid action in the system.
  */
 export interface TransitionRule<TSystem extends System> {
+  /**
+   * The name of the transition rule.
+   */
+  name: string;
   /**
    * The constraint for this rule to be valid. The search algorithm checks
    * if the current system state satisfies this constraint.
@@ -37,12 +41,20 @@ export type TransitionRules<TSystem extends System> = Record<
   TransitionRule<TSystem>
 >;
 
-export type TransitionEvent<TSchema extends z.ZodRawShape> = {
-  fromState: TransitionState<TSchema>;
-  toState: TransitionState<TSchema>;
-  ruleName: TransitionSuccess<TSchema>["ruleName"];
-  cost: TransitionSuccess<TSchema>["cost"];
-  metadata: TransitionRule<TSchema>["metadata"];
+export type PendingTransitionEvent<TSystem extends System> = {
+  currentState: TSystem;
+  nextState: TSystem;
+  ruleName: TransitionRule<TSystem>["name"];
+  cost?: number | null | undefined;
+  metadata?: TransitionRule<TSystem>["metadata"];
+};
+
+export type TransitionEvent<TSystem extends System> = {
+  currentState: TransitionState<TSystem>;
+  nextState: TransitionState<TSystem>;
+  ruleName: TransitionRule<TSystem>["name"];
+  cost?: number | null | undefined;
+  metadata?: TransitionRule<TSystem>["metadata"];
   hash: string;
   systemHash: string;
 };

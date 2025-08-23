@@ -14,7 +14,8 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "zod": "^4.0.17",
-    "@statespace/memgraph": "workspace:*"
+    "@statespace/memgraph": "workspace:*",
+    "date-fns": "^4.1.0",
+    "zod": "^4.0.17"
   }
 }

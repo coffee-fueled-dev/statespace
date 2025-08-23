@@ -1,5 +1,5 @@
-import { z } from "zod";
-import { createPathSchema, type DeepKeys } from "../shared/schema.zod";
+import { z } from "zod/v4";
+import { createPathSchema } from "../shared/schema.zod";
 
 // Conditions removed - use transition constraints instead
 

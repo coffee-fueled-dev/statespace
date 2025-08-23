@@ -1,4 +1,4 @@
-import z from "zod";
+import { z } from "zod/v4";
 import type { System } from "../types";
 import type { TransitionResult, TransitionRules } from "./types";
 
@@ -20,8 +20,18 @@ export function applyTransition<TSchema extends z.ZodRawShape>(
   const transitionCost =
     typeof rule.cost === "function" ? rule.cost(currentState) : rule.cost || 0;
 
+  // Apply the effect to generate the next state
+  const nextState =
+    typeof rule.effect === "function" ? rule.effect(currentState) : rule.effect;
+
   // Check the constraint for the rule
-  const constraintResult = rule.constraint(currentState, transitionCost);
+  const constraintResult = rule.constraint({
+    nextState,
+    currentState,
+    ruleName,
+    cost: transitionCost,
+    metadata: rule.metadata,
+  });
   if (!constraintResult.allowed) {
     return {
       ruleName,
@@ -31,11 +41,7 @@ export function applyTransition<TSchema extends z.ZodRawShape>(
     };
   }
 
-  // Apply the effect to generate the next state
-  const nextState =
-    typeof rule.effect === "function" ? rule.effect(currentState) : rule.effect;
-
-  // Runtime validation of the new state
+  // Validate the structure of the next state
   const validationResult = systemSchema.safeParse(nextState);
   if (!validationResult.success) {
     return {

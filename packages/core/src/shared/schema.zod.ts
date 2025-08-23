@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 /**
  * Shared schema components used across effects and constraints
@@ -35,8 +35,7 @@ export type PathValue<T, P extends string> = P extends `${infer K}.${infer R}`
  */
 export function createPathSchema<T>() {
   return z
-    .string()
-    .min(1)
+    .enum(Object.keys(z))
     .describe(
       "Type-safe dot-notation path to the target property"
     ) as unknown as z.ZodType<DeepKeys<T>>;
