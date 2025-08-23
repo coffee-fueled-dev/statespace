@@ -3,7 +3,8 @@ import {
   type TransitionRule,
   type TransitionRules,
   createConstraintFunction,
-  effect,
+  createEffectFunction,
+  createInstruction,
 } from "@statespace/core";
 
 // =============================================================================
@@ -67,14 +68,23 @@ function createMoveRule(
       ],
     }),
 
-    effect: effect<SystemState>()
-      .path(source)
-      .transform((sourcePeg) => sourcePeg.slice(0, -1)) // Remove top disk
-      .path(destination)
-      .transform((destPeg, originalState) => [
-        ...destPeg,
-        originalState[source][originalState[source].length - 1], // Get disk from original state
-      ]),
+    effect: createEffectFunction({
+      instructions: [
+        createInstruction<SystemState, typeof source>({
+          path: source,
+          operation: "transform",
+          transformFn: (sourcePeg) => sourcePeg.slice(0, -1),
+        }),
+        createInstruction<SystemState, typeof destination>({
+          path: destination,
+          operation: "transform",
+          transformFn: (destinationPeg, originalState) => [
+            ...destinationPeg,
+            originalState[source][originalState[source].length - 1], // Get disk from original state
+          ],
+        }),
+      ],
+    }),
   };
 }
 

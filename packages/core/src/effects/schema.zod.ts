@@ -170,7 +170,7 @@ export const EffectSchema = defaultSchemas.EffectSchema;
  */
 export type JsonEffectInstruction = z.infer<typeof EffectInstructionSchema>;
 export type JsonEffectDefinition = z.infer<typeof EffectDefinitionSchema>;
-export type EffectConfig = z.infer<typeof EffectSchema>;
+export type JsonEffectConfig = z.infer<typeof EffectSchema>;
 
 // Re-export individual operation types for better type inference
 export type SetEffectInstruction = z.infer<
@@ -272,7 +272,7 @@ function convertInstruction(instruction: JsonEffectInstruction): any {
  * Create an effect function from a validated JSON configuration
  */
 export function createEffectFromConfig<TSystem>(
-  config: EffectConfig
+  config: JsonEffectConfig
 ): (state: TSystem) => TSystem {
   // Import the builder dynamically to avoid circular dependencies
   const { effect } = require("./builder");

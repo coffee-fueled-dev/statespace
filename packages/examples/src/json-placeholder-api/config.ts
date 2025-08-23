@@ -1,7 +1,8 @@
 import { z } from "zod";
 import {
   createConstraintFunction,
-  effect,
+  createEffectFunction,
+  createInstruction,
   type TransitionRules,
 } from "@statespace/core";
 
@@ -62,11 +63,19 @@ export const transitionRules: TransitionRules<SystemState> = {
         },
       ],
     }),
-    effect: effect<SystemState>().path("frontend.newPostDraft").set({
-      userId: 1,
-      id: 0, // Temporary ID, will be assigned by backend
-      title: "New Post",
-      body: "Post content...",
+    effect: createEffectFunction({
+      instructions: [
+        createInstruction<SystemState, "frontend.newPostDraft">({
+          path: "frontend.newPostDraft",
+          operation: "set",
+          value: {
+            userId: 1,
+            id: 0, // Temporary ID, will be assigned by backend
+            title: "New Post",
+            body: "Post content...",
+          },
+        }),
+      ],
     }),
   },
 
@@ -85,22 +94,31 @@ export const transitionRules: TransitionRules<SystemState> = {
         },
       ],
     }),
-    effect: effect<SystemState>()
-      .path("frontend.loading")
-      .set(true)
-      .path("frontend.newPostDraft")
-      .unset()
-      .path("backend.posts")
-      .transform((currentPosts, originalState) => [
-        ...currentPosts,
-        {
-          ...originalState.frontend.newPostDraft!,
-          id: originalState.backend.nextId, // Backend assigns real ID
-        },
-      ])
-      .path("backend.nextId")
-      .increment(),
-    cost: 2, // Creating costs more than reading
+    effect: createEffectFunction({
+      instructions: [
+        createInstruction<SystemState, "frontend.loading">({
+          path: "frontend.loading",
+          operation: "set",
+          value: true,
+        }),
+        createInstruction<SystemState, "frontend.newPostDraft">({
+          path: "frontend.newPostDraft",
+          operation: "unset",
+        }),
+        createInstruction<SystemState, "backend.posts">({
+          path: "backend.posts",
+          operation: "transform",
+          transformFn: (currentPosts, originalState) => [
+            ...currentPosts,
+            originalState.frontend.newPostDraft!,
+          ],
+        }),
+        createInstruction<SystemState, "backend.nextId">({
+          path: "backend.nextId",
+          operation: "increment",
+        }),
+      ],
+    }),
   },
 
   // Frontend fetches all posts from backend
@@ -118,8 +136,15 @@ export const transitionRules: TransitionRules<SystemState> = {
         },
       ],
     }),
-    effect: effect<SystemState>().path("frontend.loading").set(true),
-    cost: 1,
+    effect: createEffectFunction({
+      instructions: [
+        createInstruction<SystemState, "frontend.loading">({
+          path: "frontend.loading",
+          operation: "set",
+          value: true,
+        }),
+      ],
+    }),
   },
 
   // API call completes - posts are loaded into frontend
@@ -137,11 +162,20 @@ export const transitionRules: TransitionRules<SystemState> = {
         },
       ],
     }),
-    effect: effect<SystemState>()
-      .path("frontend.posts")
-      .copyFrom("backend.posts")
-      .path("frontend.loading")
-      .set(false),
+    effect: createEffectFunction({
+      instructions: [
+        createInstruction<SystemState, "frontend.posts">({
+          path: "frontend.posts",
+          operation: "copy",
+          sourcePath: "backend.posts",
+        }),
+        createInstruction<SystemState, "frontend.loading">({
+          path: "frontend.loading",
+          operation: "set",
+          value: false,
+        }),
+      ],
+    }),
   },
 
   // Backend operation: seed initial data (simulates existing data)
@@ -159,23 +193,32 @@ export const transitionRules: TransitionRules<SystemState> = {
         },
       ],
     }),
-    effect: effect<SystemState>()
-      .path("backend.posts")
-      .set([
-        {
-          userId: 1,
-          id: 1,
-          title: "Welcome Post",
-          body: "Welcome to our platform!",
-        },
-        {
-          userId: 2,
-          id: 2,
-          title: "Getting Started",
-          body: "Here's how to get started...",
-        },
-      ])
-      .path("backend.nextId")
-      .set(3),
+    effect: createEffectFunction({
+      instructions: [
+        createInstruction<SystemState, "backend.posts">({
+          path: "backend.posts",
+          operation: "set",
+          value: [
+            {
+              userId: 1,
+              id: 1,
+              title: "Welcome Post",
+              body: "Welcome to our platform!",
+            },
+            {
+              userId: 2,
+              id: 2,
+              title: "Getting Started",
+              body: "Here's how to get started...",
+            },
+          ],
+        }),
+        createInstruction<SystemState, "backend.nextId">({
+          path: "backend.nextId",
+          operation: "set",
+          value: 3,
+        }),
+      ],
+    }),
   },
 };
