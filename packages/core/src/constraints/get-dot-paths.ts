@@ -1,4 +1,4 @@
-import type { System } from "../types";
+import type { System } from "../shared/types";
 
 /**
  * Recursively extracts all dot-notated paths from a nested object

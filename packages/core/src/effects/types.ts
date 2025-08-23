@@ -1,6 +1,14 @@
-import type { System } from "../types";
+import type { System } from "../shared/types";
 import type { DeepKeys, PathValue } from "../shared/schema.zod";
 import type { JsonEffectInstruction } from "./schema.zod";
+
+/**
+ * Defines the state changes caused by a transition. It returns the complete
+ * next state that will be validated and applied.
+ */
+export type EffectFn<TSystem extends System> = (
+  systemState: TSystem
+) => TSystem;
 
 /**
  * Effect operation types - inferred from Zod schema

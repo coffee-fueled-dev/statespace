@@ -1,5 +1,5 @@
 // Core types
-export * from "./types";
+export * from "./shared/types";
 
 // Shared schema utilities
 export {

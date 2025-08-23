@@ -1,5 +1,5 @@
-import type { System, EffectFn } from "../types";
-import type { EffectInstruction, EffectDefinition } from "./types";
+import type { System } from "../shared/types";
+import type { EffectInstruction, EffectDefinition, EffectFn } from "./types";
 import { createEffectFromConfig } from "./schema.zod";
 import { getValueByPath, setValueByPath } from "../shared/schema.zod";
 

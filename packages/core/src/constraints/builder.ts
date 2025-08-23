@@ -7,7 +7,7 @@ import type { PendingTransitionEvent } from "../transitions";
 import type { ConstraintFn } from "./types";
 import { getValueByPath } from "../shared/schema.zod";
 import { isBefore, isAfter, isWithinInterval } from "date-fns";
-import type { System } from "../types";
+import type { System } from "../shared/types";
 
 function validateValue(value: any, validation: Validation): boolean {
   switch (validation.type) {

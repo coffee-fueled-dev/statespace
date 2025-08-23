@@ -1,5 +1,5 @@
 import z from "zod";
-import type { System } from "../../types";
+import type { System } from "../../shared/types";
 import type {
   TransitionRules,
   TransitionSuccess,

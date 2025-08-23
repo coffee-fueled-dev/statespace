@@ -1,5 +1,5 @@
 import type { PendingTransitionEvent } from "../transitions";
-import type { System } from "../types";
+import type { System } from "../shared/types";
 
 /**
  * Represents a constraint that a transition must satisfy. It returns a result

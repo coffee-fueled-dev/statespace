@@ -1,4 +1,4 @@
-import type { CostFn, EffectFn, System } from "../types";
+import type { CostFn, EffectFn, System } from "../shared/types";
 import type { ConstraintFn } from "../constraints";
 
 export type Hash = string;

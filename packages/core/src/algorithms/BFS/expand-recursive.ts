@@ -1,5 +1,5 @@
 import z from "zod";
-import type { System } from "../../types";
+import type { System } from "../../shared/types";
 import type { Hash, TransitionEvent, TransitionRules } from "../../transitions";
 import type { Codex } from "../../codex";
 import { generateBreadth } from "./bfs";

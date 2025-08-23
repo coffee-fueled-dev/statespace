@@ -1,5 +1,5 @@
 import z from "zod";
-import type { System } from "../../types";
+import type { System } from "../../shared/types";
 import type { TransitionRules } from "../../transitions/types";
 import type { Codex } from "../../codex";
 import { generateDepthIterator, type DFSNode } from "./dfs";
