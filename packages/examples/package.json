@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@statespace/core": "workspace:*",
-    "@statespace/memgraph": "workspace:*"
+    "@statespace/memgraph": "workspace:*",
+    "zod": "^4.1.0"
   }
 }

@@ -1,4 +1,4 @@
-import z from "zod";
+import z from "zod/v4";
 import type { System } from "../../shared/types";
 import type { Hash, TransitionEvent, TransitionRules } from "../../transitions";
 import type { Codex } from "../../codex";

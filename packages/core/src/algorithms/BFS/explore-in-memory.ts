@@ -1,4 +1,4 @@
-import type z from "zod";
+import type z from "zod/v4";
 import { expandRecursive, type ExpansionConfig } from "./expand-recursive";
 import type { Hash, TransitionRule } from "../../transitions";
 import type { System } from "../../shared/types";
