@@ -156,7 +156,10 @@ export type CustomConstraint<TSystem extends System> = {
   require: CustomValidation<TSystem>;
 };
 
-export type Constraint<TSystem extends System> =
-  | PathConstraint
-  | CostConstraint
+export type Constraint<TSystem extends System = System> =
+  | z.infer<typeof ConstraintSchema>
   | CustomConstraint<TSystem>;
+export const ConstraintSchema = z.discriminatedUnion("type", [
+  PathConstraintSchema,
+  CostConstraintSchema,
+]);

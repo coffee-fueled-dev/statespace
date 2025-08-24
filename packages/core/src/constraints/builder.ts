@@ -5,7 +5,7 @@ import {
 } from "./schema.zod";
 import type { PendingTransitionEvent } from "../transitions";
 import type { ConstraintFn } from "./types";
-import { getValueByPath } from "../shared/schema.zod";
+import { getValueByPath } from "../shared/lib";
 import { isBefore, isAfter, isWithinInterval } from "date-fns";
 import type { System } from "../shared/types";
 
@@ -163,7 +163,7 @@ const validateConstraint =
     return false;
   };
 
-export function createConstraintFunction<TSystem extends System>({
+export function compileConstraint<TSystem extends System>({
   constraints,
 }: {
   constraints: Constraint<TSystem>[];

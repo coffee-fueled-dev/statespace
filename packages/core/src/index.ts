@@ -8,7 +8,7 @@ export {
   createPathSchema,
   type DeepKeys,
   type PathValue,
-} from "./shared/schema.zod";
+} from "./shared/lib";
 
 // Constraint builders
 export * from "./constraints";
@@ -24,3 +24,7 @@ export * from "./algorithms";
 
 // Key generators for state serialization
 export * from "./codex";
+
+// Statespace system definition
+export * from "./schema.zod";
+export * from "./compile-statespace-system";

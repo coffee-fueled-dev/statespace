@@ -1,107 +1,89 @@
 import type { System } from "../shared/types";
-import type { EffectInstruction, EffectDefinition, EffectFn } from "./types";
-import { createEffectFromConfig } from "./schema.zod";
-import { getValueByPath, setValueByPath } from "../shared/schema.zod";
+import type { EffectFn } from "./types";
+import { getValueByPath, setValueByPath } from "../shared/lib";
+import { getTransformFunction, type Effect } from "./schema.zod";
+import z from "zod";
 
-// Condition evaluation removed - use transition constraints instead
-
-/**
- * Apply a single effect instruction using schema-based processing
- */
 function applyInstruction<TSystem extends System>(
   currentState: TSystem,
-  instruction: EffectInstruction<TSystem>,
-  originalState: TSystem
+  effect: Effect<TSystem>
 ): TSystem {
-  // Convert to JSON format for schema-based processing
-  const jsonInstruction: any = {
-    path: instruction.path as string,
-    operation: instruction.operation,
-    value: instruction.value,
-    sourcePath: instruction.sourcePath as string,
-  };
-
-  // Handle transform operations
-  if (instruction.operation === "transform") {
-    if (instruction.transformFn) {
-      // Custom transform function - handle manually
-      const currentValue = getValueByPath(
-        currentState,
-        instruction.path as string
-      );
-      const newValue = instruction.transformFn(currentValue, originalState);
-      return setValueByPath(currentState, instruction.path as string, newValue);
-    } else if (instruction.transformType) {
-      // Predefined transform - use schema processing
-      jsonInstruction.transformType = instruction.transformType;
-    } else {
-      throw new Error(
-        "Transform operation requires either transformFn or transformType"
-      );
-    }
-  }
-
-  // Use the schema's createEffectFromConfig to process the instruction
-  // This leverages all the validation and processing logic from the schema
-  try {
-    const effect = createEffectFromConfig<TSystem>(jsonInstruction);
-    return effect(currentState);
-  } catch (error) {
-    // Fallback to manual processing for operations that need original state context
-    return applyInstructionManual(currentState, instruction, originalState);
-  }
-}
-
-/**
- * Manual instruction processing for cases that need original state context
- */
-function applyInstructionManual<TSystem extends System>(
-  currentState: TSystem,
-  instruction: EffectInstruction<TSystem>,
-  originalState: TSystem
-): TSystem {
-  const { path, operation, sourcePath } = instruction;
+  const { operation } = effect;
+  const currentValue = getValueByPath(currentState, effect.path);
   let newValue: any;
 
   switch (operation) {
     case "copy":
-      if (!sourcePath)
-        throw new Error("sourcePath required for copy operation");
-      newValue = getValueByPath(originalState, sourcePath as string);
+      newValue = getValueByPath(currentState, effect.sourcePath);
+      break;
+
+    case "transform":
+      const transformFn = getTransformFunction(effect);
+      newValue = transformFn(currentValue, currentState);
+      break;
+
+    case "clear":
+      newValue = [];
+      break;
+
+    case "unset":
+      newValue = undefined;
+      break;
+
+    case "increment":
+      newValue = z.number().parse(currentValue) + (effect.value ?? 1);
+      break;
+
+    case "decrement":
+      newValue = z.number().parse(currentValue) - (effect.value ?? 1);
+      break;
+
+    case "append":
+      const currentArray = z.array(z.any()).parse(currentValue);
+      newValue = Array.isArray(effect.value)
+        ? [...currentArray, ...effect.value]
+        : [...currentArray, effect.value];
+      break;
+
+    case "prepend":
+      const currentArrayPrepend = z.array(z.any()).parse(currentValue);
+      newValue = Array.isArray(effect.value)
+        ? [...effect.value, ...currentArrayPrepend]
+        : [effect.value, ...currentArrayPrepend];
+      break;
+
+    case "remove":
+      const currentArrayRemove = z.array(z.any()).parse(currentValue);
+      newValue = currentArrayRemove.filter((item) => item !== effect.value);
+      break;
+
+    case "merge":
+      const currentObject = z.record(z.string(), z.any()).parse(currentValue);
+      newValue = { ...currentObject, ...effect.value };
+      break;
+
+    case "set":
+      newValue = effect.value;
       break;
 
     default:
-      throw new Error(
-        `Unsupported operation for manual processing: ${operation}`
-      );
+      throw new Error(`Unknown effect operation: ${operation}`);
   }
-
-  return setValueByPath(currentState, path as string, newValue);
+  return setValueByPath(currentState, effect.path, newValue);
 }
 
-/**
- * Apply all effect instructions to create the new state
- * All transformations receive the original state for reference
- */
-function applyEffectDefinition<TSystem extends System>(
-  originalState: TSystem,
-  definition: EffectDefinition<TSystem>
-): TSystem {
-  // Clone the original state to avoid mutations
-  let currentState = JSON.parse(JSON.stringify(originalState));
-
-  // Apply each instruction, but always pass the original state to transform functions
-  for (const instruction of definition.instructions) {
-    currentState = applyInstruction(currentState, instruction, originalState);
-  }
-
-  return currentState;
-}
-
-export function createEffectFunction<TSystem extends System>(
-  effectDefinition: EffectDefinition<TSystem>
+export function compileEffect<TSystem extends System>(
+  effects: Effect<TSystem>[]
 ): EffectFn<TSystem> {
   return (currentState: TSystem) => {
-    return applyEffectDefinition(currentState, effectDefinition);
+    // Clone the original state to avoid mutations
+    let _currentState = { ...currentState };
+
+    // Apply each instruction, but always pass the original state to transform functions
+    for (const effect of effects) {
+      _currentState = applyInstruction<TSystem>(_currentState, effect);
+    }
+
+    return _currentState;
   };
 }
