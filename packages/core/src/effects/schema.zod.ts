@@ -1,17 +1,30 @@
-import { z } from "zod/v4";
-import type { System } from "../shared/types";
-import type { DeepKeys } from "../shared/lib";
+import { z } from "zod";
+import type { DeepKeys, PathValue } from "../shared/lib";
+import { SerializableSchema } from "../shared/schema.zod";
+import type { Schema, Shape } from "../schema";
 
-export type SetEffect = z.infer<typeof SetEffectSchema>;
+export type SetEffect<TShape extends Shape<Schema>> = Omit<
+  z.infer<typeof SetEffectSchema>,
+  "path"
+> & {
+  path: DeepKeys<TShape>;
+};
 const SetEffectSchema = z
   .object({
     operation: z.literal("set"),
     path: z.string(),
-    value: z.any().describe("The value to set at the specified path"),
+    value: SerializableSchema.describe(
+      "The value to set at the specified path"
+    ),
   })
   .describe("Set the value at the specified path");
 
-export type UnsetEffect = z.infer<typeof UnsetEffectSchema>;
+export type UnsetEffect<TShape extends Shape<Schema>> = Omit<
+  z.infer<typeof UnsetEffectSchema>,
+  "path"
+> & {
+  path: DeepKeys<TShape>;
+};
 const UnsetEffectSchema = z
   .object({
     operation: z.literal("unset"),
@@ -19,7 +32,13 @@ const UnsetEffectSchema = z
   })
   .describe("Unset the value at the specified path");
 
-export type CopyEffect = z.infer<typeof CopyEffectSchema>;
+export type CopyEffect<TShape extends Shape<Schema>> = Omit<
+  z.infer<typeof CopyEffectSchema>,
+  "path" | "sourcePath"
+> & {
+  path: DeepKeys<TShape>;
+  sourcePath: DeepKeys<TShape>;
+};
 const CopyEffectSchema = z
   .object({
     operation: z.literal("copy"),
@@ -30,72 +49,112 @@ const CopyEffectSchema = z
   })
   .describe("Copy the value from the source path to the destination path");
 
-export type IncrementEffect = z.infer<typeof IncrementEffectSchema>;
+export type IncrementEffect<TShape extends Shape<Schema>> = Omit<
+  z.infer<typeof IncrementEffectSchema>,
+  "path"
+> & {
+  path: DeepKeys<TShape>;
+};
 const IncrementEffectSchema = z
   .object({
     operation: z.literal("increment"),
     path: z.string().describe("Path to the numeric value to increment"),
     value: z
-      .optional(z.number().default(1))
+      .number()
+      .default(1)
+      .nullish()
       .describe("Amount to increment by (default: 1)"),
   })
   .describe("Increment the value at the specified path");
 
-export type DecrementEffect = z.infer<typeof DecrementEffectSchema>;
+export type DecrementEffect<TShape extends Shape<Schema>> = Omit<
+  z.infer<typeof DecrementEffectSchema>,
+  "path"
+> & {
+  path: DeepKeys<TShape>;
+};
 const DecrementEffectSchema = z
   .object({
     operation: z.literal("decrement"),
     path: z.string().describe("Path to the numeric value to decrement"),
     value: z
-      .optional(z.number().default(1))
+      .number()
+      .default(1)
+      .nullish()
       .describe("Amount to decrement by (default: 1)"),
   })
   .describe("Decrement the value at the specified path");
 
-export type AppendEffect = z.infer<typeof AppendEffectSchema>;
+export type AppendEffect<TShape extends Shape<Schema>> = Omit<
+  z.infer<typeof AppendEffectSchema>,
+  "path"
+> & {
+  path: DeepKeys<TShape>;
+};
 const AppendEffectSchema = z.object({
   operation: z.literal("append"),
   path: z.string().describe("Path to the array to append to"),
-  value: z
-    .union([z.any(), z.array(z.any())])
-    .describe("Item or array of items to append"),
+  value: SerializableSchema.describe("Item or array of items to append"),
 });
 
-export type PrependEffect = z.infer<typeof PrependEffectSchema>;
+export type PrependEffect<TShape extends Shape<Schema>> = Omit<
+  z.infer<typeof PrependEffectSchema>,
+  "path"
+> & {
+  path: DeepKeys<TShape>;
+};
 const PrependEffectSchema = z.object({
   operation: z.literal("prepend"),
   path: z.string().describe("Path to the array to prepend to"),
-  value: z
-    .union([z.any(), z.array(z.any())])
-    .describe("Item or array of items to prepend"),
+  value: SerializableSchema.describe("Item or array of items to prepend"),
 });
 
-export type RemoveEffect = z.infer<typeof RemoveEffectSchema>;
+export type RemoveEffect<TShape extends Shape<Schema>> = Omit<
+  z.infer<typeof RemoveEffectSchema>,
+  "path"
+> & {
+  path: DeepKeys<TShape>;
+};
 const RemoveEffectSchema = z.object({
   operation: z.literal("remove"),
   path: z.string().describe("Path to the array to remove items from"),
-  value: z.any().describe("Value to remove (exact match) or filter criteria"),
+  value: SerializableSchema.describe(
+    "Value to remove (exact match) or filter criteria"
+  ),
 });
 
-export type ClearEffect = z.infer<typeof ClearEffectSchema>;
+export type ClearEffect<TShape extends Shape<Schema>> = Omit<
+  z.infer<typeof ClearEffectSchema>,
+  "path"
+> & {
+  path: DeepKeys<TShape>;
+};
 const ClearEffectSchema = z.object({
   operation: z.literal("clear"),
   path: z.string().describe("Path to the array to clear"),
 });
 
-export type MergeEffect = z.infer<typeof MergeEffectSchema>;
+export type MergeEffect<TShape extends Shape<Schema>> = Omit<
+  z.infer<typeof MergeEffectSchema>,
+  "path"
+> & {
+  path: DeepKeys<TShape>;
+};
 const MergeEffectSchema = z.object({
   operation: z.literal("merge"),
   path: z.string().describe("Path to the object to merge properties into"),
   value: z
-    .record(z.string(), z.any())
+    .record(z.string(), SerializableSchema)
     .describe("Object with properties to merge"),
 });
 
-export type TransformEffect<TSystem extends System> =
-  | z.infer<typeof TransformEffectSchema>
-  | (Omit<z.infer<typeof TransformEffectSchema>, "transformType"> & {
-      transformFn: (currentValue: any, originalState: TSystem) => any;
+export type TransformEffect<TShape extends Shape<Schema>> =
+  | (Omit<z.infer<typeof TransformEffectSchema>, "path"> & {
+      path: DeepKeys<TShape>;
+    })
+  | (Omit<z.infer<typeof TransformEffectSchema>, "transformType" | "path"> & {
+      path: DeepKeys<TShape>;
+      transformFn: (currentValue: any, originalState: TShape) => any;
     });
 export const TransformEffectSchema = z.object({
   operation: z.literal("transform"),
@@ -114,12 +173,18 @@ export const TransformEffectSchema = z.object({
     .describe("Predefined transformation to apply"),
 });
 
-export type Effect<TSystem extends System> = (
-  | z.infer<typeof EffectSchema>
-  | TransformEffect<TSystem>
-) & {
-  path: DeepKeys<TSystem>;
-};
+export type Effect<TSchema extends Schema> =
+  | SetEffect<Shape<TSchema>>
+  | UnsetEffect<Shape<TSchema>>
+  | CopyEffect<Shape<TSchema>>
+  | IncrementEffect<Shape<TSchema>>
+  | DecrementEffect<Shape<TSchema>>
+  | AppendEffect<Shape<TSchema>>
+  | PrependEffect<Shape<TSchema>>
+  | RemoveEffect<Shape<TSchema>>
+  | ClearEffect<Shape<TSchema>>
+  | MergeEffect<Shape<TSchema>>
+  | TransformEffect<Shape<TSchema>>;
 export const EffectSchema = z.discriminatedUnion("operation", [
   SetEffectSchema,
   UnsetEffectSchema,
@@ -135,26 +200,32 @@ export const EffectSchema = z.discriminatedUnion("operation", [
 ]);
 
 const TRANSFORM_FUNCTIONS = {
-  toString: (value: any) => String(value),
-  toNumber: (value: any) => Number(value),
-  toLowerCase: (value: any) => z.string().parse(value).toLowerCase(),
-  toUpperCase: (value: any) => z.string().parse(value).toUpperCase(),
-  reverse: (value: any) => z.array(z.any()).parse(value).reverse(),
-  sort: (value: any) => z.array(z.any()).parse(value).sort(),
-  unique: (value: any) =>
+  toString: (value: Shape<Schema>) => String(value),
+  toNumber: (value: Shape<Schema>) => Number(value),
+  toLowerCase: (value: Shape<Schema>) => z.string().parse(value).toLowerCase(),
+  toUpperCase: (value: Shape<Schema>) => z.string().parse(value).toUpperCase(),
+  reverse: (value: Shape<Schema>) =>
+    z.array(SerializableSchema).parse(value).reverse(),
+  sort: (value: Shape<Schema>) =>
+    z.array(SerializableSchema).parse(value).sort(),
+  unique: (value: Shape<Schema>) =>
     z
-      .array(z.any())
+      .array(SerializableSchema)
       .parse(value)
       .filter((v, i, a) => a.indexOf(v) === i),
-  length: (value: any) => z.array(z.any()).parse(value).length,
+  length: (value: Shape<Schema>) =>
+    z.array(SerializableSchema).parse(value).length,
 } as const;
 
-export function getTransformFunction<TSystem extends System>(
-  effect: Effect<TSystem>
+export function getTransformFunction<TSchema extends Schema>(
+  effect: Effect<TSchema>
 ) {
   if (effect.operation === "transform") {
     if ("transformType" in effect) {
-      const transformFn = TRANSFORM_FUNCTIONS[effect.transformType];
+      const transformFn =
+        TRANSFORM_FUNCTIONS[
+          effect.transformType as keyof typeof TRANSFORM_FUNCTIONS
+        ];
       if (!transformFn) {
         throw new Error(`Unknown transform type: ${effect.transformType}`);
       }

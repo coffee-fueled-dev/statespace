@@ -1,32 +1,31 @@
-import { z } from "zod/v4";
-import type { System } from "../shared/types";
-import type { TransitionResult, TransitionRules } from "./types";
+import type { TransitionResult } from "./types";
+import type { ValidateFunction } from "ajv";
+import type { Shape } from "../schema/types";
+import type { Schema } from "../schema";
+import type { ExecutableTransition } from "./compile";
 
 /**
  * Applies a single transition rule to a system state.
- * @param systemSchema The Zod schema for validation
- * @param currentState The current system state
- * @param ruleName The name of the rule being applied
- * @param rule The transition rule to apply
  * @returns The result of applying the transition (success or failure)
  */
-export function applyTransition<TSchema extends z.ZodRawShape>(
-  systemSchema: z.ZodObject<TSchema>,
-  currentState: System<TSchema>,
+export function applyTransition<TSchema extends Schema>(
+  validator: ValidateFunction<Shape<TSchema>>,
+  currentState: { shape: Shape<TSchema> },
   ruleName: string,
-  rule: TransitionRules<System<TSchema>>[string]
-): TransitionResult<System<TSchema>> {
+  rule: ExecutableTransition<TSchema>
+): TransitionResult<Shape<TSchema>> {
   // Calculate the transition cost
   const transitionCost =
-    typeof rule.cost === "function" ? rule.cost(currentState) : rule.cost || 0;
+    typeof rule.cost === "function"
+      ? rule.cost(currentState.shape)
+      : rule.cost || 0;
 
   // Apply the effect to generate the next state
-  const nextState =
-    typeof rule.effect === "function" ? rule.effect(currentState) : rule.effect;
+  const nextState = rule.effect(currentState.shape);
 
   // Check the constraint for the rule
   const constraintResult = rule.constraint({
-    nextState,
+    nextState: { shape: nextState },
     currentState,
     ruleName,
     cost: transitionCost,
@@ -35,28 +34,31 @@ export function applyTransition<TSchema extends z.ZodRawShape>(
   if (!constraintResult.allowed) {
     return {
       ruleName,
+      systemState: { shape: currentState.shape },
+      cost: transitionCost,
+      metadata: rule.metadata,
       success: false,
       reason: "constraint",
       errors: constraintResult.errors || ["Constraint not satisfied"],
     };
   }
 
-  // Validate the structure of the next state
-  const validationResult = systemSchema.safeParse(nextState);
-  if (!validationResult.success) {
+  const isValid = validator(nextState);
+  if (!isValid) {
     return {
       ruleName,
+      systemState: { shape: currentState.shape },
+      cost: transitionCost,
+      metadata: rule.metadata,
       success: false,
-      reason: "validation",
-      errors: z
-        .treeifyError(validationResult.error)
-        .errors.map((err: any) => `${err.path.join(".")}: ${err.message}`),
+      reason: "shape",
+      errors: ["Invalid shape"],
     };
   }
 
   return {
     ruleName,
-    systemState: validationResult.data,
+    systemState: { shape: nextState },
     cost: transitionCost,
     success: true,
     metadata: rule.metadata,

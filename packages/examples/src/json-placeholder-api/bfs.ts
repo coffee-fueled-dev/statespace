@@ -1,42 +1,18 @@
 import { jsonCodex } from "@statespace/core";
 import { optimalPath } from "@statespace/core";
 
-// =============================================================================
-// JSON PLACEHOLDER API BREADTH FIRST SEARCH SOLVER
-// =============================================================================
+import { APISystem, exampleState, type API } from "./config";
 
-import { transitionRules, SystemStateSchema, type SystemState } from "./config";
-
-// Set the initial system state: empty frontend, empty backend
-const initialState: SystemState = {
-  frontend: {
-    posts: [],
-    loading: false,
-    newPostDraft: undefined,
-  },
-  backend: {
-    posts: [],
-    nextId: 1,
-  },
-};
-
-// Define the target condition: frontend has loaded posts from backend
-const targetCondition = (state: SystemState) => {
+const targetCondition = (state: API) => {
   return state.frontend.posts.length > 0 && !state.frontend.loading;
 };
 
-// Main function to run the example.
-async function exploreApiWorkflow() {
-  console.log("=== Frontend/Backend API Workflow Explorer ===");
-  console.log("Initial State:", JSON.stringify(initialState, null, 2));
-  console.log("\nFinding optimal path to load posts in frontend...");
-
+if (import.meta.main) {
   const result = await optimalPath({
-    systemSchema: SystemStateSchema,
-    initialState,
-    transitionRules,
+    system: APISystem,
+    initialState: exampleState,
     targetCondition,
-    codex: jsonCodex<SystemState>(),
+    codex: jsonCodex<API>(),
   });
 
   if (result) {
@@ -56,6 +32,3 @@ async function exploreApiWorkflow() {
     console.log("\n❌ No valid workflow found within the given constraints.");
   }
 }
-
-// Run the explorer.
-exploreApiWorkflow();

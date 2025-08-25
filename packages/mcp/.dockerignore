@@ -1,0 +1,32 @@
+# Include any files or directories that you don't want to be added to the image.
+# For more help, visit the .dockerignore file reference guide at
+# https://docs.docker.com/engine/reference/builder/#dockerignore-file
+
+**/.git
+**/.gitignore
+**/README.md
+**/LICENSE
+**/.vscode
+**/Dockerfile
+**/.dockerignore
+**/node_modules
+**/npm-debug.log
+**/coverage
+**/.nyc_output
+**/dist
+**/build
+**/.next
+**/.nuxt
+**/.cache
+**/.parcel-cache
+**/.DS_Store
+**/Thumbs.db
+
+# Ignore other packages not needed for MCP
+**/packages/examples
+**/packages/memgraph
+**/scripts
+
+# Keep only core and mcp packages
+!**/packages/core
+!**/packages/mcp

@@ -1,0 +1,18 @@
+{
+  "name": "@statespace/agent",
+  "version": "0.2.0-beta.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "bun run src/index.ts",
+    "dev": "bun run --watch src/index.ts"
+  },
+  "dependencies": {
+    "mcp-use": "^0.1.17",
+    "@langchain/openai": "^0.3.15",
+    "zod": "^3"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}

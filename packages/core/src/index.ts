@@ -1,14 +1,13 @@
-// Core types
-export * from "./shared/types";
-
 // Shared schema utilities
 export {
   getValueByPath,
   setValueByPath,
-  createPathSchema,
   type DeepKeys,
   type PathValue,
 } from "./shared/lib";
+
+// Schema utilities
+export * from "./schema";
 
 // Constraint builders
 export * from "./constraints";
@@ -27,4 +26,4 @@ export * from "./codex";
 
 // Statespace system definition
 export * from "./schema.zod";
-export * from "./compile-statespace-system";
+export * from "./compile";

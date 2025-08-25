@@ -1,12 +1,10 @@
-import type z from "zod/v4";
-import { expandRecursive, type ExpansionConfig } from "./expand-recursive";
-import type { Hash, TransitionRule } from "../../transitions";
-import type { System } from "../../shared/types";
+import type { Hash } from "../../transitions";
+import type { System } from "../../schema.zod";
+import type { Metadata } from "../../shared";
+import { expandToLimit, type ExpandToLimitConfig } from "./expand-to-limit";
 
-export type ExploreInMemoryConfig<TSchema extends z.ZodRawShape> = Omit<
-  ExpansionConfig<TSchema>,
-  "onTransition"
->;
+export interface ExploreInMemoryConfig<TSystem extends System>
+  extends ExpandToLimitConfig<TSystem> {}
 
 export type MarkovChain = [
   Hash,
@@ -14,7 +12,7 @@ export type MarkovChain = [
   {
     cost?: number | null | undefined;
     ruleName: string;
-    metadata?: TransitionRule<System>["metadata"];
+    metadata?: Metadata | null | undefined;
   }
 ];
 
@@ -42,8 +40,8 @@ export interface ExploreInMemoryResult {
   profile: ExploreInMemoryProfile;
 }
 
-export async function exploreInMemory<TSchema extends z.ZodRawShape>(
-  config: ExploreInMemoryConfig<TSchema>
+export async function exploreInMemory<TSystem extends System>(
+  config: ExploreInMemoryConfig<TSystem>
 ): Promise<ExploreInMemoryResult> {
   const markovChains: MarkovGraph = new Map();
 
@@ -57,15 +55,15 @@ export async function exploreInMemory<TSchema extends z.ZodRawShape>(
   let maxStatesReached = false;
   let maxIterationsReached = false;
 
-  await expandRecursive({
+  await expandToLimit({
     ...config,
-    onTransition: ({ currentState, nextState, ...event }) => {
-      // Track iteration metrics
-      if (event.ruleName === "initial") {
-        // Initial state discovery
-        statesExplored = 1;
-        stateTransitionCounts.set(currentState.hash, 0);
-        return;
+    limit: {
+      maxIterations: Infinity,
+      maxStates: Infinity,
+    },
+    onTransition: ({ currentState, result, isNewState }) => {
+      if (!currentState.hash || !result.systemState.hash) {
+        throw new Error("Current or next state hash is undefined");
       }
 
       iterationsPerformed++;
@@ -76,7 +74,7 @@ export async function exploreInMemory<TSchema extends z.ZodRawShape>(
       // Add the new transition
       const updatedTransitions = {
         ...existingTransitions,
-        [nextState.hash]: event,
+        [result.systemState.hash]: result,
       };
       markovChains.set(currentState.hash, updatedTransitions);
 
@@ -95,9 +93,9 @@ export async function exploreInMemory<TSchema extends z.ZodRawShape>(
       }
 
       // Track if new state discovered
-      if (nextState.isNew) {
+      if (isNewState) {
         statesExplored++;
-        stateTransitionCounts.set(nextState.hash, 0);
+        stateTransitionCounts.set(result.systemState.hash, 0);
       }
 
       // Check if we hit limits (these will be detected in the next iteration)

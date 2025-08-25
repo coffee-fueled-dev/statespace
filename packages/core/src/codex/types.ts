@@ -1,7 +1,5 @@
-import { Codex as StatespaceCodex } from "@statespace/memgraph";
-
-export type Codex<T extends any = any> = {
-  key: StatespaceCodex;
+export type Codex<T = any> = {
+  key: string;
   encode: (systemState: T) => Promise<string>;
   decode: (key: string) => Promise<T>;
 };

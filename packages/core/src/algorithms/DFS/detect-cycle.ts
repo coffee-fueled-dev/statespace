@@ -1,18 +1,13 @@
-import z from "zod/v4";
-import type { System } from "../../shared/types";
-import type { TransitionRules } from "../../transitions/types";
-import type { Codex } from "../../codex";
-import { generateDepthIterator, type DFSNode } from "./dfs";
+import type { System } from "../../schema.zod";
+import type { Shape } from "../../schema";
+import { generateDepthIterator } from "./any-path";
+import type { StudyConfig } from "../BFS/optimal-path";
 
 /**
  * Configuration for cycle detection DFS.
  */
-export interface CycleDetectionConfig<TSchema extends z.ZodRawShape> {
-  systemSchema: z.ZodObject<TSchema>;
-  initialState: System<TSchema>;
-  transitionRules: TransitionRules<System<TSchema>>;
-  codex: Codex<System<TSchema>>;
-  /** Maximum depth to search */
+export interface CycleDetectionConfig<TSystem extends System>
+  extends StudyConfig<TSystem> {
   maxDepth?: number;
 }
 
@@ -20,13 +15,12 @@ export interface CycleDetectionConfig<TSchema extends z.ZodRawShape> {
  * True DFS-based cycle detection algorithm using recursion.
  * @returns The first cycle found (sequence of rule names) and total cost, or null if no cycle is found.
  */
-export async function detectCycle<TSchema extends z.ZodRawShape>(
-  config: CycleDetectionConfig<TSchema>
+export async function detectCycle<TSystem extends System>(
+  config: CycleDetectionConfig<TSystem>
 ): Promise<{ cycle: string[]; cost: number } | null> {
   const {
-    systemSchema,
+    system,
     initialState,
-    transitionRules,
     codex,
     maxDepth = 100, // Default reasonable limit for cycle detection
   } = config;
@@ -36,7 +30,7 @@ export async function detectCycle<TSchema extends z.ZodRawShape>(
 
   // Recursive DFS helper function
   async function dfsForCycle(
-    state: System<TSchema>,
+    state: Shape<TSystem["schema"]>,
     path: string[],
     cost: number,
     depth: number
@@ -64,11 +58,7 @@ export async function detectCycle<TSchema extends z.ZodRawShape>(
 
     try {
       // Generate transitions one at a time (true DFS behavior)
-      const transitionIterator = generateDepthIterator(
-        systemSchema,
-        state,
-        transitionRules
-      );
+      const transitionIterator = generateDepthIterator(system, state);
 
       // Try each transition one at a time (true DFS behavior)
       for (const result of transitionIterator) {
@@ -77,7 +67,7 @@ export async function detectCycle<TSchema extends z.ZodRawShape>(
 
         // Recursively explore this path deeply
         const cycleResult = await dfsForCycle(
-          result.systemState,
+          result.systemState.shape,
           childPath,
           childCost,
           depth + 1

@@ -85,6 +85,24 @@ services:
       retries: 3
       start_period: 40s
 
+  statespace-mcp:
+    build:
+      context: .
+      dockerfile: packages/mcp/Dockerfile
+    container_name: statespace-mcp
+    ports:
+      - "${MCP_PORT:-8080}:8080"
+    environment:
+      - NODE_ENV=production
+    networks:
+      - statespace
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8080/healthz || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
 volumes:
   memgraph_data:

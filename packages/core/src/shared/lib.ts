@@ -1,11 +1,8 @@
-import { z } from "zod/v4";
-import type { System } from "../shared/types";
-
 /**
  * Recursively extracts all dot-notated paths from a nested object
  */
-export function getDotPaths<TSystem extends System>(
-  obj: TSystem,
+export function getDotPaths(
+  obj: Record<string, unknown>,
   prefix = ""
 ): string[] {
   const paths: string[] = [];
@@ -57,19 +54,6 @@ export type PathValue<T, P extends string> = P extends `${infer K}.${infer R}`
   : P extends keyof T
   ? T[P]
   : never;
-
-/**
- * Generic path schema that validates paths against a specific type
- * This provides compile-time type safety for path strings
- * Note: Runtime validation is still string-based, but TypeScript will enforce valid paths
- */
-export function createPathSchema<T>() {
-  return z
-    .enum(Object.keys(z))
-    .describe(
-      "Type-safe dot-notation path to the target property"
-    ) as unknown as z.ZodType<DeepKeys<T>>;
-}
 
 /**
  * Utility function to get a value from an object using dot notation

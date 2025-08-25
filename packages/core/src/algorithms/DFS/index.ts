@@ -1,2 +1,2 @@
-export * from "./dfs";
-export * from "./cycle-detection";
+export * from "./any-path";
+export * from "./detect-cycle";
