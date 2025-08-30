@@ -57,7 +57,6 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy source code and generated files
 COPY packages/core/src ./packages/core/src
 COPY packages/memgraph/src ./packages/memgraph/src
-COPY --from=codegen /app/packages/memgraph/src/server/generated ./packages/memgraph/src/server/generated
 COPY --from=codegen /app/packages/memgraph/src/client/generated ./packages/memgraph/src/client/generated
 
 # Copy package.json files

@@ -1,8 +1,8 @@
-import {
-  compileStatespaceSystem,
-  StatespaceSystemDefinitionSchema,
-} from "@statespace/core";
+import { SystemSchema, makeExecutableSchema } from "@statespace/core";
 import { FastMCP } from "fastmcp";
+import { z } from "zod";
+
+console.log(SystemSchema.shape);
 
 export const registerDefineSystem = (server: FastMCP) =>
   server.addTool({
@@ -10,11 +10,16 @@ export const registerDefineSystem = (server: FastMCP) =>
     description:
       "Model a stateful system as a schema which describes its allowed shape and behavior. " +
       "Use this system to make decisions about optimal workflows given initial conditions and desired outcomes.",
-    parameters: StatespaceSystemDefinitionSchema,
+    parameters: z.object({
+      schema: z
+        .string()
+        .describe(
+          "A JSON schema that defines the shape and behavior of the system."
+        ),
+    }),
     execute: async (args) => {
-      console.log(JSON.stringify(args, null, 2));
-      // const system = compileStatespaceSystem(args);
-      // console.log(JSON.stringify(system, null, 2));
+      const system = SystemSchema.parse(args.schema);
+      console.log(JSON.stringify(system, null, 2));
       return JSON.stringify(args);
     },
   });

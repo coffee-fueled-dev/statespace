@@ -12,7 +12,7 @@
     },
     "packages/agent": {
       "name": "@statespace/agent",
-      "version": "0.1.0",
+      "version": "0.2.0-beta.1",
       "dependencies": {
         "@langchain/openai": "^0.3.15",
         "mcp-use": "^0.1.17",
@@ -24,26 +24,10 @@
     },
     "packages/core": {
       "name": "@statespace/core",
-      "version": "0.0.1",
+      "version": "0.2.0-beta.1",
       "dependencies": {
         "ajv": "^8.17.1",
-        "date-fns": "^4.1.0",
-        "zod": "^3",
-      },
-      "devDependencies": {
-        "@types/bun": "latest",
-      },
-      "peerDependencies": {
-        "typescript": "^5.0.0",
-      },
-    },
-    "packages/examples": {
-      "name": "@statespace/examples",
-      "version": "0.0.1",
-      "dependencies": {
-        "@statespace/core": "workspace:*",
-        "@statespace/memgraph": "workspace:*",
-        "zod": "^3",
+        "zod": "^4.1.5",
       },
       "devDependencies": {
         "@types/bun": "latest",
@@ -54,7 +38,7 @@
     },
     "packages/mcp": {
       "name": "@statespace/mcp",
-      "version": "0.0.1",
+      "version": "0.2.0-beta.1",
       "dependencies": {
         "@statespace/core": "workspace:*",
         "fastmcp": "^3.15.1",
@@ -69,7 +53,7 @@
     },
     "packages/memgraph": {
       "name": "@statespace/memgraph",
-      "version": "0.0.1",
+      "version": "0.2.0-beta.1",
       "dependencies": {
         "@escape.tech/graphql-armor": "^3.1.6",
         "@graphql-yoga/plugin-response-cache": "^3.17.1",
@@ -401,8 +385,6 @@
 
     "@statespace/core": ["@statespace/core@workspace:packages/core"],
 
-    "@statespace/examples": ["@statespace/examples@workspace:packages/examples"],
-
     "@statespace/mcp": ["@statespace/mcp@workspace:packages/mcp"],
 
     "@statespace/memgraph": ["@statespace/memgraph@workspace:packages/memgraph"],
@@ -596,8 +578,6 @@
     "data-uri-to-buffer": ["data-uri-to-buffer@4.0.1", "", {}, "sha512-0R9ikRb668HB7QDxT1vkpuUBtqc53YyAwMwGeUFKRojY/NWKvdZ+9UYtRfGmhqNbRkTSVpMbmyhXipFFv2cb/A=="],
 
     "dataloader": ["dataloader@2.2.3", "", {}, "sha512-y2krtASINtPFS1rSDjacrFgn1dcUuoREVabwlOGOe4SdxenREqwjwjElAdwvbGM7kgZz9a3KVicWR7vcz8rnzA=="],
-
-    "date-fns": ["date-fns@4.1.0", "", {}, "sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg=="],
 
     "debounce": ["debounce@1.2.1", "", {}, "sha512-XRRe6Glud4rd/ZGQfiV1ruXSfbvfJedlV9Y6zOlP+2K04vBYiJEte6stfFkCP03aMnY5tsipamumUjL14fofug=="],
 
@@ -1433,6 +1413,10 @@
 
     "@neo4j/graphql/@graphql-tools/utils": ["@graphql-tools/utils@10.8.6", "", { "dependencies": { "@graphql-typed-document-node/core": "^3.1.1", "@whatwg-node/promise-helpers": "^1.0.0", "cross-inspect": "1.0.1", "dset": "^3.1.4", "tslib": "^2.4.0" }, "peerDependencies": { "graphql": "^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0" } }, "sha512-Alc9Vyg0oOsGhRapfL3xvqh1zV8nKoFUdtLhXX7Ki4nClaIJXckrA86j+uxEuG3ic6j4jlM1nvcWXRn/71AVLQ=="],
 
+    "@statespace/core/@types/bun": ["@types/bun@1.2.21", "", { "dependencies": { "bun-types": "1.2.21" } }, "sha512-NiDnvEqmbfQ6dmZ3EeUO577s4P5bf4HCTXtI6trMc6f6RzirY5IrF3aIookuSpyslFzrnvv2lmEWv5HyC1X79A=="],
+
+    "@statespace/core/zod": ["zod@4.1.5", "", {}, "sha512-rcUUZqlLJgBC33IT3PNMgsCq6TzLQEG/Ei/KTCU0PedSWRMAXoOUN+4t/0H+Q8bdnLPdqUYnvboJT0bn/229qg=="],
+
     "bl/buffer": ["buffer@5.7.1", "", { "dependencies": { "base64-js": "^1.3.1", "ieee754": "^1.1.13" } }, "sha512-EHcyIPBQ4BSGlvjB16k5KgAJ27CIsHY/2JBmCRReo48y9rQ3MaUzWX3KVlBa4U7MyX02HdVj0K7C3WaB3ju7FQ=="],
 
     "chalk/ansi-styles": ["ansi-styles@4.3.0", "", { "dependencies": { "color-convert": "^2.0.1" } }, "sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg=="],
@@ -1564,6 +1548,8 @@
     "@graphql-codegen/visitor-plugin-common/@graphql-tools/utils/tslib": ["tslib@2.8.1", "", {}, "sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w=="],
 
     "@modelcontextprotocol/sdk/ajv/json-schema-traverse": ["json-schema-traverse@0.4.1", "", {}, "sha512-xbbCH5dCYU5T8LcEhhuh7HJ88HXuW3qsI3Y0zOZFKfZEHcpWiHU/Jxzk629Brsab/mMiHQti9wMP+845RPe3Vg=="],
+
+    "@statespace/core/@types/bun/bun-types": ["bun-types@1.2.21", "", { "dependencies": { "@types/node": "*" }, "peerDependencies": { "@types/react": "^19" } }, "sha512-sa2Tj77Ijc/NTLS0/Odjq/qngmEPZfbfnOERi0KRUYhT9R8M4VBioWVmMWE5GrYbKMc+5lVybXygLdibHaqVqw=="],
 
     "cli-truncate/string-width/emoji-regex": ["emoji-regex@8.0.0", "", {}, "sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A=="],
 
