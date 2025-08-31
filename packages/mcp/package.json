@@ -15,9 +15,6 @@
     "docker:up": "cd ../../ && docker-compose up mcp-server",
     "docker:down": "cd ../../ && docker-compose down mcp-server"
   },
-  "devDependencies": {
-    "@types/bun": "latest"
-  },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
