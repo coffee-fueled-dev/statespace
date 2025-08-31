@@ -1,1 +1,1 @@
-# **State Space Explorer: Core Package (@statespace/core)**
+# **StateSpace: Core Package (@statespace/core)**

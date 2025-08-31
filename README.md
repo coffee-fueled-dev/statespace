@@ -1,4 +1,4 @@
-# State Space Explorer
+# StateSpace
 
 A configurable framework for generating and analyzing combinatorial state graphs. This project uses **rule-based transitions** to explore systems modeled as elements moving between containers.
 

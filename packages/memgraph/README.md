@@ -1,1 +1,1 @@
-# **State Space Explorer: Memgraph Package (@statespace/memgraph)**
+# **StateSpace: Memgraph Package (@statespace/memgraph)**
