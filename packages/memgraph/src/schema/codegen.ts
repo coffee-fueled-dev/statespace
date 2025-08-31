@@ -1,5 +1,5 @@
 import { generate, type CodegenConfig } from "@graphql-codegen/cli";
-import { type GraphQLSchema, print, printSchema } from "graphql";
+import { type GraphQLSchema, printSchema } from "graphql";
 import path from "path";
 import { fileURLToPath } from "url";
 import { getSchema } from "../server/startup";
