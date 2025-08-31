@@ -4,6 +4,7 @@ import {
   type Effect,
   type StateSpace,
   createConstraintFn,
+  createEffectFn,
 } from "../../..";
 
 export type System = z.infer<typeof SystemSchema>;
@@ -20,21 +21,26 @@ export const ZodDeclaration = {
   transitions: [
     {
       effect: {
-        name: "increment",
+        name: "transform",
         path: "a.b.c",
-        operation: "add",
-        value: 1,
+        operation: "transform",
+        value: createEffectFn((value, _state) => ({
+          name: "transform",
+          value: value + 5,
+          cost: 1,
+          meta: { message: "Transformed value" },
+        })),
       } satisfies Effect<System, "a.b.c">,
       constraints: [
         {
           phase: "before_transition",
           path: "a.b",
-          schema: z.toJSONSchema(SystemSchema.shape.a.shape.b),
+          validation: z.toJSONSchema(SystemSchema.shape.a.shape.b),
         } satisfies Constraint<System, "a.b">,
         {
           phase: "before_transition",
           path: "a.b.c",
-          schema: createConstraintFn((value, _state) => {
+          validation: createConstraintFn((value, _state) => {
             const isValidNumber = typeof value === "number" && !isNaN(value);
             const isInRange = value >= 0 && value <= 100;
             const isEvenNumber = value % 2 === 0;

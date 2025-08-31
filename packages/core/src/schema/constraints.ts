@@ -33,7 +33,7 @@ export type ConstraintFn<T extends object, S extends Path<T>> = (
 export type Constraint<T extends object, S extends Path<T> = Path<T>> = {
   phase: "before_transition" | "after_transition";
   path: S;
-  schema: Schema<Value<T, S>> | ConstraintFn<T, S>;
+  validation: Schema<Value<T, S>> | ConstraintFn<T, S>;
   message?: string;
 };
 
@@ -68,9 +68,9 @@ export function constraintResult<T extends object, S extends Path<T>>({
   }
 }
 
-export function createConstraintFn<T extends object, S extends Path<T>>(
-  fn: (value: Value<T, S>, state: T) => { success: boolean; message?: string }
-): ConstraintFn<T, S> {
+export function createConstraintFn<T extends object, P extends Path<T>>(
+  fn: (value: Value<T, P>, state: T) => { success: boolean; message?: string }
+): ConstraintFn<T, P> {
   return (path, state, phase) => {
     const value = pathValue(path, state);
     const result = fn(value, state);
@@ -89,11 +89,11 @@ export function executableConstraint<T extends object, S extends Path<T>>(
   constraint: Constraint<T, S>
 ): ConstraintFn<T, S> {
   return (path, state, phase) => {
-    if (typeof constraint.schema === "function") {
-      return constraint.schema(path, state, phase);
+    if (typeof constraint.validation === "function") {
+      return constraint.validation(path, state, phase);
     }
     const value = pathValue(path, state);
-    const validator = ajv.compile(constraint.schema);
+    const validator = ajv.compile(constraint.validation);
     const isValid = validator(value);
 
     const errorMessage =

@@ -42,7 +42,7 @@ export const JSONSchemaDeclaration = {
         {
           phase: "before_transition",
           path: "a.b",
-          schema: {
+          validation: {
             type: "object",
             required: [],
             properties: {

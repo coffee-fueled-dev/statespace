@@ -9,49 +9,49 @@ import {
 export type Scalar = number | string | boolean | undefined | null;
 export type Metadata = Record<string, Scalar>;
 
-export type EffectFn<T extends object, S extends Path<T>> = (
-  path: S,
+export type EffectFn<T extends object, P extends Path<T>> = (
+  path: P,
   state: T
 ) => {
   name: string;
-  value: Value<T, S>;
+  value: Value<T, P>;
   cost?: number;
   meta?: Metadata;
 };
 
-export type EffectResult<T extends object, S extends Path<T>> = {
+export type EffectResult<T extends object, P extends Path<T>> = {
   name: string;
-  value: Value<T, S>;
+  value: Value<T, P>;
   cost?: number;
   meta?: Metadata;
 };
 
-type NumericPath<T extends object, S extends Path<T>> = Value<
+type NumericPath<T extends object, P extends Path<T>> = Value<
   T,
-  S
+  P
 > extends number
-  ? S
+  ? P
   : never;
 
-type StringPath<T extends object, S extends Path<T>> = Value<
+type StringPath<T extends object, P extends Path<T>> = Value<
   T,
-  S
+  P
 > extends string
-  ? S
+  ? P
   : never;
 
-export type Effect<T extends object, S extends Path<T> = Path<T>> =
+export type Effect<T extends object, P extends Path<T> = Path<T>> =
   | {
       name: string;
-      path: S;
+      path: P;
       operation: "set";
-      value: Value<T, S> | `$${Path<T>}`;
+      value: Value<T, P> | `$${Path<T>}`;
       meta?: Metadata;
       cost?: number;
     }
   | {
       name: string;
-      path: NumericPath<T, S>;
+      path: NumericPath<T, P>;
       operation: "add" | "subtract" | "multiply" | "divide";
       value: number;
       meta?: Metadata;
@@ -59,7 +59,7 @@ export type Effect<T extends object, S extends Path<T> = Path<T>> =
     }
   | {
       name: string;
-      path: StringPath<T, S>;
+      path: StringPath<T, P>;
       operation: "concat" | "prepend" | "append" | "cut";
       value: string;
       meta?: Metadata;
@@ -67,12 +67,22 @@ export type Effect<T extends object, S extends Path<T> = Path<T>> =
     }
   | {
       name: string;
-      path: S;
+      path: P;
       operation: "transform";
-      value: EffectFn<T, S>;
+      value: EffectFn<T, P>;
       meta?: Metadata;
       cost?: number;
     };
+
+export function createEffectFn<T extends object, P extends Path<T>>(
+  fn: (value: Value<T, P>, state: T) => EffectResult<T, P>
+): EffectFn<T, P> {
+  return (path, state) => {
+    const value = pathValue(path, state);
+    const result = fn(value, state);
+    return result;
+  };
+}
 
 function validateMutation<T extends object, S extends Path<T>>(
   newValue: Value<T, S>,
