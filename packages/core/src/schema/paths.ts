@@ -1,42 +1,42 @@
-export type Symbol<T> = T extends object
+export type Path<T> = T extends object
   ? {
       [K in keyof T]-?: K extends string | number
         ? T[K] extends object
-          ? `${K}` | `${K}.${Symbol<T[K]>}`
+          ? `${K}` | `${K}.${Path<T[K]>}`
           : `${K}`
         : never;
     }[keyof T]
   : never;
 
-const symbols = <T extends object>(object: T, prefix = ""): string[] => {
-  const paths: string[] = [];
+const paths = <T extends object>(object: T, prefix = ""): string[] => {
+  const _paths: string[] = [];
 
   for (const key in object) {
     if (object.hasOwnProperty(key)) {
       const currentPath = prefix ? `${prefix}.${key}` : key;
-      paths.push(currentPath);
+      _paths.push(currentPath);
 
       const value = object[key];
       if (value && typeof value === "object" && !Array.isArray(value)) {
-        paths.push(...symbols(value as object, currentPath));
+        _paths.push(...paths(value as object, currentPath));
       }
     }
   }
 
-  return paths;
+  return _paths;
 };
 
-// Type-level check if a string literal is a valid symbol
-export type IsSymbol<S extends string, T> = S extends Symbol<T> ? true : false;
+// Type-level check if a string literal is a valid path
+export type IsPath<S extends string, T> = S extends Path<T> ? true : false;
 
-export const isSymbol = <T extends object, S extends string>(
-  symbol: S,
+export const isPath = <T extends object, S extends string>(
+  path: S,
   object: T
-): S extends Symbol<T> ? true : S extends "." ? false : false => {
-  if (symbol === ".") {
+): S extends Path<T> ? true : S extends "." ? false : false => {
+  if (path === ".") {
     return false as any;
   }
-  return symbols(object).includes(symbol) as any;
+  return paths(object).includes(path) as any;
 };
 
 export type Value<T, P extends string> = P extends `${infer K}.${infer R}`
@@ -46,12 +46,12 @@ export type Value<T, P extends string> = P extends `${infer K}.${infer R}`
   : P extends keyof T
   ? T[P]
   : never;
-export const symbolValue = <T extends object, S extends Symbol<T>>(
-  symbol: S,
+export const pathValue = <T extends object, S extends Path<T>>(
+  path: S,
   object: T
 ): Value<T, S> => {
-  const path = symbol as string;
-  const keys = path.split(".");
+  const _path = path as string;
+  const keys = _path.split(".");
 
   let current: any = object;
   for (const key of keys) {
@@ -65,17 +65,17 @@ export const symbolValue = <T extends object, S extends Symbol<T>>(
   return current as Value<T, S>;
 };
 
-export const operationMaintainsType = <T extends object, S extends Symbol<T>>(
+export const operationMaintainsType = <T extends object, S extends Path<T>>(
   value: unknown,
-  symbol: S,
+  path: S,
   object: T
 ): value is Value<T, S> => {
-  if (!isSymbol(symbol, object)) {
+  if (!isPath(path, object)) {
     return false;
   }
 
-  // Get the current value at the symbol path to infer the expected type
-  const currentValue = symbolValue(symbol, object);
+  // Get the current value at the path path to infer the expected type
+  const currentValue = pathValue(path, object);
 
   // Basic runtime type checking
   if (typeof currentValue === "number") {

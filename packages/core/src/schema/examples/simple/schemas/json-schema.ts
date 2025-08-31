@@ -34,15 +34,15 @@ export const JSONSchemaDeclaration = {
     {
       effect: {
         name: "increment",
-        symbol: "a.b.c",
+        path: "a.b.c",
         operation: "add",
         value: 1,
       },
       constraints: [
         {
           phase: "before_transition",
-          symbol: "a.b",
-          shape: {
+          path: "a.b",
+          schema: {
             type: "object",
             required: [],
             properties: {

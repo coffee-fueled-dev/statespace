@@ -1,6 +1,6 @@
 import { executableConstraint, type Constraint } from "./constraints";
-import { executableEffect, type Effect } from "./effects";
-import type { Symbol } from "./symbols";
+import { executableEffect, type Effect, type Metadata } from "./effects";
+import type { Path } from "./paths";
 
 export interface Transition<T extends object> {
   effect: Effect<T, any>;
@@ -10,12 +10,18 @@ export interface Transition<T extends object> {
 export type TransitionSuccess<T extends object> = {
   success: true;
   state: T;
+  effect: Effect<T, any>;
 };
 export type TransitionFailure<T extends object> = {
   success: false;
   state: T;
   error: string;
+  effect: Effect<T, any>;
 };
+
+export type TransitionResult<T extends object> =
+  | TransitionSuccess<T>
+  | TransitionFailure<T>;
 
 export function transition<T extends object>(
   transition: Transition<T>
@@ -33,12 +39,12 @@ export function executableTransition<T extends object>(
 ): TransitionFn<T> {
   return async (state) => {
     const { effect, constraints } = transition;
-    const { symbol } = effect;
+    const { path } = effect;
 
     const isValidBefore = validateConstraints(
       "before_transition",
       constraints,
-      symbol,
+      path,
       state
     );
 
@@ -47,20 +53,35 @@ export function executableTransition<T extends object>(
         success: false,
         state,
         error: "Constraints failed before transition",
+        effect: effect,
       };
     }
 
-    // Execute the effect to get the new value for the symbol
-    const nextValue = executableEffect(effect)(symbol, state);
+    // Execute the effect to get the new value for the path
+    const nextValue = executableEffect(effect)(path, state);
 
+    let nextState = state;
     // Apply the new value to create a new state
-    const nextState = applySymbolChange(state, symbol, nextValue);
+    try {
+      nextState = applyEffect(state, path, nextValue);
+    } catch (error) {
+      let errorMessage = "Failed to apply effect";
+      if (error instanceof Error) {
+        errorMessage += ":\n" + error.message;
+      }
+      return {
+        success: false,
+        state: nextState,
+        error: errorMessage,
+        effect: effect,
+      };
+    }
 
     // Check after constraints
     const isValidAfter = validateConstraints(
       "after_transition",
       constraints,
-      symbol,
+      path,
       nextState
     );
 
@@ -69,6 +90,7 @@ export function executableTransition<T extends object>(
         success: false,
         state: nextState,
         error: "Constraints failed after transition",
+        effect: effect,
       };
     }
 
@@ -77,34 +99,43 @@ export function executableTransition<T extends object>(
         success: false,
         state,
         error: "State is not valid",
+        effect: effect,
       };
     }
 
-    return { success: true, state: nextState };
+    return {
+      success: true,
+      state: nextState,
+      effect: effect,
+    };
   };
 }
 
 function validateConstraints<T extends object>(
   phase: "before_transition" | "after_transition",
   constraints: Constraint<T, any>[],
-  symbol: Symbol<T>,
+  path: Path<T>,
   state: T
 ): boolean {
   const constrainstOfPhase = constraints.filter(
     (constraint) => constraint.phase === phase
   );
-  return constrainstOfPhase.every((constraint) =>
-    executableConstraint(constraint)(symbol, state)
-  );
+  try {
+    return constrainstOfPhase.every((constraint) =>
+      executableConstraint(constraint)(path, state, phase)
+    );
+  } catch (error) {
+    return false;
+  }
 }
 
-// Helper function to apply a symbol value change to a state object
-function applySymbolChange<T extends object>(
+// Helper function to apply an effect to a state object
+function applyEffect<T extends object>(
   state: T,
-  symbol: string,
+  path: Path<T>,
   nextValue: any
 ): T {
-  const keys = symbol.split(".");
+  const keys = path.split(".");
   const newState = JSON.parse(JSON.stringify(state)); // Deep clone
 
   let current: any = newState;

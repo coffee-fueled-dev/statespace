@@ -1,5 +1,5 @@
 import { type Effect } from "../../effects";
-import { symbolValue } from "../../symbols";
+import { pathValue } from "../../paths";
 import { type System } from "./schemas/zod";
 
 // Different ways to create effects:
@@ -7,7 +7,7 @@ import { type System } from "./schemas/zod";
 // 1. Simple increment effect
 const incrementEffect = {
   name: "increment",
-  symbol: "a.b.c",
+  path: "a.b.c",
   operation: "add",
   value: 1,
 } satisfies Effect<System, "a.b.c">;
@@ -15,10 +15,10 @@ const incrementEffect = {
 // 2. Custom transform effect
 const transformEffect = {
   name: "transform",
-  symbol: "a.b.c",
+  path: "a.b.c",
   operation: "transform",
-  value: (symbol, state) => {
-    const currentValue = symbolValue(symbol, state);
+  value: (path, state) => {
+    const currentValue = pathValue(path, state);
     return {
       name: "transform",
       value: currentValue + 5,
@@ -31,7 +31,7 @@ const transformEffect = {
 // 3. Set value effect
 const setValue = {
   name: "set",
-  symbol: "a.b.c",
+  path: "a.b.c",
   operation: "set",
   value: 42,
 } satisfies Effect<System, "a.b.c">;
@@ -39,7 +39,7 @@ const setValue = {
 // 4. Decrement effect
 const decrementEffect = {
   name: "decrement",
-  symbol: "a.b.c",
+  path: "a.b.c",
   operation: "subtract",
   value: 1,
 } satisfies Effect<System, "a.b.c">;

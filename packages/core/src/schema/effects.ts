@@ -1,15 +1,16 @@
 import {
+  isPath,
   operationMaintainsType,
-  symbolValue,
-  type Symbol,
+  pathValue,
+  type Path,
   type Value,
-} from "./symbols";
+} from "./paths";
 
 export type Scalar = number | string | boolean | undefined | null;
 export type Metadata = Record<string, Scalar>;
 
-export type EffectFn<T extends object, S extends Symbol<T>> = (
-  symbol: S,
+export type EffectFn<T extends object, S extends Path<T>> = (
+  path: S,
   state: T
 ) => {
   name: string;
@@ -18,39 +19,39 @@ export type EffectFn<T extends object, S extends Symbol<T>> = (
   meta?: Metadata;
 };
 
-export type EffectResult<T extends object, S extends Symbol<T>> = {
+export type EffectResult<T extends object, S extends Path<T>> = {
   name: string;
   value: Value<T, S>;
   cost?: number;
   meta?: Metadata;
 };
 
-type NumericSymbol<T extends object, S extends Symbol<T>> = Value<
+type NumericPath<T extends object, S extends Path<T>> = Value<
   T,
   S
 > extends number
   ? S
   : never;
 
-type StringSymbol<T extends object, S extends Symbol<T>> = Value<
+type StringPath<T extends object, S extends Path<T>> = Value<
   T,
   S
 > extends string
   ? S
   : never;
 
-export type Effect<T extends object, S extends Symbol<T> = Symbol<T>> =
+export type Effect<T extends object, S extends Path<T> = Path<T>> =
   | {
       name: string;
-      symbol: S;
-      operation: "set" | "unset";
-      value: Value<T, S>;
+      path: S;
+      operation: "set";
+      value: Value<T, S> | `$${Path<T>}`;
       meta?: Metadata;
       cost?: number;
     }
   | {
       name: string;
-      symbol: NumericSymbol<T, S>;
+      path: NumericPath<T, S>;
       operation: "add" | "subtract" | "multiply" | "divide";
       value: number;
       meta?: Metadata;
@@ -58,42 +59,42 @@ export type Effect<T extends object, S extends Symbol<T> = Symbol<T>> =
     }
   | {
       name: string;
-      symbol: StringSymbol<T, S>;
-      operation: "concat" | "prepend" | "append" | "replace";
+      path: StringPath<T, S>;
+      operation: "concat" | "prepend" | "append" | "cut";
       value: string;
       meta?: Metadata;
       cost?: number;
     }
   | {
       name: string;
-      symbol: S;
+      path: S;
       operation: "transform";
       value: EffectFn<T, S>;
       meta?: Metadata;
       cost?: number;
     };
 
-function validateMutation<T extends object, S extends Symbol<T>>(
+function validateMutation<T extends object, S extends Path<T>>(
   newValue: Value<T, S>,
-  symbol: S,
+  path: S,
   state: T
 ): Value<T, S> {
-  if (!operationMaintainsType(newValue, symbol, state)) {
-    const currentValue = symbolValue(symbol, state);
+  if (!operationMaintainsType(newValue, path, state)) {
+    const currentValue = pathValue(path, state);
     throw new Error(
-      `Mutation of symbol '${String(
-        symbol
+      `Mutation of path '${String(
+        path
       )}' resulted in incompatible type. Expected ${typeof currentValue}, got ${typeof newValue}`
     );
   }
   return newValue;
 }
 
-export function executableEffect<T extends object, S extends Symbol<T>>(
+export function executableEffect<T extends object, S extends Path<T>>(
   effect: Effect<T, S>
 ): EffectFn<T, S> {
-  return (symbol, state) => {
-    const currentValue = symbolValue(symbol, state);
+  return (path, state) => {
+    const currentValue = pathValue(path, state);
 
     const result: EffectResult<T, S> = {
       name: effect.name,
@@ -104,39 +105,49 @@ export function executableEffect<T extends object, S extends Symbol<T>>(
 
     switch (effect.operation) {
       case "set":
-        result.value = effect.value;
-        break;
-
-      case "unset":
-        result.value = undefined as Value<T, S>;
+        if (typeof effect.value === "string" && effect.value.startsWith("$")) {
+          const referencedPath = effect.value.slice(1) as Path<T>;
+          if (!isPath(referencedPath, state)) {
+            throw new Error(
+              `Referenced path '${String(referencedPath)}' not found in state`
+            );
+          }
+          result.value = validateMutation(
+            pathValue(referencedPath, state) as Value<T, S>,
+            path,
+            state
+          );
+        } else {
+          result.value = effect.value as Value<T, S>;
+        }
         break;
 
       // Numeric operations
       case "add":
         result.value = validateMutation(
           ((currentValue as number) + effect.value) as Value<T, S>,
-          symbol,
+          path,
           state
         );
         break;
       case "subtract":
         result.value = validateMutation(
           ((currentValue as number) - effect.value) as Value<T, S>,
-          symbol,
+          path,
           state
         );
         break;
       case "multiply":
         result.value = validateMutation(
           ((currentValue as number) * effect.value) as Value<T, S>,
-          symbol,
+          path,
           state
         );
         break;
       case "divide":
         result.value = validateMutation(
           ((currentValue as number) / effect.value) as Value<T, S>,
-          symbol,
+          path,
           state
         );
         break;
@@ -144,28 +155,28 @@ export function executableEffect<T extends object, S extends Symbol<T>>(
       case "concat":
         result.value = validateMutation(
           ((currentValue as string) + effect.value) as Value<T, S>,
-          symbol,
+          path,
           state
         );
         break;
       case "append":
         result.value = validateMutation(
           ((currentValue as string) + effect.value) as Value<T, S>,
-          symbol,
+          path,
           state
         );
         break;
       case "prepend":
         result.value = validateMutation(
           (effect.value + (currentValue as string)) as Value<T, S>,
-          symbol,
+          path,
           state
         );
         break;
-      case "replace":
+      case "cut":
         result.value = validateMutation(
           (currentValue as string).replace(effect.value, "") as Value<T, S>,
-          symbol,
+          path,
           state
         );
         break;
@@ -173,8 +184,8 @@ export function executableEffect<T extends object, S extends Symbol<T>>(
       // Custom transformation
       case "transform":
         result.value = validateMutation(
-          effect.value(symbol, state).value,
-          symbol,
+          effect.value(path, state).value,
+          path,
           state
         );
         break;
