@@ -16,17 +16,6 @@ const server = new FastMCP({
 
 registerDefineSystem(server);
 
-server.addResource({
-  uri: "file:///examples.json",
-  name: "Application Logs",
-  mimeType: "text/plain",
-  async load() {
-    return {
-      text: "Hello, world!",
-    };
-  },
-});
-
 server.start({
   transportType: "httpStream",
   httpStream: {
