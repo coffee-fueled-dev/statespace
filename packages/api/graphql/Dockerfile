@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Copy root package files for workspace resolution
 COPY package.json bun.lock ./
-COPY packages/memgraph/package.json ./packages/memgraph/
+COPY packages/api/graphql/package.json ./packages/api/graphql/
 COPY packages/core/package.json ./packages/core/
 
 # Install dependencies
@@ -16,7 +16,7 @@ WORKDIR /app
 
 # Copy source files needed for codegen
 COPY packages/core/src ./packages/core/src
-COPY packages/memgraph/src ./packages/memgraph/src
+COPY packages/api/graphql/src ./packages/api/graphql/src
 
 # Set environment variables for codegen
 ARG NODE_ENV=production
@@ -44,7 +44,7 @@ ENV ENABLE_GRAPHIQL=${ENABLE_GRAPHIQL}
 ENV ENABLE_LANDING_PAGE=${ENABLE_LANDING_PAGE}
 
 # Run codegen
-WORKDIR /app/packages/memgraph
+WORKDIR /app/packages/api/graphql
 RUN bun run codegen
 
 # Production stage
@@ -56,14 +56,14 @@ COPY --from=deps /app/node_modules ./node_modules
 
 # Copy source code and generated files
 COPY packages/core/src ./packages/core/src
-COPY packages/memgraph/src ./packages/memgraph/src
-COPY --from=codegen /app/packages/memgraph/src/client/generated ./packages/memgraph/src/client/generated
+COPY packages/api/graphql/src ./packages/api/graphql/src
+COPY --from=codegen /app/packages/api/graphql/src/client/generated ./packages/api/graphql/src/client/generated
 
 # Copy package.json files
 COPY package.json ./
-COPY packages/memgraph/package.json ./packages/memgraph/
+COPY packages/api/graphql/package.json ./packages/api/graphql/
 
-WORKDIR /app/packages/memgraph
+WORKDIR /app/packages/api/graphql
 
 EXPOSE 4000
 
