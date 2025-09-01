@@ -9,16 +9,16 @@ const getPaths = (ROOT: string) => {
   const pathIn = (target: string) => path.join(ROOT, target);
   return {
     output: {
-      memgraph: {
+      graphql: {
         client: {
-          types: path.join(pathOut("packages/memgraph/src/client"), "types.ts"),
-          operations: pathOut("packages/memgraph/src/client"),
+          types: path.join(pathOut("packages/graphql/src/client"), "types.ts"),
+          operations: pathOut("packages/graphql/src/client"),
         },
       },
     },
     input: {
       operations: path.join(
-        pathIn("packages/memgraph/src/client"),
+        pathIn("packages/graphql/src/client"),
         "**/*.graphql"
       ),
     },
@@ -38,10 +38,10 @@ const getConfig = (
   silent: true,
   errorsOnly: true,
   generates: {
-    [paths.output.memgraph.client.types]: {
+    [paths.output.graphql.client.types]: {
       plugins: ["typescript"],
     },
-    [paths.output.memgraph.client.operations]: {
+    [paths.output.graphql.client.operations]: {
       preset: "near-operation-file",
       plugins: ["typescript-operations", "typed-document-node"],
       presetConfig: {
@@ -64,7 +64,7 @@ const getConfig = (
 if (import.meta.main) {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
-  const ROOT = path.resolve(__dirname, "../../../../");
+  const ROOT = path.resolve(__dirname, "../../../../../");
   const { input, output } = getPaths(ROOT);
 
   getSchema()

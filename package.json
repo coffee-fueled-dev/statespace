@@ -4,15 +4,14 @@
   "private": true,
   "type": "module",
   "workspaces": [
-    "examples/*",
     "packages/*",
-    "packages/studies/*"
-    
+    "packages/studies/*",
+    "packages/api/*"
   ],
   "scripts": {
     "context": "bun run scripts/context.ts",
-    "memgraph:codegen": "bun run --env-file=.env --filter @statespace/memgraph codegen",
-    "memgraph:start": "bun run --env-file=.env --filter @statespace/memgraph start",
+    "graphql:codegen": "bun run --env-file=.env --filter @statespace/graphql codegen",
+    "graphql:start": "bun run --env-file=.env --filter @statespace/graphql start",
     "agent:start": "bun run --filter @statespace/agent start",
     "agent:dev": "bun run --filter @statespace/agent dev"
   },
