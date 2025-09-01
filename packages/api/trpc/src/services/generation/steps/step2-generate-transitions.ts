@@ -1,7 +1,7 @@
 import { OpenAI } from "@langchain/openai";
 import { StructuredOutputParser } from "langchain/output_parsers";
 import { PromptTemplate } from "@langchain/core/prompts";
-import { TransitionSchema } from "../../schemas/rough/transition.zod";
+import { RoughTransitionSchema } from "../../storage/domain/RoughTransition.entity";
 import { z } from "zod";
 import { EntitiesResult } from "./step1-generate-entities";
 
@@ -10,9 +10,10 @@ const llm = new OpenAI({
   temperature: 0.7,
 });
 
-export interface TransitionsResult {
-  transitions: z.infer<typeof TransitionSchema>[];
-}
+export type TransitionsResult = z.infer<typeof TransitionResultSchema>;
+export const TransitionResultSchema = z.object({
+  transitions: z.array(RoughTransitionSchema),
+});
 
 export async function generateTransitions(
   entitiesResult: EntitiesResult
@@ -21,14 +22,12 @@ export async function generateTransitions(
 
   try {
     const transitionParser = StructuredOutputParser.fromZodSchema(
-      z.object({
-        transitions: z.array(TransitionSchema),
-      })
+      TransitionResultSchema
     );
 
     const transitionPrompt = PromptTemplate.fromTemplate(`
 Based on these entities from a shopping trip system:
-{entities}
+${entitiesResult.entities}
 
 Generate transitions that describe how the system changes. Think about actions like:
 - Adding money to wallet
@@ -41,7 +40,7 @@ For each transition:
 - Describe the effect (how properties change)
 - Describe the constraints (what must be true for this transition to happen)
 
-{format_instructions}
+${transitionParser.getFormatInstructions()}
 `);
 
     const transitionChain = transitionPrompt.pipe(llm).pipe(transitionParser);
@@ -50,9 +49,6 @@ For each transition:
       entities: JSON.stringify(entitiesResult.entities, null, 2),
       format_instructions: transitionParser.getFormatInstructions(),
     });
-
-    console.log("Generated Transitions:");
-    console.log(JSON.stringify(transitionsResult, null, 2));
 
     return transitionsResult;
   } catch (error) {

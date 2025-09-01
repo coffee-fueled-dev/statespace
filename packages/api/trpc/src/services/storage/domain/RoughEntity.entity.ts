@@ -17,7 +17,8 @@ const PropertySchema = z
       "It may be modified by transitions and used to constrain when a transition is or isn't allowed."
   );
 
-export const EntitySchema = z
+export type RoughEntity = z.infer<typeof RoughEntitySchema>;
+export const RoughEntitySchema = z
   .object({
     name: z.string().describe("The name of the entity."),
     description: z

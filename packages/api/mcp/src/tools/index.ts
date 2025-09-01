@@ -1,1 +1,1 @@
-export * from "./generate-statespace/tool";
+export { generateStatespaceViaTRPCTool } from "./generate-statespace/tool";

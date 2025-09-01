@@ -1,7 +1,7 @@
 import { OpenAI } from "@langchain/openai";
 import { StructuredOutputParser } from "langchain/output_parsers";
 import { PromptTemplate } from "@langchain/core/prompts";
-import { EntitySchema } from "../../schemas/rough/entity.zod";
+import { RoughEntitySchema } from "../../storage/domain/RoughEntity.entity";
 import { z } from "zod";
 
 const llm = new OpenAI({
@@ -9,9 +9,10 @@ const llm = new OpenAI({
   temperature: 0.7,
 });
 
-export interface EntitiesResult {
-  entities: z.infer<typeof EntitySchema>[];
-}
+export type EntitiesResult = z.infer<typeof EntitiesResultSchema>;
+export const EntitiesResultSchema = z.object({
+  entities: z.array(RoughEntitySchema),
+});
 
 export async function generateEntities(
   prompt: string
@@ -19,11 +20,8 @@ export async function generateEntities(
   console.log("=== STEP 1: Generating Initial Entities ===");
 
   try {
-    const entityParser = StructuredOutputParser.fromZodSchema(
-      z.object({
-        entities: z.array(EntitySchema),
-      })
-    );
+    const entityParser =
+      StructuredOutputParser.fromZodSchema(EntitiesResultSchema);
 
     const entityPrompt = PromptTemplate.fromTemplate(prompt);
 
@@ -32,9 +30,6 @@ export async function generateEntities(
     const entitiesResult = await entityChain.invoke({
       format_instructions: entityParser.getFormatInstructions(),
     });
-
-    console.log("Generated Entities:");
-    console.log(JSON.stringify(entitiesResult, null, 2));
 
     return entitiesResult;
   } catch (error) {

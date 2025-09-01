@@ -7,16 +7,11 @@ const pathDescription =
   "This path will be the target of the effect operation. " +
   "The value returned by the effect must match the type for the path specified by the schema.";
 
-const ScalarSchema = z.union([
-  z.number(),
-  z.string(),
-  z.boolean(),
-  z.undefined(),
-  z.null(),
-]);
-
 const MetadataSchema = z
-  .record(z.string(), ScalarSchema)
+  .record(
+    z.string(),
+    z.union([z.number(), z.string(), z.boolean(), z.undefined(), z.null()])
+  )
   .describe(
     "Metadata associated with the effect, containing scalar values only."
   );
@@ -26,7 +21,8 @@ const CostSchema = z
   .optional()
   .describe("The cost of the effect, used for path finding and optimization.");
 
-export const EffectSchema = z
+export type RefinedEffect = z.infer<typeof RefinedEffectSchema>;
+export const RefinedEffectSchema = z
   .discriminatedUnion("operation", [
     z.object({
       name: z.string().describe("The name of the effect."),
@@ -80,5 +76,3 @@ export const EffectSchema = z
     }),
   ])
   .describe("An effect that modifies the system.");
-
-export type SerializableEffect = z.infer<typeof EffectSchema>;

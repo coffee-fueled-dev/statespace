@@ -1,6 +1,7 @@
 import z from "zod";
 
-export const TransitionSchema = z.object({
+export type RoughTransition = z.infer<typeof RoughTransitionSchema>;
+export const RoughTransitionSchema = z.object({
   effect: z
     .string()
     .describe(

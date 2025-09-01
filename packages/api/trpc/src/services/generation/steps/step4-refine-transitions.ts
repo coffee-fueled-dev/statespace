@@ -1,25 +1,22 @@
 import { OpenAI } from "@langchain/openai";
 import { StructuredOutputParser } from "langchain/output_parsers";
 import { PromptTemplate } from "@langchain/core/prompts";
-import { EffectSchema } from "../../schemas/refined/effect.zod";
-import { ConstraintSchema } from "../../schemas/refined/constraint.zod";
 import { z } from "zod";
 import { TransitionsResult } from "./step2-generate-transitions";
 import { JsonSchemaResult } from "./step3-refine-schema";
+import { RefinedTransitionSchema } from "../../storage/domain/RefinedTransition.entity";
 
 const llm = new OpenAI({
   modelName: "gpt-4o",
   temperature: 0.1,
 });
 
-export interface RefinedTransition {
-  effect: z.infer<typeof EffectSchema>;
-  constraint: z.infer<typeof ConstraintSchema>;
-}
-
-export interface RefinedTransitionsResult {
-  transitions: RefinedTransition[];
-}
+export type RefinedTransitionsResult = z.infer<
+  typeof RefinedTransitionsResultSchema
+>;
+export const RefinedTransitionsResultSchema = z.object({
+  transitions: z.array(RefinedTransitionSchema),
+});
 
 export async function refineTransitions(
   transitionsResult: TransitionsResult,
@@ -28,27 +25,18 @@ export async function refineTransitions(
 ): Promise<RefinedTransitionsResult> {
   console.log("\n=== STEP 4: Refining Transitions to Structured Format ===");
 
-  const refinedTransitionSchema = z.object({
-    transitions: z.array(
-      z.object({
-        effect: EffectSchema,
-        constraint: ConstraintSchema,
-      })
-    ),
-  });
-
   const refinedTransitionParser = StructuredOutputParser.fromZodSchema(
-    refinedTransitionSchema
+    RefinedTransitionsResultSchema
   );
 
   const basePrompt = `
 Convert these rough transition descriptions into structured Effects and Constraints format.
 
 System JSON Schema:
-{jsonSchema}
+${jsonSchemaResult.jsonSchema}
 
 Rough Transitions:
-{transitions}
+${transitionsResult.transitions}
 
 For each transition, create:
 
@@ -67,7 +55,7 @@ For each transition, create:
 
 Make sure paths match the JSON Schema structure you created.
 
-{format_instructions}
+${refinedTransitionParser.getFormatInstructions()}
 `;
 
   let attempt = 1;
@@ -105,9 +93,6 @@ Please fix the validation issues and ensure the output matches the required sche
         transitions: JSON.stringify(transitionsResult.transitions, null, 2),
         format_instructions: refinedTransitionParser.getFormatInstructions(),
       });
-
-      console.log("Refined Transitions:");
-      console.log(JSON.stringify(refinedTransitionsResult, null, 2));
 
       return refinedTransitionsResult;
     } catch (error) {

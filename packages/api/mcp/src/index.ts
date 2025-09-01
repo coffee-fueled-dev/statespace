@@ -1,7 +1,7 @@
 import { FastMCP } from "fastmcp";
-import { registerDefineSystem } from "./tools";
 import { version } from "../package.json";
 import { semVer } from "./libs";
+import { generateStatespaceViaTRPCTool } from "./tools";
 
 const server = new FastMCP({
   name: "Statespace",
@@ -14,7 +14,8 @@ const server = new FastMCP({
   },
 });
 
-registerDefineSystem(server);
+// Register tools
+server.addTool(generateStatespaceViaTRPCTool);
 
 server.start({
   transportType: "httpStream",

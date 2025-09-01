@@ -1,27 +1,21 @@
 import { JsonSchemaResult } from "./step3-refine-schema";
 import { RefinedTransitionsResult } from "./step4-refine-transitions";
-
-export interface StateSpace {
-  shape: any;
-  transitions: any[];
-}
+import {
+  RefinedStateSpace,
+  RefinedStateSpaceSchema,
+} from "../../storage/domain/RefinedStateSpace.entity";
 
 export async function assembleStateSpace(
   jsonSchemaResult: JsonSchemaResult,
   refinedTransitionsResult: RefinedTransitionsResult
-): Promise<StateSpace> {
+): Promise<RefinedStateSpace> {
   console.log("\n=== STEP 5: Final StateSpace Object ===");
 
   try {
-    const finalStateSpace: StateSpace = {
-      shape: JSON.parse(jsonSchemaResult.jsonSchema),
+    return RefinedStateSpaceSchema.parse({
+      shape: jsonSchemaResult.jsonSchema,
       transitions: refinedTransitionsResult.transitions,
-    };
-
-    console.log("Complete StateSpace:");
-    console.log(JSON.stringify(finalStateSpace, null, 2));
-
-    return finalStateSpace;
+    });
   } catch (error) {
     console.error("Error in step 5 - assembling statespace:", error);
     throw new Error(

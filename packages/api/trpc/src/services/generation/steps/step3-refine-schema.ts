@@ -1,6 +1,10 @@
 import { OpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { EntitiesResult } from "./step1-generate-entities";
+import {
+  JSONSchema,
+  JSONSchemaMetaSchema,
+} from "../../storage/domain/JSONSchema.entity";
 
 const llm = new OpenAI({
   modelName: "gpt-4o",
@@ -8,7 +12,7 @@ const llm = new OpenAI({
 });
 
 export interface JsonSchemaResult {
-  jsonSchema: string;
+  jsonSchema: JSONSchema;
 }
 
 export async function refineEntitiesSchema(
@@ -21,7 +25,7 @@ export async function refineEntitiesSchema(
 Convert these rough entity definitions into a single, comprehensive JSON Schema that represents the complete system state.
 
 Entities:
-{entities}
+${entitiesResult.entities}
 
 Create a JSON Schema object that:
 1. Has a "type": "object" at the root
@@ -49,7 +53,10 @@ ${basePrompt}
 IMPORTANT: The previous attempt failed with this error:
 ${lastError}
 
-Please fix this issue and ensure the output is valid JSON that can be parsed.
+Please fix this issue and ensure the output is:
+1. Valid JSON that can be parsed
+2. A valid JSON Schema according to the JSON Schema specification
+3. Uses only the supported JSON Schema features (object, array, string, number, integer, boolean, null types and composition with anyOf/oneOf/allOf)
 `;
       }
 
@@ -60,14 +67,16 @@ Please fix this issue and ensure the output is valid JSON that can be parsed.
         entities: JSON.stringify(entitiesResult.entities, null, 2),
       });
 
-      // Validate that the result can be parsed as JSON
+      // Validate that the result can be parsed as JSON and matches JSONSchema
       try {
-        JSON.parse(jsonSchemaResult);
-        console.log("JSON Schema for System:");
-        console.log(jsonSchemaResult);
-        return { jsonSchema: jsonSchemaResult };
+        const parsedSchema = JSON.parse(jsonSchemaResult);
+
+        // Validate against our JSONSchema meta schema
+        const validatedSchema = JSONSchemaMetaSchema.parse(parsedSchema);
+
+        return { jsonSchema: validatedSchema };
       } catch (parseError) {
-        lastError = `JSON parsing failed: ${
+        lastError = `JSON parsing or schema validation failed: ${
           parseError instanceof Error ? parseError.message : String(parseError)
         }. The output was: ${jsonSchemaResult.substring(0, 200)}...`;
         console.warn(
