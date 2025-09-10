@@ -1,5 +1,5 @@
 {
-  "name": "@statespace/core",
+  "name": "@statespace/explorer",
   "module": "index.ts",
   "type": "module",
   "version": "0.2.0-beta.1",

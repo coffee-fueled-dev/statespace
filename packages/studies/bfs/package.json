@@ -1,5 +1,5 @@
 {
-  "name": "@statespace/core",
+  "name": "@statespace/bfs",
   "module": "index.ts",
   "type": "module",
   "version": "0.2.0-beta.1",
@@ -11,9 +11,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "ajv": "^8.17.1",
-    "immer": "^10.1.3",
-    "queue": "^7.0.0",
-    "zlib": "^1.0.5"
+    "@datastructures-js/priority-queue": "^6.3.4",
+    "@statespace/core": "workspace:*"
   }
 }
