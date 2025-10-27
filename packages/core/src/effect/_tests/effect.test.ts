@@ -13,6 +13,11 @@ const testState = {
     e: "world",
   },
   f: 20,
+  g: [100, 200, 300],
+  h: [
+    { id: 1, name: "first" },
+    { id: 2, name: "second" },
+  ],
 };
 
 describe("Effect libs", () => {
@@ -27,6 +32,20 @@ describe("Effect libs", () => {
       const newState = mergeValue(testState, "c.d", 15);
       expect(newState.c.d).toBe(15);
       expect(newState.c).not.toBe(testState.c);
+    });
+
+    test("should update a value at an array index", () => {
+      const newState = mergeValue(testState, "g[1]", 999);
+      expect(newState.g[1]).toBe(999);
+      expect(newState.g).toEqual([100, 999, 300]);
+      expect(newState.g).not.toBe(testState.g);
+    });
+
+    test("should update a nested value in an array element", () => {
+      const newState = mergeValue(testState, "h[0].name", "updated");
+      expect(newState.h[0].name).toBe("updated");
+      expect(newState.h[0]).toEqual({ id: 1, name: "updated" });
+      expect(newState.h).not.toBe(testState.h);
     });
   });
 
@@ -67,6 +86,26 @@ describe("EffectRepository", () => {
       const value = EffectRepository.resolveValue(effect, testState);
       expect(value).toBe(5);
     });
+
+    test("should resolve an array indexed path reference", () => {
+      const effect = {
+        path: "a",
+        operation: "set",
+        value: "$g[1]",
+      } satisfies Effect<TestState>;
+      const value = EffectRepository.resolveValue(effect, testState);
+      expect(value).toBe(200);
+    });
+
+    test("should resolve a nested array path reference", () => {
+      const effect = {
+        path: "a",
+        operation: "set",
+        value: "$h[0].id",
+      } satisfies Effect<TestState>;
+      const value = EffectRepository.resolveValue(effect, testState);
+      expect(value).toBe(1);
+    });
   });
 
   describe("makeExecutable", () => {
@@ -75,9 +114,8 @@ describe("EffectRepository", () => {
         path: "a",
         operation: "set",
         value: 100,
-      } satisfies Effect<TestState>;
-      const executable =
-        EffectRepository.makeExecutable<typeof testState>(effect);
+      };
+      const executable = EffectRepository.makeExecutable(effect);
       const result = executable("a", testState);
       expect(result.success).toBe(true);
       if (result.success) {
@@ -91,8 +129,7 @@ describe("EffectRepository", () => {
         operation: "add",
         value: 5,
       } satisfies Effect<TestState>;
-      const executable =
-        EffectRepository.makeExecutable<typeof testState>(effect);
+      const executable = EffectRepository.makeExecutable(effect);
       const result = executable("a", testState);
       expect(result.success).toBe(true);
       if (result.success) {
@@ -106,8 +143,7 @@ describe("EffectRepository", () => {
         operation: "subtract",
         value: 5,
       } satisfies Effect<TestState>;
-      const executable =
-        EffectRepository.makeExecutable<typeof testState>(effect);
+      const executable = EffectRepository.makeExecutable(effect);
       const result = executable("a", testState);
       expect(result.success).toBe(true);
       if (result.success) {
@@ -121,8 +157,7 @@ describe("EffectRepository", () => {
         operation: "multiply",
         value: 2,
       } satisfies Effect<TestState>;
-      const executable =
-        EffectRepository.makeExecutable<typeof testState>(effect);
+      const executable = EffectRepository.makeExecutable(effect);
       const result = executable("a", testState);
       expect(result.success).toBe(true);
       if (result.success) {
@@ -136,8 +171,7 @@ describe("EffectRepository", () => {
         operation: "divide",
         value: 2,
       } satisfies Effect<TestState>;
-      const executable =
-        EffectRepository.makeExecutable<typeof testState>(effect);
+      const executable = EffectRepository.makeExecutable(effect);
       const result = executable("a", testState);
       expect(result.success).toBe(true);
       if (result.success) {
@@ -151,8 +185,7 @@ describe("EffectRepository", () => {
         operation: "append",
         value: " world",
       } satisfies Effect<TestState>;
-      const executable =
-        EffectRepository.makeExecutable<typeof testState>(effect);
+      const executable = EffectRepository.makeExecutable(effect);
       const result = executable("b", testState);
       expect(result.success).toBe(true);
       if (result.success) {
@@ -166,8 +199,7 @@ describe("EffectRepository", () => {
         operation: "prepend",
         value: "world ",
       } satisfies Effect<TestState>;
-      const executable =
-        EffectRepository.makeExecutable<typeof testState>(effect);
+      const executable = EffectRepository.makeExecutable(effect);
       const result = executable("b", testState);
       expect(result.success).toBe(true);
       if (result.success) {
@@ -208,14 +240,57 @@ describe("EffectRepository", () => {
       }
     });
 
+    test("set operation should work with array indexing", () => {
+      const effect = {
+        path: "g[1]",
+        operation: "set",
+        value: 999,
+      };
+      const executable = EffectRepository.makeExecutable(effect);
+      const result = executable("g[1]", testState);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.state.g[1]).toBe(999);
+        expect(result.state.g).toEqual([100, 999, 300]);
+      }
+    });
+
+    test("add operation should work with array indexing", () => {
+      const effect: Effect<TestState> = {
+        path: "g[0]",
+        operation: "add",
+        value: 50,
+      };
+      const executable = EffectRepository.makeExecutable(effect);
+      const result = executable("g[0]", testState);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.state.g[0]).toBe(150);
+      }
+    });
+
+    test("set operation should work with nested array paths", () => {
+      const effect = {
+        path: "h[0].name",
+        operation: "set",
+        value: "updated",
+      } satisfies Effect<TestState>;
+      const executable = EffectRepository.makeExecutable(effect);
+      const result = executable("h[0].name", testState);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.state.h[0].name).toBe("updated");
+        expect(result.state.h[0].id).toBe(1); // should preserve other properties
+      }
+    });
+
     test("should throw on invalid operation", () => {
       const effect = {
         path: "a",
         operation: "invalid_op" as never,
         value: 1,
       } satisfies Effect<TestState>;
-      const executable =
-        EffectRepository.makeExecutable<typeof testState>(effect);
+      const executable = EffectRepository.makeExecutable(effect);
       expect(() => executable("a", testState)).toThrow(
         "Invalid effect operation: invalid_op"
       );

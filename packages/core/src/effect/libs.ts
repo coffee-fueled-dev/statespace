@@ -5,30 +5,43 @@ import type { Path, Value } from "../path/domain";
 export const mergeValue = <T extends object, P extends Path<T>>(
   state: T,
   path: P,
-  nextValue: Value<T, P>,
+  nextValue: Value<T, P>
 ): T => {
   return produce(state, (draft) => {
-    const keys = path.split(".");
+    const segments = PathRepository.parsePathSegments(path);
     let current: any = draft;
 
-    for (let i = 0; i < keys.length - 1; i++) {
-      current = current[keys[i]];
+    // Navigate to the parent of the target
+    for (let i = 0; i < segments.length - 1; i++) {
+      const segment = segments[i];
+      if (segment.type === "property") {
+        current = current[segment.key];
+      } else if (segment.type === "index") {
+        current = current[segment.index];
+      }
     }
-    current[keys[keys.length - 1]] = nextValue;
+
+    // Set the final value
+    const lastSegment = segments[segments.length - 1];
+    if (lastSegment.type === "property") {
+      current[lastSegment.key] = nextValue;
+    } else if (lastSegment.type === "index") {
+      current[lastSegment.index] = nextValue;
+    }
   });
 };
 
 export const validateMutation = <T extends object, P extends Path<T>>(
   path: P,
   state: T,
-  nextValue: Value<T, P>,
+  nextValue: Value<T, P>
 ): Value<T, P> => {
   if (!operationMaintainsType(nextValue, path, state)) {
     const currentValue = PathRepository.valueFromPath(path, state);
     throw new Error(
       `Mutation of path '${String(
-        path,
-      )}' resulted in incompatible type. Expected ${typeof currentValue}, got ${typeof nextValue}`,
+        path
+      )}' resulted in incompatible type. Expected ${typeof currentValue}, got ${typeof nextValue}`
     );
   }
   return nextValue;
@@ -37,7 +50,7 @@ export const validateMutation = <T extends object, P extends Path<T>>(
 const operationMaintainsType = <T extends object, P extends Path<T>>(
   value: unknown,
   path: P,
-  object: T,
+  object: T
 ): value is Value<T, P> => {
   if (!PathRepository.isPath(path, object)) {
     return false;

@@ -55,24 +55,17 @@ export const EffectRepository: IEffectRepository = {
       const pathRef = effect.value as PathReference<TState, TPath>;
       const path = pathRef.slice(1) as TPath;
 
-      const keys = path.split(".");
-
-      let current: any = state;
-      for (const key of keys) {
-        if (current && typeof current === "object" && key in current) {
-          current = current[key];
-        } else {
-          return undefined as any;
-        }
+      try {
+        return PathRepository.valueFromPath(path, state) as TValue;
+      } catch {
+        return undefined as any;
       }
-
-      return current as TValue;
     } else {
       return effect.value as TValue;
     }
   },
 
-  makeExecutable: (effect) => (path, state) => {
+  makeExecutable: (effect: any) => (path: any, state: any) => {
     type TState = typeof state;
     type TPath = typeof path;
 
@@ -95,7 +88,7 @@ export const EffectRepository: IEffectRepository = {
       };
     }
 
-    const effectValue = EffectRepository.resolveValue(effect, state);
+    const effectValue = EffectRepository.resolveValue(effect as any, state);
     switch (effect.operation) {
       case "set":
         return mergeAndValidate(effectValue);

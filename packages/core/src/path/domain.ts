@@ -2,8 +2,8 @@ export type Path<TState> = TState extends object
   ? {
       [K in keyof TState]-?: K extends string
         ? TState[K] extends object
-          ? TState[K] extends any[]
-            ? K
+          ? TState[K] extends (infer U)[]
+            ? K | `${K}[${number}]` | `${K}[${number}].${Path<U>}`
             : K | `${K}.${Path<TState[K]>}`
           : K
         : never;
@@ -13,7 +13,19 @@ export type Path<TState> = TState extends object
 export type Value<
   TState,
   TPath extends string
-> = TPath extends `${infer K}.${infer R}`
+> = TPath extends `${infer K}[${infer Index}].${infer R}`
+  ? K extends keyof TState
+    ? TState[K] extends (infer U)[]
+      ? Value<U, R>
+      : never
+    : never
+  : TPath extends `${infer K}[${infer Index}]`
+  ? K extends keyof TState
+    ? TState[K] extends (infer U)[]
+      ? U
+      : never
+    : never
+  : TPath extends `${infer K}.${infer R}`
   ? K extends keyof TState
     ? Value<TState[K], R>
     : never
@@ -50,4 +62,10 @@ export interface IPathRepository {
     path: TPath,
     state: TState
   ) => Value<TState, TPath>;
+
+  readonly parsePathSegments: (
+    path: string
+  ) => Array<
+    { type: "property"; key: string } | { type: "index"; index: number }
+  >;
 }

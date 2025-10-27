@@ -75,9 +75,18 @@ export interface IEffectRepository {
     ) => EffectResult<TState>
   ) => EffectFn<TState>;
 
-  readonly makeExecutable: <TState extends object>(
-    effect: Effect<TState>
-  ) => EffectFn<TState>;
+  readonly makeExecutable: <
+    TEffect extends {
+      path: string;
+      operation: string;
+      value: any;
+    }
+  >(
+    effect: TEffect
+  ) => <TState extends object>(
+    path: string,
+    state: TState
+  ) => EffectResult<TState>;
 
   readonly apply: <
     TState extends object,
