@@ -10,6 +10,18 @@
         "@types/bun": "latest",
       },
     },
+    "examples": {
+      "name": "@statespace/examples",
+      "version": "0.2.0-beta.1",
+      "dependencies": {
+        "@statespace/bfs": "workspace:*",
+        "@statespace/core": "workspace:*",
+        "@statespace/explorer": "workspace:*",
+      },
+      "peerDependencies": {
+        "typescript": "^5.0.0",
+      },
+    },
     "packages/core": {
       "name": "@statespace/core",
       "version": "0.2.0-beta.1",
@@ -18,6 +30,39 @@
         "immer": "^10.1.3",
         "queue": "^7.0.0",
         "zlib": "^1.0.5",
+      },
+      "peerDependencies": {
+        "typescript": "^5.0.0",
+      },
+    },
+    "packages/explorer": {
+      "name": "@statespace/explorer",
+      "version": "0.2.0-beta.1",
+      "dependencies": {
+        "@statespace/core": "workspace:*",
+        "queue": "^7.0.0",
+      },
+      "peerDependencies": {
+        "typescript": "^5.0.0",
+      },
+    },
+    "packages/studies/bfs": {
+      "name": "@statespace/bfs",
+      "version": "0.2.0-beta.1",
+      "dependencies": {
+        "@datastructures-js/priority-queue": "^6.3.4",
+        "@statespace/core": "workspace:*",
+        "@statespace/explorer": "workspace:*",
+      },
+      "peerDependencies": {
+        "typescript": "^5.0.0",
+      },
+    },
+    "packages/studies/dfs": {
+      "name": "@statespace/dfs",
+      "version": "0.2.0-beta.1",
+      "dependencies": {
+        "@statespace/core": "workspace:*",
       },
       "peerDependencies": {
         "typescript": "^5.0.0",
@@ -42,7 +87,15 @@
 
     "@isaacs/brace-expansion": ["@isaacs/brace-expansion@5.0.0", "", { "dependencies": { "@isaacs/balanced-match": "^4.0.1" } }, "sha512-ZT55BDLV0yv0RBm2czMiZ+SqCGO7AvmOM3G/w2xhVPH+te0aKgFjmBvGlL1dH+ql2tgGO3MVrbb3jCKyvpgnxA=="],
 
+    "@statespace/bfs": ["@statespace/bfs@workspace:packages/studies/bfs"],
+
     "@statespace/core": ["@statespace/core@workspace:packages/core"],
+
+    "@statespace/dfs": ["@statespace/dfs@workspace:packages/studies/dfs"],
+
+    "@statespace/examples": ["@statespace/examples@workspace:examples"],
+
+    "@statespace/explorer": ["@statespace/explorer@workspace:packages/explorer"],
 
     "@statespace/scripts": ["@statespace/scripts@workspace:tools/scripts"],
 

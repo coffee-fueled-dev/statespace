@@ -18,20 +18,22 @@ export interface IExplorer<T extends object> {
   decode(key: string): Promise<T>;
   study<TResult>(
     study: (config: StudyConfig<T>) => Promise<TResult>,
-    config: Omit<StudyConfig<T>, "explorer">,
+    config: Omit<StudyConfig<T>, "explorer">
   ): Promise<TResult>;
   resetState(): void;
 }
 
 export type StudyResult<T extends object> = {
-  lastTransition: TransitionResult<T>;
+  lastTransition: TransitionResult<T> | null;
   exitReason: string;
 };
 
 export interface StudyConfig<T extends object> {
   explorer: IExplorer<T>;
   initialState: T;
-  exitConditions: ((explorer: IExplorer<T>) => StudyResult<T> | null)[];
+  exitConditions: ((
+    explorer: IExplorer<T>
+  ) => StudyResult<T> | null | Promise<StudyResult<T> | null>)[];
 }
 
 export type MarkovChain = [
@@ -44,8 +46,8 @@ export type MarkovChain = [
       meta?: Metadata;
       cost?: number | null | undefined;
     },
-    number, // number of times this transition has been taken
-  ],
+    number // number of times this transition has been taken
+  ]
 ];
 
 export type MarkovGraph = Map<

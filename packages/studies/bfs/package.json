@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@datastructures-js/priority-queue": "^6.3.4",
-    "@statespace/core": "workspace:*"
+    "@statespace/core": "workspace:*",
+    "@statespace/explorer": "workspace:*"
   }
 }

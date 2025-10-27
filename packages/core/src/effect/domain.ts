@@ -6,23 +6,21 @@ export type Metadata = Record<string, Scalar>;
 export type EffectSuccess<TState extends object> = {
   success: true;
   state: TState;
-  effect: Effect<TState>;
   meta?: Metadata;
 };
 
-export type EffectFailure<TState extends object> = {
-  effect: Effect<TState>;
+export type EffectFailure = {
   success: false;
   error: string;
 };
 
 export type EffectResult<TState extends object> =
   | EffectSuccess<TState>
-  | EffectFailure<TState>;
+  | EffectFailure;
 
 export type EffectFn<TState extends object> = (
   path: Path<TState>,
-  state: TState,
+  state: TState
 ) => EffectResult<TState>;
 
 // A helper type that defines all valid effects for a SINGLE path
@@ -69,26 +67,26 @@ export interface IEffectRepository {
   readonly createImperative: <TState extends object>(
     fn: (
       value: Value<TState, Path<TState>>,
-      state: TState,
-    ) => EffectResult<TState>,
+      state: TState
+    ) => EffectResult<TState>
   ) => EffectFn<TState>;
 
   readonly makeExecutable: <TState extends object>(
-    effect: Effect<TState>,
+    effect: Effect<TState>
   ) => EffectFn<TState>;
 
   readonly apply: <
     TState extends object,
-    TPath extends Path<TState> = Path<TState>,
+    TPath extends Path<TState> = Path<TState>
   >(
     state: TState,
     path: TPath,
     transition: Transition<TState>,
-    validator: (state: TState) => boolean,
+    validator: (state: TState) => boolean
   ) => EffectResult<TState>;
 
   readonly resolveValue: <TState extends object>(
     effect: Effect<TState>,
-    state: TState,
+    state: TState
   ) => Value<TState, Path<TState>>;
 }

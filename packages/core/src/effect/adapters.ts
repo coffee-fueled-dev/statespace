@@ -10,7 +10,7 @@ export const EffectRepository: IEffectRepository = {
     try {
       const result = EffectRepository.makeExecutable(transition.effect)(
         path,
-        state,
+        state
       );
 
       if (!result.success) {
@@ -22,8 +22,7 @@ export const EffectRepository: IEffectRepository = {
         return {
           success: false,
           error: "Malformed state after effect",
-          effect: transition.effect,
-        } satisfies EffectFailure<TState>;
+        } satisfies EffectFailure;
       }
 
       return result;
@@ -35,8 +34,7 @@ export const EffectRepository: IEffectRepository = {
       return {
         success: false,
         error: errorMessage,
-        effect: transition.effect,
-      } satisfies EffectFailure<TState>;
+      } satisfies EffectFailure;
     }
   },
 
@@ -81,19 +79,19 @@ export const EffectRepository: IEffectRepository = {
     const currentValue = PathRepository.valueFromPath(path, state);
 
     function mergeAndValidate<TValue extends unknown>(
-      nextValue: TValue,
+      nextValue: TValue
     ): EffectSuccess<TState> {
       const validatedValue = validateMutation(
         path,
         state,
-        nextValue as Value<TState, TPath>,
+        nextValue as Value<TState, TPath>
       );
       const nextState = mergeValue(state, path, validatedValue);
 
       return {
         success: true,
         state: nextState,
-        effect: effect,
+        // effect: effect,
       };
     }
 
@@ -124,7 +122,7 @@ export const EffectRepository: IEffectRepository = {
 
       case "cut":
         return mergeAndValidate(
-          String(currentValue).replace(String(effectValue), ""),
+          String(currentValue).replace(String(effectValue), "")
         );
 
       // Custom transformation
@@ -139,14 +137,14 @@ export const EffectRepository: IEffectRepository = {
         } else {
           return {
             success: false,
-            effect,
+            // effect,
             error: transformResult.error,
-          } satisfies EffectFailure<TState>;
+          } satisfies EffectFailure;
         }
 
       default:
         throw new Error(
-          `Invalid effect operation: ${(effect as any).operation}`,
+          `Invalid effect operation: ${(effect as any).operation}`
         );
     }
   },

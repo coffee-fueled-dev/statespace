@@ -9,7 +9,7 @@ export interface Transition<TState extends object> {
 }
 
 export type TransitionFn<TState extends object> = (
-  state: TState,
+  state: TState
 ) => TransitionResult<TState>;
 
 export type TransitionSuccess<TState extends object> = {
@@ -34,20 +34,20 @@ export interface ITransitionRepository {
   readonly apply: <TState extends object>(
     state: TState,
     transition: Transition<TState>,
-    validator: (state: TState) => boolean,
+    validator: (state: TState) => boolean
   ) => TransitionResult<TState>;
 
   readonly makeExecutable: <TState extends object>(
     transition: Transition<TState>,
-    validator: (state: TState) => boolean,
+    validator: (state: TState) => boolean
   ) => TransitionFn<TState>;
 
   readonly validateConstraints: <
     TState extends object,
-    TPath extends Path<TState> = Path<TState>,
+    TPath extends Path<TState> = Path<TState>
   >(
     phase: "before_transition" | "after_transition",
     constraints: Constraint<TState, TPath>[],
-    state: TState,
+    state: TState
   ) => boolean;
 }

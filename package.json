@@ -4,11 +4,14 @@
   "private": true,
   "type": "module",
   "workspaces": [
+    "examples",
     "packages/*",
+    "packages/studies/*",
     "tools/*"
   ],
   "scripts": {
-    "context": "bun run --filter @statespace/scripts context"
+    "context": "bun run --filter @statespace/scripts context",
+    "example:tower-of-hanoi": "bun run --filter @statespace/examples tower-of-hanoi"
   },
   "devDependencies": {
     "@types/bun": "latest"
