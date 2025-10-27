@@ -93,7 +93,7 @@ describe("ConstraintRepository", () => {
         phase,
       }));
 
-      const constraint: Constraint<typeof testState, "a"> = {
+      const constraint: Constraint<typeof testState> = {
         path: "a",
         phase: "before_transition",
         validation: myConstraintFn,
@@ -105,12 +105,12 @@ describe("ConstraintRepository", () => {
       expect(myConstraintFn).toHaveBeenCalledWith(
         "a",
         testState,
-        "before_transition",
+        "before_transition"
       );
     });
 
     test("should create an executable from a schema that succeeds", () => {
-      const constraint: Constraint<typeof testState, "a"> = {
+      const constraint: Constraint<typeof testState> = {
         path: "a",
         phase: "before_transition",
         validation: { type: "number", minimum: 5 },
@@ -121,7 +121,7 @@ describe("ConstraintRepository", () => {
     });
 
     test("should create an executable from a schema that fails", () => {
-      const constraint: Constraint<typeof testState, "a"> = {
+      const constraint: Constraint<typeof testState> = {
         path: "a",
         phase: "before_transition",
         validation: { type: "number", maximum: 5 },
@@ -137,7 +137,7 @@ describe("ConstraintRepository", () => {
 
   describe("apply", () => {
     test("should apply a schema constraint that succeeds", () => {
-      const constraint: Constraint<typeof testState, "b"> = {
+      const constraint: Constraint<typeof testState> = {
         path: "b",
         phase: "after_transition",
         validation: { type: "string", minLength: 3 },
@@ -146,13 +146,13 @@ describe("ConstraintRepository", () => {
         constraint,
         testState,
         "b",
-        "after_transition",
+        "after_transition"
       );
       expect(result.success).toBe(true);
     });
 
     test("should apply a schema constraint that fails", () => {
-      const constraint: Constraint<typeof testState, "b"> = {
+      const constraint: Constraint<typeof testState> = {
         path: "b",
         phase: "after_transition",
         validation: { type: "string", maxLength: 3 },
@@ -161,13 +161,13 @@ describe("ConstraintRepository", () => {
         constraint,
         testState,
         "b",
-        "after_transition",
+        "after_transition"
       );
       expect(result.success).toBe(false);
     });
 
     test("should apply a function constraint", () => {
-      const constraint: Constraint<typeof testState, "c.d"> = {
+      const constraint: Constraint<typeof testState> = {
         path: "c.d",
         phase: "before_transition",
         validation: (path, state, phase) => ({
@@ -181,7 +181,7 @@ describe("ConstraintRepository", () => {
         constraint,
         testState,
         "c.d",
-        "before_transition",
+        "before_transition"
       );
       expect(result.success).toBe(true);
     });

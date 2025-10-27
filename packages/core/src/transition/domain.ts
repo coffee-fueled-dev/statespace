@@ -1,11 +1,10 @@
 import type { Constraint } from "../constraint/domain";
 import type { Effect } from "../effect/domain";
-import type { Path } from "../path/domain";
 
 export interface Transition<TState extends object> {
   name: string;
   effect: Effect<TState>;
-  constraints: Constraint<TState, Path<TState>>[]; // Constraints could point to any path of state, not exclusively TPath
+  constraints: Constraint<TState>[]; // Constraints could point to any path of state, not exclusively TPath
 }
 
 export type TransitionFn<TState extends object> = (
@@ -42,12 +41,9 @@ export interface ITransitionRepository {
     validator: (state: TState) => boolean
   ) => TransitionFn<TState>;
 
-  readonly validateConstraints: <
-    TState extends object,
-    TPath extends Path<TState> = Path<TState>
-  >(
+  readonly validateConstraints: <TState extends object>(
     phase: "before_transition" | "after_transition",
-    constraints: Constraint<TState, TPath>[],
+    constraints: Constraint<TState>[],
     state: TState
   ) => boolean;
 }

@@ -23,40 +23,44 @@ export type EffectFn<TState extends object> = (
   state: TState
 ) => EffectResult<TState>;
 
+type NumericEffect<TState extends object, P extends Path<TState>> = {
+  path: P;
+  operation: "add" | "subtract" | "multiply" | "divide";
+  value: number;
+  meta?: Metadata;
+  cost?: number;
+};
+
+type StringEffect<TState extends object, P extends Path<TState>> = {
+  path: P;
+  operation: "prepend" | "append" | "cut";
+  value: string;
+  meta?: Metadata;
+  cost?: number;
+};
+
+type TransformEffect<TState extends object, P extends Path<TState>> = {
+  path: P;
+  operation: "transform";
+  value: EffectFn<TState>;
+  meta?: Metadata;
+  cost?: number;
+};
+
+type SetEffect<TState extends object, P extends Path<TState>> = {
+  path: P;
+  operation: "set";
+  value: Value<TState, P> | `$${Path<TState>}`;
+  meta?: Metadata;
+  cost?: number;
+};
+
 // A helper type that defines all valid effects for a SINGLE path
 type EffectForPath<TState extends object, P extends Path<TState>> =
-  | {
-      path: P;
-      operation: "set";
-      value: Value<TState, P> | `$${Path<TState>}`;
-      meta?: Metadata;
-      cost?: number;
-    }
-  | (Value<TState, P> extends number
-      ? {
-          path: P;
-          operation: "add" | "subtract" | "multiply" | "divide";
-          value: number;
-          meta?: Metadata;
-          cost?: number;
-        }
-      : never)
-  | (Value<TState, P> extends string
-      ? {
-          path: P;
-          operation: "prepend" | "append" | "cut";
-          value: string;
-          meta?: Metadata;
-          cost?: number;
-        }
-      : never)
-  | {
-      path: P;
-      operation: "transform";
-      value: EffectFn<TState>;
-      meta?: Metadata;
-      cost?: number;
-    };
+  | SetEffect<TState, P>
+  | (Value<TState, P> extends number ? NumericEffect<TState, P> : never)
+  | (Value<TState, P> extends string ? StringEffect<TState, P> : never)
+  | TransformEffect<TState, P>;
 
 // The main Effect type becomes a union of all possible effects for all paths
 export type Effect<TState extends object> = {

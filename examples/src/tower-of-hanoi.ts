@@ -1,5 +1,6 @@
 import {
   jsonCodex,
+  Path,
   StateSpaceRepository,
   type Schema,
   type Transition,

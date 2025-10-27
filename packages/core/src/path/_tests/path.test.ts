@@ -40,14 +40,16 @@ describe("PathRepository", () => {
       type StateWithNullPath = Path<typeof stateWithNull>;
       const expected: StateWithNullPath[] = ["a", "b"];
       expect(PathRepository.paths(stateWithNull).sort()).toEqual(
-        expected.sort(),
+        expected.sort()
       );
     });
 
     test("should not traverse into arrays", () => {
       const stateWithArray = { a: [{ b: 1 }] };
-      const expected = ["a"];
-      expect(PathRepository.paths(stateWithArray)).toEqual(expected);
+      const expected: string[] = ["a"];
+      expect(PathRepository.paths(stateWithArray) as string[]).toEqual(
+        expected
+      );
     });
   });
 
@@ -59,9 +61,9 @@ describe("PathRepository", () => {
     });
 
     test("should return false for invalid paths", () => {
-      expect(PathRepository.isPath("x", testState)).toBe(false);
-      expect(PathRepository.isPath("a.x", testState)).toBe(false);
-      expect(PathRepository.isPath("b.c.x", testState)).toBe(false);
+      expect(PathRepository.isPath("x" as any, testState)).toBe(false);
+      expect(PathRepository.isPath("a.x" as any, testState)).toBe(false);
+      expect(PathRepository.isPath("b.c.x" as any, testState)).toBe(false);
     });
 
     test("should return false for '.' path", () => {
@@ -102,15 +104,87 @@ describe("PathRepository", () => {
     });
 
     test("should throw an error for an invalid path", () => {
-      expect(() => PathRepository.valueFromPath("x", testState)).toThrow(
-        "Invalid path: x",
+      expect(() => PathRepository.valueFromPath("x" as any, testState)).toThrow(
+        "Invalid path: x"
       );
-      expect(() => PathRepository.valueFromPath("a.x", testState)).toThrow(
-        "Invalid path: a.x",
-      );
-      expect(() => PathRepository.valueFromPath("b.d.x", testState)).toThrow(
-        "Invalid path: b.d.x",
-      );
+      expect(() =>
+        PathRepository.valueFromPath("a.x" as any, testState)
+      ).toThrow("Invalid path: a.x");
+      expect(() =>
+        PathRepository.valueFromPath("b.d.x" as any, testState)
+      ).toThrow("Invalid path: b.d.x");
+    });
+  });
+
+  describe("Path type inference", () => {
+    test("should infer literal types for simple paths", () => {
+      interface SimpleState {
+        name: string;
+        count: number;
+      }
+
+      type SimplePaths = Path<SimpleState>;
+      const paths: SimplePaths[] = ["name", "count"];
+
+      // This test passes if TypeScript compilation succeeds
+      expect(paths).toEqual(["name", "count"]);
+    });
+
+    test("should infer literal types for nested paths", () => {
+      interface NestedState {
+        user: {
+          profile: {
+            name: string;
+            age: number;
+          };
+          settings: {
+            theme: string;
+          };
+        };
+        metadata: {
+          version: string;
+        };
+      }
+
+      type NestedPaths = Path<NestedState>;
+      const paths: NestedPaths[] = [
+        "user",
+        "user.profile",
+        "user.profile.name",
+        "user.profile.age",
+        "user.settings",
+        "user.settings.theme",
+        "metadata",
+        "metadata.version",
+      ];
+
+      // This test passes if TypeScript compilation succeeds
+      expect(paths.length).toBe(8);
+    });
+
+    test("should handle arrays as leaf nodes", () => {
+      interface StateWithArray {
+        tags: string[];
+        items: { id: number }[];
+      }
+
+      type ArrayPaths = Path<StateWithArray>;
+      const paths: ArrayPaths[] = ["tags", "items"];
+
+      // Arrays should not be traversed into
+      expect(paths).toEqual(["tags", "items"]);
+    });
+
+    test("should work with the HanoiState example", () => {
+      interface HanoiState {
+        pegs: number[][];
+      }
+
+      type HanoiPaths = Path<HanoiState>;
+      const paths: HanoiPaths[] = ["pegs"];
+
+      // Should infer "pegs" as literal type, not string
+      expect(paths).toEqual(["pegs"]);
     });
   });
 });

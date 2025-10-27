@@ -3,7 +3,7 @@ import type { Schema } from "../statespace/domain";
 
 export type ConstraintSuccess<
   TState extends object,
-  TPath extends Path<TState> = Path<TState>,
+  TPath extends Path<TState> = Path<TState>
 > = {
   success: true;
   state: TState;
@@ -13,7 +13,7 @@ export type ConstraintSuccess<
 
 export type ConstraintFailure<
   TState extends object,
-  TPath extends Path<TState> = Path<TState>,
+  TPath extends Path<TState> = Path<TState>
 > = {
   success: false;
   state: TState;
@@ -24,52 +24,51 @@ export type ConstraintFailure<
 
 export type ConstraintResult<
   TState extends object,
-  TPath extends Path<TState> = Path<TState>,
+  TPath extends Path<TState> = Path<TState>
 > = ConstraintSuccess<TState, TPath> | ConstraintFailure<TState, TPath>;
 
 export type ConstraintFn<
   TState extends object,
-  TPath extends Path<TState> = Path<TState>,
+  TPath extends Path<TState> = Path<TState>
 > = (
   path: TPath,
   state: TState,
-  phase: "before_transition" | "after_transition",
+  phase: "before_transition" | "after_transition"
 ) => ConstraintResult<TState, TPath>;
 
-export type Constraint<
-  TState extends object,
-  TPath extends Path<TState> = Path<TState>,
-> = {
-  phase: "before_transition" | "after_transition";
-  path: TPath;
-  validation: Schema<Value<TState, TPath>> | ConstraintFn<TState, TPath>;
-  message?: string;
-};
+export type Constraint<TState extends object> = {
+  [P in Path<TState>]: {
+    phase: "before_transition" | "after_transition";
+    path: P;
+    validation: Schema<Value<TState, P>> | ConstraintFn<TState, P>;
+    message?: string;
+  };
+}[Path<TState>];
 
 export interface IConstraintRepository {
   readonly apply: <
     TState extends object,
-    TPath extends Path<TState> = Path<TState>,
+    TPath extends Path<TState> = Path<TState>
   >(
-    constraint: Constraint<TState, TPath>,
+    constraint: Constraint<TState>,
     state: TState,
     path: TPath,
-    phase: "before_transition" | "after_transition",
+    phase: "before_transition" | "after_transition"
   ) => ConstraintResult<TState, TPath>;
 
   readonly createImperative: <
     TState extends object,
-    TPath extends Path<TState> = Path<TState>,
+    TPath extends Path<TState> = Path<TState>
   >(
     fn: (
       value: Value<TState, TPath>,
-      state: TState,
-    ) => { success: boolean; message?: string },
+      state: TState
+    ) => { success: boolean; message?: string }
   ) => ConstraintFn<TState, TPath>;
 
   readonly formatResult: <
     TState extends object,
-    TPath extends Path<TState> = Path<TState>,
+    TPath extends Path<TState> = Path<TState>
   >(args: {
     isValid: boolean;
     state: TState;
@@ -80,8 +79,8 @@ export interface IConstraintRepository {
 
   readonly makeExecutable: <
     TState extends object,
-    TPath extends Path<TState> = Path<TState>,
+    TPath extends Path<TState> = Path<TState>
   >(
-    constraint: Constraint<TState, TPath>,
+    constraint: Constraint<TState>
   ) => ConstraintFn<TState, TPath>;
 }

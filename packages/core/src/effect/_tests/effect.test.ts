@@ -4,6 +4,7 @@ import type { Effect, EffectFn } from "../domain";
 import { mergeValue, validateMutation } from "../libs";
 import type { Transition } from "../../transition";
 
+type TestState = typeof testState;
 const testState = {
   a: 10,
   b: "hello",
@@ -39,7 +40,7 @@ describe("Effect libs", () => {
     test("should throw an error if the type is incompatible", () => {
       const nextValue = "not a number";
       expect(() => validateMutation("a", testState, nextValue as any)).toThrow(
-        "Mutation of path 'a' resulted in incompatible type. Expected number, got string",
+        "Mutation of path 'a' resulted in incompatible type. Expected number, got string"
       );
     });
   });
@@ -48,21 +49,21 @@ describe("Effect libs", () => {
 describe("EffectRepository", () => {
   describe("resolveValue", () => {
     test("should return literal value", () => {
-      const effect: Effect<typeof testState> = {
+      const effect = {
         path: "a",
         operation: "set",
         value: 123,
-      };
+      } satisfies Effect<TestState>;
       const value = EffectRepository.resolveValue(effect, testState);
       expect(value).toBe(123);
     });
 
     test("should resolve a path reference", () => {
-      const effect: Effect<typeof testState> = {
+      const effect = {
         path: "a",
         operation: "set",
         value: "$c.d",
-      };
+      } satisfies Effect<TestState>;
       const value = EffectRepository.resolveValue(effect, testState);
       expect(value).toBe(5);
     });
@@ -70,11 +71,11 @@ describe("EffectRepository", () => {
 
   describe("makeExecutable", () => {
     test("set operation should set a value", () => {
-      const effect: Effect<typeof testState> = {
+      const effect = {
         path: "a",
         operation: "set",
         value: 100,
-      };
+      } satisfies Effect<TestState>;
       const executable =
         EffectRepository.makeExecutable<typeof testState>(effect);
       const result = executable("a", testState);
@@ -85,11 +86,11 @@ describe("EffectRepository", () => {
     });
 
     test("add operation should add to a number", () => {
-      const effect: Effect<typeof testState> = {
+      const effect = {
         path: "a",
         operation: "add",
         value: 5,
-      };
+      } satisfies Effect<TestState>;
       const executable =
         EffectRepository.makeExecutable<typeof testState>(effect);
       const result = executable("a", testState);
@@ -100,11 +101,11 @@ describe("EffectRepository", () => {
     });
 
     test("subtract operation", () => {
-      const effect: Effect<typeof testState> = {
+      const effect = {
         path: "a",
         operation: "subtract",
         value: 5,
-      };
+      } satisfies Effect<TestState>;
       const executable =
         EffectRepository.makeExecutable<typeof testState>(effect);
       const result = executable("a", testState);
@@ -115,11 +116,11 @@ describe("EffectRepository", () => {
     });
 
     test("multiply operation", () => {
-      const effect: Effect<typeof testState> = {
+      const effect = {
         path: "a",
         operation: "multiply",
         value: 2,
-      };
+      } satisfies Effect<TestState>;
       const executable =
         EffectRepository.makeExecutable<typeof testState>(effect);
       const result = executable("a", testState);
@@ -130,11 +131,11 @@ describe("EffectRepository", () => {
     });
 
     test("divide operation", () => {
-      const effect: Effect<typeof testState> = {
+      const effect = {
         path: "a",
         operation: "divide",
         value: 2,
-      };
+      } satisfies Effect<TestState>;
       const executable =
         EffectRepository.makeExecutable<typeof testState>(effect);
       const result = executable("a", testState);
@@ -145,11 +146,11 @@ describe("EffectRepository", () => {
     });
 
     test("append operation", () => {
-      const effect: Effect<typeof testState> = {
+      const effect = {
         path: "b",
         operation: "append",
         value: " world",
-      };
+      } satisfies Effect<TestState>;
       const executable =
         EffectRepository.makeExecutable<typeof testState>(effect);
       const result = executable("b", testState);
@@ -160,11 +161,11 @@ describe("EffectRepository", () => {
     });
 
     test("prepend operation", () => {
-      const effect: Effect<typeof testState> = {
+      const effect = {
         path: "b",
         operation: "prepend",
         value: "world ",
-      };
+      } satisfies Effect<TestState>;
       const executable =
         EffectRepository.makeExecutable<typeof testState>(effect);
       const result = executable("b", testState);
@@ -175,11 +176,11 @@ describe("EffectRepository", () => {
     });
 
     test("cut operation", () => {
-      const effect: Effect<typeof testState> = {
+      const effect = {
         path: "b",
         operation: "cut",
         value: "ell",
-      };
+      } satisfies Effect<TestState>;
       const executable = EffectRepository.makeExecutable(effect);
       const result = executable("b", testState);
       expect(result.success).toBe(true);
@@ -194,11 +195,11 @@ describe("EffectRepository", () => {
         state: { ...state, a: state.a + 1 },
         effect: null as any, // not needed for this test
       });
-      const effect: Effect<typeof testState> = {
+      const effect = {
         path: "a",
         operation: "transform",
         value: transformFn,
-      };
+      } satisfies Effect<TestState>;
       const executable = EffectRepository.makeExecutable(effect);
       const result = executable("a", testState);
       expect(result.success).toBe(true);
@@ -208,11 +209,15 @@ describe("EffectRepository", () => {
     });
 
     test("should throw on invalid operation", () => {
-      const effect = { path: "a", operation: "invalid_op", value: 1 } as any;
+      const effect = {
+        path: "a",
+        operation: "invalid_op" as never,
+        value: 1,
+      } satisfies Effect<TestState>;
       const executable =
         EffectRepository.makeExecutable<typeof testState>(effect);
       expect(() => executable("a", testState)).toThrow(
-        "Invalid effect operation: invalid_op",
+        "Invalid effect operation: invalid_op"
       );
     });
   });
@@ -220,7 +225,11 @@ describe("EffectRepository", () => {
   describe("apply", () => {
     const transition = {
       name: "test",
-      effect: { path: "a", operation: "set", value: 100 },
+      effect: {
+        path: "a",
+        operation: "set",
+        value: 100,
+      },
       constraints: [],
     } satisfies Transition<typeof testState>;
 
@@ -230,7 +239,7 @@ describe("EffectRepository", () => {
         testState,
         "a",
         transition,
-        validator,
+        validator
       );
       expect(result.success).toBe(true);
       if (result.success) {
@@ -244,7 +253,7 @@ describe("EffectRepository", () => {
         testState,
         "a",
         transition,
-        validator,
+        validator
       );
       expect(result.success).toBe(false);
       if (!result.success) {
@@ -255,7 +264,11 @@ describe("EffectRepository", () => {
     test("should return failure if effect application throws", () => {
       const badTransition = {
         name: "test",
-        effect: { path: "a", operation: "set", value: "not a number" } as any,
+        effect: {
+          path: "a",
+          operation: "set",
+          value: "not a number" as never,
+        },
         constraints: [],
       } satisfies Transition<typeof testState>;
       const validator = () => true;
@@ -263,7 +276,7 @@ describe("EffectRepository", () => {
         testState,
         "a",
         badTransition,
-        validator,
+        validator
       );
       expect(result.success).toBe(false);
       if (!result.success) {
