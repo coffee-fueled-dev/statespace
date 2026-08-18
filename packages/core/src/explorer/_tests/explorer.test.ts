@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, jest, test } from "bun:test";
-import type { Codex, ExecutableStateSpace, TransitionSuccess } from "@statespace/core";
+import type { Codex } from "../../codex/entity";
+import type { ExecutableStateSpace } from "../../statespace/domain";
+import type { TransitionSuccess } from "../../transition/domain";
 import { Explorer } from "../adapters";
 
 type MockState = { value: number };

@@ -1,6 +1,11 @@
-import { bfs } from "@statespace/bfs";
-import { jsonCodex, type Schema, StateSpaceRepository, type Transition } from "@statespace/core";
-import { Explorer } from "@statespace/explorer";
+import {
+  bfs,
+  Explorer,
+  jsonCodex,
+  type Schema,
+  StateSpaceRepository,
+  type Transition,
+} from "@statespace/core";
 
 interface HanoiState {
   pegs: number[][];

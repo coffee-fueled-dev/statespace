@@ -6,7 +6,6 @@
   "workspaces": [
     "examples",
     "packages/*",
-    "packages/studies/*",
     "tools/*"
   ],
   "scripts": {
@@ -28,8 +27,5 @@
   "peerDependencies": {},
   "trustedDependencies": [
     "kuzu"
-  ],
-  "dependencies": {
-    "@datastructures-js/priority-queue": "^6.3.4"
-  }
+  ]
 }

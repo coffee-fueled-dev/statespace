@@ -1,4 +1,4 @@
-import type { StudyConfig, StudyResult } from "@statespace/explorer";
+import type { StudyConfig, StudyResult } from "../explorer";
 
 export interface DFSConfig<T extends object> extends StudyConfig<T> {}
 

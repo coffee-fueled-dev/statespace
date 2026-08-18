@@ -1,5 +1,7 @@
-import type { Codex, ExecutableStateSpace, Schema, TransitionResult } from "@statespace/core";
 import Queue from "queue";
+import type { Codex } from "../codex/entity";
+import type { ExecutableStateSpace, Schema } from "../statespace/domain";
+import type { TransitionResult } from "../transition/domain";
 import type { HashedTransition, IExplorer, MarkovChain, MarkovGraph, StudyConfig } from "./domain";
 
 export class Explorer<T extends object> implements IExplorer<T> {

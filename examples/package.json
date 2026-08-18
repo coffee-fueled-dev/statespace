@@ -13,8 +13,6 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@statespace/core": "workspace:*",
-    "@statespace/explorer": "workspace:*",
-    "@statespace/bfs": "workspace:*"
+    "@statespace/core": "workspace:*"
   }
 }

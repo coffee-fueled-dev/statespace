@@ -1,6 +1,6 @@
 import { type ICompare, PriorityQueue } from "@datastructures-js/priority-queue";
-import type { TransitionResult, TransitionSuccess } from "@statespace/core";
-import type { StudyConfig, StudyResult } from "@statespace/explorer";
+import type { StudyConfig, StudyResult } from "../explorer";
+import type { TransitionResult, TransitionSuccess } from "../transition/domain";
 
 export interface BFSConfig<T extends object> extends StudyConfig<T> {
   comparator?: ICompare<TransitionResult<T>>;

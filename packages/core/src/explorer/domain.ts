@@ -1,4 +1,7 @@
-import type { Hash, Metadata, Schema, TransitionResult, TransitionSuccess } from "@statespace/core";
+import type { Hash } from "../codex/entity";
+import type { Metadata } from "../effect/domain";
+import type { Schema } from "../statespace/domain";
+import type { TransitionResult, TransitionSuccess } from "../transition/domain";
 
 export interface IExplorer<T extends object> {
   readonly graph: MarkovGraph;
