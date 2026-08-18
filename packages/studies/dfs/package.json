@@ -11,6 +11,7 @@
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@statespace/core": "workspace:*"
+    "@statespace/core": "workspace:*",
+    "@statespace/explorer": "workspace:*"
   }
 }

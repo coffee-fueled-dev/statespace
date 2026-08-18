@@ -1,8 +1,8 @@
-import { describe, test, expect, jest } from "bun:test";
-import { ConstraintRepository } from "../../constraint/adapters";
-import type { Transition } from "../domain";
-import { TransitionRepository } from "../adapters";
+import { describe, expect, jest, test } from "bun:test";
 import type { Constraint } from "../../constraint";
+import { ConstraintRepository } from "../../constraint/adapters";
+import { TransitionRepository } from "../adapters";
+import type { Transition } from "../domain";
 
 const testState = {
   a: 10,
@@ -61,11 +61,9 @@ describe("TransitionRepository", () => {
     });
 
     test("should return false if applying a constraint throws an error", () => {
-      const applySpy = jest
-        .spyOn(ConstraintRepository, "apply")
-        .mockImplementation(() => {
-          throw new Error("Test Error");
-        });
+      const applySpy = jest.spyOn(ConstraintRepository, "apply").mockImplementation(() => {
+        throw new Error("Test Error");
+      });
 
       const result = TransitionRepository.validateConstraints(
         "before_transition",
@@ -98,11 +96,7 @@ describe("TransitionRepository", () => {
         ],
       };
 
-      const result = TransitionRepository.apply(
-        testState,
-        transition,
-        validator,
-      );
+      const result = TransitionRepository.apply(testState, transition, validator);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.state.a).toBe(15);
@@ -122,11 +116,7 @@ describe("TransitionRepository", () => {
         ],
       };
 
-      const result = TransitionRepository.apply(
-        testState,
-        transition,
-        validator,
-      );
+      const result = TransitionRepository.apply(testState, transition, validator);
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error).toBe("Constraints failed before transition");
@@ -137,15 +127,11 @@ describe("TransitionRepository", () => {
     test("should fail if the effect fails", () => {
       const transition: Transition<typeof testState> = {
         name: "Fail Effect",
-        effect: { path: "a", operation: "set", value: "not a number" } as any, // will fail
+        effect: { path: "a", operation: "set", value: "not a number" } as never, // will fail
         constraints: [],
       };
 
-      const result = TransitionRepository.apply(
-        testState,
-        transition,
-        validator,
-      );
+      const result = TransitionRepository.apply(testState, transition, validator);
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error).toContain("incompatible type");
@@ -165,11 +151,7 @@ describe("TransitionRepository", () => {
         ],
       };
 
-      const result = TransitionRepository.apply(
-        testState,
-        transition,
-        validator,
-      );
+      const result = TransitionRepository.apply(testState, transition, validator);
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error).toBe("Constraints failed after transition");

@@ -1,17 +1,6 @@
-import type { IExplorer } from "./domain";
+import type { Codex, ExecutableStateSpace, Schema, TransitionResult } from "@statespace/core";
 import Queue from "queue";
-import type {
-  HashedTransition,
-  MarkovChain,
-  MarkovGraph,
-  StudyConfig,
-} from "./domain";
-import type {
-  Codex,
-  ExecutableStateSpace,
-  Schema,
-  TransitionResult,
-} from "@statespace/core";
+import type { HashedTransition, IExplorer, MarkovChain, MarkovGraph, StudyConfig } from "./domain";
 
 export class Explorer<T extends object> implements IExplorer<T> {
   private _graph: MarkovGraph = new Map();
@@ -65,16 +54,14 @@ export class Explorer<T extends object> implements IExplorer<T> {
     return neighbors;
   }
 
-  async *neighborIterator(
-    initialState: T,
-  ): AsyncGenerator<HashedTransition<T>> {
+  async *neighborIterator(initialState: T): AsyncGenerator<HashedTransition<T>> {
     const initialStateHash = await this.encode(initialState);
-    if (!this._graph.has(initialStateHash)) {
+    let transitionMap = this._graph.get(initialStateHash);
+    if (!transitionMap) {
       this._uniqueStates++;
-      this._graph.set(initialStateHash, new Map());
+      transitionMap = new Map();
+      this._graph.set(initialStateHash, transitionMap);
     }
-
-    const transitionMap = this._graph.get(initialStateHash)!;
 
     // Use queue package for better async processing with streaming results
     const results: HashedTransition<T>[] = [];
@@ -102,12 +89,10 @@ export class Explorer<T extends object> implements IExplorer<T> {
     }
 
     // Stream results as they become available
-    while (
-      processedCount < this.stateSpace.transitions.length ||
-      results.length > 0
-    ) {
-      if (results.length > 0) {
-        yield results.shift()!;
+    while (processedCount < this.stateSpace.transitions.length || results.length > 0) {
+      const next = results.shift();
+      if (next) {
+        yield next;
       } else {
         // Small delay to prevent busy waiting
         await new Promise((resolve) => setTimeout(resolve, 1));

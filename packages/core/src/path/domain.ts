@@ -10,62 +10,45 @@ export type Path<TState> = TState extends object
     }[keyof TState]
   : never;
 
-export type Value<
-  TState,
-  TPath extends string
-> = TPath extends `${infer K}[${infer Index}].${infer R}`
+export type Value<TState, TPath extends string> = TPath extends `${infer K}[${string}].${infer R}`
   ? K extends keyof TState
     ? TState[K] extends (infer U)[]
       ? Value<U, R>
       : never
     : never
-  : TPath extends `${infer K}[${infer Index}]`
-  ? K extends keyof TState
-    ? TState[K] extends (infer U)[]
-      ? U
+  : TPath extends `${infer K}[${string}]`
+    ? K extends keyof TState
+      ? TState[K] extends (infer U)[]
+        ? U
+        : never
       : never
-    : never
-  : TPath extends `${infer K}.${infer R}`
-  ? K extends keyof TState
-    ? Value<TState[K], R>
-    : never
-  : TPath extends keyof TState
-  ? TState[TPath]
-  : never;
+    : TPath extends `${infer K}.${infer R}`
+      ? K extends keyof TState
+        ? Value<TState[K], R>
+        : never
+      : TPath extends keyof TState
+        ? TState[TPath]
+        : never;
 
-export type PathReference<
-  TState extends object,
-  TPath extends Path<TState>
-> = `$${TPath}`;
+export type PathReference<TState extends object, TPath extends Path<TState>> = `$${TPath}`;
 
 export interface IPathRepository {
-  readonly paths: <TState extends object>(
-    state: TState,
-    prefix?: string
-  ) => Path<TState>[];
+  readonly paths: <TState extends object>(state: TState, prefix?: string) => Path<TState>[];
 
   readonly isPath: <TState extends object, TPath extends string>(
     path: TPath,
-    state: TState
+    state: TState,
   ) => boolean;
 
   // TODO: return errors
-  readonly isPathRef: <TState extends object>(
-    maybeRef: unknown,
-    state: TState
-  ) => boolean;
+  readonly isPathRef: <TState extends object>(maybeRef: unknown, state: TState) => boolean;
 
-  readonly valueFromPath: <
-    TState extends object,
-    TPath extends Path<TState> = Path<TState>
-  >(
+  readonly valueFromPath: <TState extends object, TPath extends Path<TState> = Path<TState>>(
     path: TPath,
-    state: TState
+    state: TState,
   ) => Value<TState, TPath>;
 
   readonly parsePathSegments: (
-    path: string
-  ) => Array<
-    { type: "property"; key: string } | { type: "index"; index: number }
-  >;
+    path: string,
+  ) => Array<{ type: "property"; key: string } | { type: "index"; index: number }>;
 }

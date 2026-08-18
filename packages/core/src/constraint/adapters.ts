@@ -1,6 +1,6 @@
+import Ajv from "ajv";
 import { PathRepository } from "../path/adapters";
 import type { IConstraintRepository } from "./domain";
-import Ajv from "ajv";
 
 const ajv = new Ajv({
   strict: false,
@@ -52,9 +52,8 @@ export const ConstraintRepository: IConstraintRepository = {
     const isValid = validator(value);
 
     const errorMessage =
-      validator.errors
-        ?.map((err) => `${err.instancePath} ${err.message}`)
-        .join(", ") || "Validation failed";
+      validator.errors?.map((err) => `${err.instancePath} ${err.message}`).join(", ") ||
+      "Validation failed";
 
     return ConstraintRepository.formatResult({
       isValid,

@@ -1,6 +1,6 @@
-import { describe, test, expect, jest } from "bun:test";
+import { describe, expect, jest, test } from "bun:test";
 import { ConstraintRepository } from "../adapters";
-import type { Constraint, ConstraintFn } from "../domain";
+import type { Constraint } from "../domain";
 
 const testState = {
   a: 10,
@@ -64,10 +64,9 @@ describe("ConstraintRepository", () => {
   describe("createImperative", () => {
     test("should create a constraint function that succeeds", () => {
       const imperativeFn = (value: number) => ({ success: value > 5 });
-      const constraintFn = ConstraintRepository.createImperative<
-        typeof testState,
-        "a"
-      >(imperativeFn);
+      const constraintFn = ConstraintRepository.createImperative<typeof testState, "a">(
+        imperativeFn,
+      );
       const result = constraintFn("a", testState, "before_transition");
       expect(result.success).toBe(true);
     });
@@ -77,10 +76,9 @@ describe("ConstraintRepository", () => {
         success: value > state.c.d * 3,
         message: "Value not high enough",
       });
-      const constraintFn = ConstraintRepository.createImperative<
-        typeof testState,
-        "a"
-      >(imperativeFn);
+      const constraintFn = ConstraintRepository.createImperative<typeof testState, "a">(
+        imperativeFn,
+      );
       const result = constraintFn("a", testState, "before_transition");
       expect(result.success).toBe(false);
       if (!result.success) {
@@ -107,11 +105,7 @@ describe("ConstraintRepository", () => {
       executable("a", testState, "before_transition");
 
       expect(myConstraintFn).toHaveBeenCalledTimes(1);
-      expect(myConstraintFn).toHaveBeenCalledWith(
-        "a",
-        testState,
-        "before_transition"
-      );
+      expect(myConstraintFn).toHaveBeenCalledWith("a", testState, "before_transition");
     });
 
     test("should create an executable from a schema that succeeds", () => {
@@ -147,12 +141,7 @@ describe("ConstraintRepository", () => {
         phase: "after_transition",
         validation: { type: "string", minLength: 3 },
       };
-      const result = ConstraintRepository.apply(
-        constraint,
-        testState,
-        "b",
-        "after_transition"
-      );
+      const result = ConstraintRepository.apply(constraint, testState, "b", "after_transition");
       expect(result.success).toBe(true);
     });
 
@@ -162,12 +151,7 @@ describe("ConstraintRepository", () => {
         phase: "after_transition",
         validation: { type: "string", maxLength: 3 },
       };
-      const result = ConstraintRepository.apply(
-        constraint,
-        testState,
-        "b",
-        "after_transition"
-      );
+      const result = ConstraintRepository.apply(constraint, testState, "b", "after_transition");
       expect(result.success).toBe(false);
     });
 
@@ -182,12 +166,7 @@ describe("ConstraintRepository", () => {
           phase,
         }),
       };
-      const result = ConstraintRepository.apply(
-        constraint,
-        testState,
-        "c.d",
-        "before_transition"
-      );
+      const result = ConstraintRepository.apply(constraint, testState, "c.d", "before_transition");
       expect(result.success).toBe(true);
     });
   });
@@ -199,12 +178,7 @@ describe("ConstraintRepository", () => {
         phase: "before_transition",
         validation: { type: "number", minimum: 50 },
       };
-      const result = ConstraintRepository.apply(
-        constraint,
-        testState,
-        "e[0]",
-        "before_transition"
-      );
+      const result = ConstraintRepository.apply(constraint, testState, "e[0]", "before_transition");
       expect(result.success).toBe(true);
     });
 
@@ -214,12 +188,7 @@ describe("ConstraintRepository", () => {
         phase: "before_transition",
         validation: { type: "number", maximum: 150 },
       };
-      const result = ConstraintRepository.apply(
-        constraint,
-        testState,
-        "e[1]",
-        "before_transition"
-      );
+      const result = ConstraintRepository.apply(constraint, testState, "e[1]", "before_transition");
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.message).toContain("must be <= 150");
@@ -236,7 +205,7 @@ describe("ConstraintRepository", () => {
         constraint,
         testState,
         "f[0].id",
-        "after_transition"
+        "after_transition",
       );
       expect(result.success).toBe(true);
     });
@@ -253,12 +222,7 @@ describe("ConstraintRepository", () => {
           message: "Third element must be greater than 250",
         }),
       };
-      const result = ConstraintRepository.apply(
-        constraint,
-        testState,
-        "e[2]",
-        "before_transition"
-      );
+      const result = ConstraintRepository.apply(constraint, testState, "e[2]", "before_transition");
       expect(result.success).toBe(true);
     });
 
@@ -274,12 +238,7 @@ describe("ConstraintRepository", () => {
           message: "First element must be greater than 150",
         }),
       };
-      const result = ConstraintRepository.apply(
-        constraint,
-        testState,
-        "e[0]",
-        "before_transition"
-      );
+      const result = ConstraintRepository.apply(constraint, testState, "e[0]", "before_transition");
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.message).toBe("First element must be greater than 150");
@@ -296,7 +255,7 @@ describe("ConstraintRepository", () => {
         constraint,
         testState,
         "f[1].name",
-        "after_transition"
+        "after_transition",
       );
       expect(result.success).toBe(true);
     });
@@ -306,10 +265,9 @@ describe("ConstraintRepository", () => {
         success: value < state.e[1], // e[0] should be less than e[1]
         message: "First element should be less than second",
       });
-      const constraintFn = ConstraintRepository.createImperative<
-        typeof testState,
-        "e[0]"
-      >(imperativeFn);
+      const constraintFn = ConstraintRepository.createImperative<typeof testState, "e[0]">(
+        imperativeFn,
+      );
       const result = constraintFn("e[0]", testState, "before_transition");
       expect(result.success).toBe(true);
     });
@@ -319,16 +277,13 @@ describe("ConstraintRepository", () => {
         success: value > state.e[2], // e[1] should be greater than e[2]
         message: "Second element should be greater than third",
       });
-      const constraintFn = ConstraintRepository.createImperative<
-        typeof testState,
-        "e[1]"
-      >(imperativeFn);
+      const constraintFn = ConstraintRepository.createImperative<typeof testState, "e[1]">(
+        imperativeFn,
+      );
       const result = constraintFn("e[1]", testState, "before_transition");
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.message).toBe(
-          "Second element should be greater than third"
-        );
+        expect(result.message).toBe("Second element should be greater than third");
       }
     });
 
@@ -342,7 +297,7 @@ describe("ConstraintRepository", () => {
         constraint,
         testState,
         "f[0].active",
-        "before_transition"
+        "before_transition",
       );
       expect(result.success).toBe(true);
     });

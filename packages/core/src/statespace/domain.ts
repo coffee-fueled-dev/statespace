@@ -1,5 +1,5 @@
+import type { JSONSchemaType } from "ajv";
 import type { Transition, TransitionFn } from "../transition/domain";
-import { type JSONSchemaType } from "ajv";
 
 export type Schema<T> = JSONSchemaType<T>;
 

@@ -1,10 +1,4 @@
-import type {
-  Hash,
-  Schema,
-  TransitionResult,
-  TransitionSuccess,
-  Metadata,
-} from "@statespace/core";
+import type { Hash, Metadata, Schema, TransitionResult, TransitionSuccess } from "@statespace/core";
 
 export interface IExplorer<T extends object> {
   readonly graph: MarkovGraph;
@@ -18,7 +12,7 @@ export interface IExplorer<T extends object> {
   decode(key: string): Promise<T>;
   study<TResult>(
     study: (config: StudyConfig<T>) => Promise<TResult>,
-    config: Omit<StudyConfig<T>, "explorer">
+    config: Omit<StudyConfig<T>, "explorer">,
   ): Promise<TResult>;
   resetState(): void;
 }
@@ -32,7 +26,7 @@ export interface StudyConfig<T extends object> {
   explorer: IExplorer<T>;
   initialState: T;
   exitConditions: ((
-    explorer: IExplorer<T>
+    explorer: IExplorer<T>,
   ) => StudyResult<T> | null | Promise<StudyResult<T> | null>)[];
 }
 
@@ -46,14 +40,11 @@ export type MarkovChain = [
       meta?: Metadata;
       cost?: number | null | undefined;
     },
-    number // number of times this transition has been taken
-  ]
+    number, // number of times this transition has been taken
+  ],
 ];
 
-export type MarkovGraph = Map<
-  MarkovChain[0],
-  Map<MarkovChain[1], MarkovChain[2]>
->;
+export type MarkovGraph = Map<MarkovChain[0], Map<MarkovChain[1], MarkovChain[2]>>;
 
 export type HashedTransition<T extends object> = {
   result: TransitionSuccess<T>;

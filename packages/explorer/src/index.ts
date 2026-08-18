@@ -1,2 +1,2 @@
-export * from "./domain";
 export { Explorer } from "./adapters";
+export * from "./domain";

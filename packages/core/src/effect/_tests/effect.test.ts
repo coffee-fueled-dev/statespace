@@ -1,8 +1,8 @@
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
+import type { Transition } from "../../transition";
 import { EffectRepository } from "../adapters";
 import type { Effect, EffectFn } from "../domain";
 import { mergeValue, validateMutation } from "../libs";
-import type { Transition } from "../../transition";
 
 type TestState = typeof testState;
 const testState = {
@@ -58,8 +58,8 @@ describe("Effect libs", () => {
 
     test("should throw an error if the type is incompatible", () => {
       const nextValue = "not a number";
-      expect(() => validateMutation("a", testState, nextValue as any)).toThrow(
-        "Mutation of path 'a' resulted in incompatible type. Expected number, got string"
+      expect(() => validateMutation("a", testState, nextValue as never)).toThrow(
+        "Mutation of path 'a' resulted in incompatible type. Expected number, got string",
       );
     });
   });
@@ -225,7 +225,6 @@ describe("EffectRepository", () => {
       const transformFn: EffectFn<typeof testState> = (_path, state) => ({
         success: true,
         state: { ...state, a: state.a + 1 },
-        effect: null as any, // not needed for this test
       });
       const effect = {
         path: "a",
@@ -291,9 +290,7 @@ describe("EffectRepository", () => {
         value: 1,
       } satisfies Effect<TestState>;
       const executable = EffectRepository.makeExecutable(effect);
-      expect(() => executable("a", testState)).toThrow(
-        "Invalid effect operation: invalid_op"
-      );
+      expect(() => executable("a", testState)).toThrow("Invalid effect operation: invalid_op");
     });
   });
 
@@ -310,12 +307,7 @@ describe("EffectRepository", () => {
 
     test("should apply effect and pass validation", () => {
       const validator = (state: typeof testState) => state.a === 100;
-      const result = EffectRepository.apply(
-        testState,
-        "a",
-        transition,
-        validator
-      );
+      const result = EffectRepository.apply(testState, "a", transition, validator);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.state.a).toBe(100);
@@ -324,12 +316,7 @@ describe("EffectRepository", () => {
 
     test("should return failure if validation fails", () => {
       const validator = (state: typeof testState) => state.a !== 100;
-      const result = EffectRepository.apply(
-        testState,
-        "a",
-        transition,
-        validator
-      );
+      const result = EffectRepository.apply(testState, "a", transition, validator);
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error).toBe("Malformed state after effect");
@@ -347,12 +334,7 @@ describe("EffectRepository", () => {
         constraints: [],
       } satisfies Transition<typeof testState>;
       const validator = () => true;
-      const result = EffectRepository.apply(
-        testState,
-        "a",
-        badTransition,
-        validator
-      );
+      const result = EffectRepository.apply(testState, "a", badTransition, validator);
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error).toContain("Failed to apply effect");

@@ -1,9 +1,6 @@
+import { type ICompare, PriorityQueue } from "@datastructures-js/priority-queue";
 import type { TransitionResult, TransitionSuccess } from "@statespace/core";
 import type { StudyConfig, StudyResult } from "@statespace/explorer";
-import {
-  PriorityQueue,
-  type ICompare,
-} from "@datastructures-js/priority-queue";
 
 export interface BFSConfig<T extends object> extends StudyConfig<T> {
   comparator?: ICompare<TransitionResult<T>>;
@@ -23,10 +20,7 @@ export async function bfs<T extends object>({
 
   const queue = new PriorityQueue<TransitionSuccess<T>>(comparator);
   const visited = new Set<string>();
-  const parents = new Map<
-    string,
-    { parentHash: string; transition: TransitionSuccess<T> }
-  >();
+  const parents = new Map<string, { parentHash: string; transition: TransitionSuccess<T> }>();
 
   const initialHash = await explorer.encode(initialState);
   visited.add(initialHash);
@@ -42,14 +36,13 @@ export async function bfs<T extends object>({
     }
   }
 
-  const reconstructPath = async (
-    goalStateHash: string
-  ): Promise<TransitionSuccess<T>[]> => {
+  const reconstructPath = async (goalStateHash: string): Promise<TransitionSuccess<T>[]> => {
     const path: TransitionSuccess<T>[] = [];
     let currentHash = goalStateHash;
 
     while (parents.has(currentHash)) {
-      const parent = parents.get(currentHash)!;
+      const parent = parents.get(currentHash);
+      if (!parent) break;
       path.unshift(parent.transition);
       currentHash = parent.parentHash;
     }
@@ -60,7 +53,8 @@ export async function bfs<T extends object>({
   let lastTransition: TransitionResult<T> | null = null;
 
   while (!queue.isEmpty()) {
-    const current = queue.dequeue()!;
+    const current = queue.dequeue();
+    if (!current) break;
     lastTransition = current;
 
     // Check async or sync exit conditions

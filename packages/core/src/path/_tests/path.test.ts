@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { PathRepository } from "../adapters";
 import type { Path } from "../domain";
 
@@ -60,17 +60,13 @@ describe("PathRepository", () => {
       const stateWithNull = { a: 1, b: null };
       type StateWithNullPath = Path<typeof stateWithNull>;
       const expected: StateWithNullPath[] = ["a", "b"];
-      expect(PathRepository.paths(stateWithNull).sort()).toEqual(
-        expected.sort()
-      );
+      expect(PathRepository.paths(stateWithNull).sort()).toEqual(expected.sort());
     });
 
     test("should traverse into arrays with indexing", () => {
       const stateWithArray = { a: [{ b: 1 }] };
       const expected: string[] = ["a", "a[0]", "a[0].b"];
-      expect(PathRepository.paths(stateWithArray) as string[]).toEqual(
-        expected
-      );
+      expect(PathRepository.paths(stateWithArray) as string[]).toEqual(expected);
     });
   });
 
@@ -89,15 +85,15 @@ describe("PathRepository", () => {
     });
 
     test("should return false for invalid paths", () => {
-      expect(PathRepository.isPath("x" as any, testState)).toBe(false);
-      expect(PathRepository.isPath("a.x" as any, testState)).toBe(false);
-      expect(PathRepository.isPath("b.c.x" as any, testState)).toBe(false);
+      expect(PathRepository.isPath("x", testState)).toBe(false);
+      expect(PathRepository.isPath("a.x", testState)).toBe(false);
+      expect(PathRepository.isPath("b.c.x", testState)).toBe(false);
     });
 
     test("should return false for invalid array indexed paths", () => {
-      expect(PathRepository.isPath("f[3]" as any, testState)).toBe(false); // out of bounds
-      expect(PathRepository.isPath("f[x]" as any, testState)).toBe(false); // non-numeric index
-      expect(PathRepository.isPath("a[0]" as any, testState)).toBe(false); // not an array
+      expect(PathRepository.isPath("f[3]", testState)).toBe(false); // out of bounds
+      expect(PathRepository.isPath("f[x]", testState)).toBe(false); // non-numeric index
+      expect(PathRepository.isPath("a[0]", testState)).toBe(false); // not an array
     });
 
     test("should return false for '.' path", () => {
@@ -152,39 +148,35 @@ describe("PathRepository", () => {
         name: "first",
       });
       expect(PathRepository.valueFromPath("h[0].id", testState)).toBe(1);
-      expect(PathRepository.valueFromPath("h[0].name", testState)).toBe(
-        "first"
-      );
+      expect(PathRepository.valueFromPath("h[0].name", testState)).toBe("first");
       expect(PathRepository.valueFromPath("h[1].id", testState)).toBe(2);
-      expect(PathRepository.valueFromPath("h[1].name", testState)).toBe(
-        "second"
-      );
+      expect(PathRepository.valueFromPath("h[1].name", testState)).toBe("second");
       expect(PathRepository.valueFromPath("i[0]", testState)).toEqual([10, 20]);
       expect(PathRepository.valueFromPath("i[1]", testState)).toEqual([30, 40]);
     });
 
     test("should throw an error for an invalid path", () => {
-      expect(() => PathRepository.valueFromPath("x" as any, testState)).toThrow(
-        "Invalid path: x"
+      expect(() => PathRepository.valueFromPath("x" as never, testState)).toThrow(
+        "Invalid path: x",
       );
-      expect(() =>
-        PathRepository.valueFromPath("a.x" as any, testState)
-      ).toThrow("Invalid path: a.x");
-      expect(() =>
-        PathRepository.valueFromPath("b.d.x" as any, testState)
-      ).toThrow("Invalid path: b.d.x");
+      expect(() => PathRepository.valueFromPath("a.x" as never, testState)).toThrow(
+        "Invalid path: a.x",
+      );
+      expect(() => PathRepository.valueFromPath("b.d.x" as never, testState)).toThrow(
+        "Invalid path: b.d.x",
+      );
     });
 
     test("should throw an error for invalid array indexed paths", () => {
-      expect(() =>
-        PathRepository.valueFromPath("f[3]" as any, testState)
-      ).toThrow("Invalid path: f[3]");
-      expect(() =>
-        PathRepository.valueFromPath("a[0]" as any, testState)
-      ).toThrow("Invalid path: a[0]");
-      expect(() =>
-        PathRepository.valueFromPath("f[x]" as any, testState)
-      ).toThrow("Invalid path: non-numeric array index in f[x]");
+      expect(() => PathRepository.valueFromPath("f[3]" as never, testState)).toThrow(
+        "Invalid path: f[3]",
+      );
+      expect(() => PathRepository.valueFromPath("a[0]" as never, testState)).toThrow(
+        "Invalid path: a[0]",
+      );
+      expect(() => PathRepository.valueFromPath("f[x]" as never, testState)).toThrow(
+        "Invalid path: non-numeric array index in f[x]",
+      );
     });
   });
 
@@ -241,13 +233,7 @@ describe("PathRepository", () => {
       }
 
       type ArrayPaths = Path<StateWithArray>;
-      const paths: ArrayPaths[] = [
-        "tags",
-        "tags[0]",
-        "items",
-        "items[0]",
-        "items[0].id",
-      ];
+      const paths: ArrayPaths[] = ["tags", "tags[0]", "items", "items[0]", "items[0].id"];
 
       // Arrays should now support indexing
       expect(paths.length).toBe(5);
@@ -287,9 +273,7 @@ describe("PathRepository", () => {
     });
 
     test("should parse mixed paths", () => {
-      const segments = PathRepository.parsePathSegments(
-        "users[0].profile.tags[2]"
-      );
+      const segments = PathRepository.parsePathSegments("users[0].profile.tags[2]");
       expect(segments).toEqual([
         { type: "property", key: "users" },
         { type: "index", index: 0 },
@@ -314,13 +298,13 @@ describe("PathRepository", () => {
 
     test("should throw error for unclosed bracket", () => {
       expect(() => PathRepository.parsePathSegments("a[0")).toThrow(
-        "Invalid path: unclosed bracket in a[0"
+        "Invalid path: unclosed bracket in a[0",
       );
     });
 
     test("should throw error for non-numeric index", () => {
       expect(() => PathRepository.parsePathSegments("a[x]")).toThrow(
-        "Invalid path: non-numeric array index in a[x]"
+        "Invalid path: non-numeric array index in a[x]",
       );
     });
   });

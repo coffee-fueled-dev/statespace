@@ -1,8 +1,8 @@
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import { jsonCodex } from "../adapters";
 
 describe("jsonCodex", () => {
-  const codex = jsonCodex<any>();
+  const codex = jsonCodex<unknown>();
 
   test("should have the key 'JSON'", () => {
     expect(codex.key).toBe("JSON");
@@ -53,8 +53,7 @@ describe("jsonCodex", () => {
   test("encoded string should be a base64 string", async () => {
     const simpleObject = { a: 1 };
     const encoded = await codex.encode(simpleObject);
-    const base64Regex =
-      /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
+    const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
     expect(base64Regex.test(encoded)).toBe(true);
   });
 

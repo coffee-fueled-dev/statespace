@@ -1,27 +1,31 @@
-import { beforeEach, describe, test, expect, jest } from "bun:test";
-import type {
-  Codex,
-  ExecutableStateSpace,
-  TransitionSuccess,
-} from "@statespace/core";
+import { beforeEach, describe, expect, jest, test } from "bun:test";
+import type { Codex, ExecutableStateSpace, TransitionSuccess } from "@statespace/core";
 import { Explorer } from "../adapters";
 
-// Mocks
-const mockCodex: Codex<any> = {
+type MockState = { value: number };
+
+const mockCodex: Codex<MockState> = {
   key: "mock",
   encode: jest.fn(async (state) => JSON.stringify(state)),
   decode: jest.fn(async (key) => JSON.parse(key)),
 };
 
-const mockSuccessTransition: TransitionSuccess<any> = {
+const mockSuccessTransition: TransitionSuccess<MockState> = {
   success: true,
   name: "t1",
   state: { value: 1 },
   effect: { path: "value", operation: "set", value: 1 },
 };
 
-const mockStateSpace: ExecutableStateSpace<any> = {
-  shape: { type: "object" },
+const mockStateSpace: ExecutableStateSpace<MockState> = {
+  shape: {
+    type: "object",
+    properties: {
+      value: { type: "number" },
+    },
+    required: ["value"],
+    additionalProperties: false,
+  },
   transitions: [
     jest.fn(() => ({ ...mockSuccessTransition, state: { value: 2 } })),
     jest.fn(() => ({ ...mockSuccessTransition, state: { value: 3 } })),
@@ -36,7 +40,7 @@ const mockStateSpace: ExecutableStateSpace<any> = {
 };
 
 describe("Explorer", () => {
-  let explorer: Explorer<any>;
+  let explorer: Explorer<MockState>;
 
   beforeEach(() => {
     // Reset mocks before each test
@@ -93,13 +97,13 @@ describe("Explorer", () => {
       const neighbor2Hash = await mockCodex.encode({ value: 3 });
 
       expect(explorer.graph.has(initialStateHash)).toBe(true);
-      const transitionsFromInitial = explorer.graph.get(initialStateHash)!;
-      expect(transitionsFromInitial.size).toBe(2);
-      expect(transitionsFromInitial.has(neighbor1Hash)).toBe(true);
-      expect(transitionsFromInitial.has(neighbor2Hash)).toBe(true);
+      const transitionsFromInitial = explorer.graph.get(initialStateHash);
+      expect(transitionsFromInitial?.size).toBe(2);
+      expect(transitionsFromInitial?.has(neighbor1Hash)).toBe(true);
+      expect(transitionsFromInitial?.has(neighbor2Hash)).toBe(true);
 
       // Check transition count
-      expect(transitionsFromInitial.get(neighbor1Hash)![1]).toBe(1);
+      expect(transitionsFromInitial?.get(neighbor1Hash)?.[1]).toBe(1);
     });
 
     test("should increment transition count on second visit", async () => {
@@ -108,17 +112,13 @@ describe("Explorer", () => {
       expect(explorer.uniqueStates).toBe(3);
       const initialStateHash = await mockCodex.encode(initialState);
       const neighbor1Hash = await mockCodex.encode({ value: 2 });
-      expect(explorer.graph.get(initialStateHash)!.get(neighbor1Hash)![1]).toBe(
-        1,
-      );
+      expect(explorer.graph.get(initialStateHash)?.get(neighbor1Hash)?.[1]).toBe(1);
 
       // Second visit
       await explorer.neighbors(initialState);
       expect(explorer.totalOperations).toBe(6); // 3 more operations
       expect(explorer.uniqueStates).toBe(3); // No new unique states
-      expect(explorer.graph.get(initialStateHash)!.get(neighbor1Hash)![1]).toBe(
-        2,
-      ); // Count incremented
+      expect(explorer.graph.get(initialStateHash)?.get(neighbor1Hash)?.[1]).toBe(2); // Count incremented
     });
   });
 

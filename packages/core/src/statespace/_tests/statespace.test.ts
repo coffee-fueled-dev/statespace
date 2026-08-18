@@ -1,4 +1,4 @@
-import { describe, test, expect } from "bun:test";
+import { describe, expect, test } from "bun:test";
 import type { Transition } from "../../transition/domain";
 import { StateSpaceRepository } from "../adapters";
 import type { Schema, StateSpace } from "../domain";
@@ -39,8 +39,7 @@ const myStateSpace: StateSpace<MyState> = {
 describe("StateSpaceRepository", () => {
   describe("makeExecutable", () => {
     test("should create an executable state space", () => {
-      const executableStateSpace =
-        StateSpaceRepository.makeExecutable(myStateSpace);
+      const executableStateSpace = StateSpaceRepository.makeExecutable(myStateSpace);
 
       // Check shape
       expect(executableStateSpace.shape).toEqual(myStateSchema);
@@ -51,8 +50,7 @@ describe("StateSpaceRepository", () => {
     });
 
     test("the executable transition should work correctly", () => {
-      const executableStateSpace =
-        StateSpaceRepository.makeExecutable(myStateSpace);
+      const executableStateSpace = StateSpaceRepository.makeExecutable(myStateSpace);
       const executableTransition = executableStateSpace.transitions[0];
 
       const initialState: MyState = { a: 10, b: "test" };
@@ -93,9 +91,7 @@ describe("StateSpaceRepository", () => {
         transitions: [badTransition],
       };
 
-      const executableStateSpace = StateSpaceRepository.makeExecutable(
-        stateSpaceWithBadTransition,
-      );
+      const executableStateSpace = StateSpaceRepository.makeExecutable(stateSpaceWithBadTransition);
       const executableTransition = executableStateSpace.transitions[0];
 
       const initialState: MyState = { a: 10, b: "test" };

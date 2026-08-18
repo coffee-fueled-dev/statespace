@@ -1,4 +1,4 @@
-import type { Path, IPathRepository, Value } from "./domain";
+import type { IPathRepository, Path, Value } from "./domain";
 
 export const PathRepository: IPathRepository = {
   paths: (object, prefix = "") => {
@@ -8,7 +8,7 @@ export const PathRepository: IPathRepository = {
     const _paths: TPath[] = [];
 
     for (const key in object) {
-      if (object.hasOwnProperty(key)) {
+      if (Object.hasOwn(object, key)) {
         const currentPath = prefix ? `${prefix}.${key}` : key;
         _paths.push(currentPath as TPath);
 
@@ -21,14 +21,8 @@ export const PathRepository: IPathRepository = {
               _paths.push(indexPath as TPath);
 
               // If array element is an object, recursively add its paths
-              if (
-                value[i] &&
-                typeof value[i] === "object" &&
-                !Array.isArray(value[i])
-              ) {
-                _paths.push(
-                  ...PathRepository.paths(value[i] as object, indexPath)
-                );
+              if (value[i] && typeof value[i] === "object" && !Array.isArray(value[i])) {
+                _paths.push(...PathRepository.paths(value[i] as object, indexPath));
               }
             }
           } else {
@@ -62,23 +56,19 @@ export const PathRepository: IPathRepository = {
     // Parse path segments that can include array indexing
     const segments = PathRepository.parsePathSegments(path);
 
-    let current: any = state;
+    let current: unknown = state;
     for (const segment of segments) {
       if (segment.type === "property") {
         if (current && typeof current === "object" && segment.key in current) {
-          current = current[segment.key];
+          current = (current as Record<string, unknown>)[segment.key];
         } else {
-          throw new Error("Invalid path: " + path);
+          throw new Error(`Invalid path: ${path}`);
         }
       } else if (segment.type === "index") {
-        if (
-          Array.isArray(current) &&
-          segment.index >= 0 &&
-          segment.index < current.length
-        ) {
+        if (Array.isArray(current) && segment.index >= 0 && segment.index < current.length) {
           current = current[segment.index];
         } else {
-          throw new Error("Invalid path: " + path);
+          throw new Error(`Invalid path: ${path}`);
         }
       }
     }
@@ -88,9 +78,8 @@ export const PathRepository: IPathRepository = {
 
   // Helper method to parse path segments
   parsePathSegments: (path: string) => {
-    const segments: Array<
-      { type: "property"; key: string } | { type: "index"; index: number }
-    > = [];
+    const segments: Array<{ type: "property"; key: string } | { type: "index"; index: number }> =
+      [];
     let i = 0;
 
     while (i < path.length) {
@@ -99,12 +88,12 @@ export const PathRepository: IPathRepository = {
         const start = i + 1;
         const end = path.indexOf("]", start);
         if (end === -1) {
-          throw new Error("Invalid path: unclosed bracket in " + path);
+          throw new Error(`Invalid path: unclosed bracket in ${path}`);
         }
         const indexStr = path.slice(start, end);
         const index = parseInt(indexStr, 10);
-        if (isNaN(index)) {
-          throw new Error("Invalid path: non-numeric array index in " + path);
+        if (Number.isNaN(index)) {
+          throw new Error(`Invalid path: non-numeric array index in ${path}`);
         }
         segments.push({ type: "index", index });
         i = end + 1;

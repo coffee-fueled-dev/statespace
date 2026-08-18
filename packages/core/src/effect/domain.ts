@@ -1,4 +1,4 @@
-import { type Path, type Value } from "../path/domain";
+import type { Path, Value } from "../path/domain";
 import type { Transition } from "../transition/domain";
 export type Scalar = number | string | boolean | undefined | null;
 export type Metadata = Record<string, Scalar>;
@@ -14,13 +14,11 @@ export type EffectFailure = {
   error: string;
 };
 
-export type EffectResult<TState extends object> =
-  | EffectSuccess<TState>
-  | EffectFailure;
+export type EffectResult<TState extends object> = EffectSuccess<TState> | EffectFailure;
 
 export type EffectFn<TState extends object> = (
   path: Path<TState>,
-  state: TState
+  state: TState,
 ) => EffectResult<TState>;
 
 type NumericEffect<TState extends object, P extends Path<TState>> = {
@@ -69,37 +67,28 @@ export type Effect<TState extends object> = {
 
 export interface IEffectRepository {
   readonly createImperative: <TState extends object>(
-    fn: (
-      value: Value<TState, Path<TState>>,
-      state: TState
-    ) => EffectResult<TState>
+    fn: (value: Value<TState, Path<TState>>, state: TState) => EffectResult<TState>,
   ) => EffectFn<TState>;
 
   readonly makeExecutable: <
     TEffect extends {
       path: string;
       operation: string;
-      value: any;
-    }
+      value: unknown;
+    },
   >(
-    effect: TEffect
-  ) => <TState extends object>(
-    path: string,
-    state: TState
-  ) => EffectResult<TState>;
+    effect: TEffect,
+  ) => <TState extends object>(path: Path<TState>, state: TState) => EffectResult<TState>;
 
-  readonly apply: <
-    TState extends object,
-    TPath extends Path<TState> = Path<TState>
-  >(
+  readonly apply: <TState extends object, TPath extends Path<TState> = Path<TState>>(
     state: TState,
     path: TPath,
     transition: Transition<TState>,
-    validator: (state: TState) => boolean
+    validator: (state: TState) => boolean,
   ) => EffectResult<TState>;
 
   readonly resolveValue: <TState extends object>(
     effect: Effect<TState>,
-    state: TState
+    state: TState,
   ) => Value<TState, Path<TState>>;
 }

@@ -1,30 +1,19 @@
 import { ConstraintRepository } from "../constraint/adapters";
 import { EffectRepository } from "../effect/adapters";
-import type {
-  ITransitionRepository,
-  TransitionFailure,
-  TransitionSuccess,
-} from "./domain";
+import type { ITransitionRepository, TransitionFailure, TransitionSuccess } from "./domain";
 
 export const TransitionRepository: ITransitionRepository = {
   apply: (state, transition, validator) =>
     TransitionRepository.makeExecutable(transition, validator)(state),
 
   validateConstraints: (phase, constraints, state) => {
-    const constrainstOfPhase = constraints.filter(
-      (constraint) => constraint.phase === phase,
-    );
+    const constrainstOfPhase = constraints.filter((constraint) => constraint.phase === phase);
     try {
       return constrainstOfPhase.every((constraint) => {
-        const result = ConstraintRepository.apply(
-          constraint,
-          state,
-          constraint.path,
-          phase,
-        );
+        const result = ConstraintRepository.apply(constraint, state, constraint.path, phase);
         return result.success;
       });
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   },

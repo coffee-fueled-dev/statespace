@@ -1,10 +1,10 @@
 #!/usr/bin/env bun
 
-import { readdir, stat, readFile, writeFile, mkdir } from "fs/promises";
-import { join, relative, resolve, basename } from "path";
-import { existsSync } from "fs";
-import parse from "parse-gitignore";
+import { existsSync } from "node:fs";
+import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
+import { basename, join, relative, resolve } from "node:path";
 import { minimatch } from "minimatch";
+import parse from "parse-gitignore";
 
 /**
  * Find the project root by looking for bun.lock or .git directory
@@ -69,12 +69,12 @@ class GitignoreFilter {
 
     // If pattern doesn't start with / and doesn't contain /, it should match at any level
     if (!normalized.startsWith("/") && !normalized.includes("/")) {
-      normalized = "**/" + normalized;
+      normalized = `**/${normalized}`;
     }
 
     // If pattern ends with /, it matches directories
     if (normalized.endsWith("/")) {
-      normalized = normalized + "**";
+      normalized = `${normalized}**`;
     }
 
     // Remove leading slash (we're working with relative paths)
@@ -150,10 +150,7 @@ class ContextCollector {
           }
         } catch (error) {
           if (this.options.verbose) {
-            console.warn(
-              `⚠️  Failed to load .gitignore from ${gitignorePath}:`,
-              error,
-            );
+            console.warn(`⚠️  Failed to load .gitignore from ${gitignorePath}:`, error);
           }
         }
       }
@@ -197,9 +194,7 @@ class ContextCollector {
       ".vscode/**",
     ];
 
-    return basicIgnorePatterns.some((pattern) =>
-      minimatch(filePath, pattern, { dot: true }),
-    );
+    return basicIgnorePatterns.some((pattern) => minimatch(filePath, pattern, { dot: true }));
   }
 
   private async getAllFiles(dir: string, baseDir: string): Promise<string[]> {
@@ -221,7 +216,7 @@ class ContextCollector {
 
         if (stats.isDirectory()) {
           // Check if directory should be ignored
-          if (!this.shouldIgnoreFile(relativePath + "/", entry)) {
+          if (!this.shouldIgnoreFile(`${relativePath}/`, entry)) {
             const subFiles = await this.getAllFiles(fullPath, baseDir);
             files.push(...subFiles);
           }
@@ -258,11 +253,8 @@ class ContextCollector {
     }
 
     const targetDir = resolve(this.options.targetDir || projectRoot);
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/[:.]/g, "-")
-      .slice(0, 19);
-    const baseName = basename(targetDir);
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+    const _baseName = basename(targetDir);
 
     // Create output directory
     const outputDir = this.options.outputDir || join(targetDir, ".llm-context");
@@ -355,12 +347,8 @@ class ContextCollector {
     console.log("🎉 LLM context collection complete!");
     console.log("");
     console.log("💡 Usage tips:");
-    console.log(
-      "   • Upload the combined file to your LLM for codebase analysis",
-    );
-    console.log(
-      "   • Files are automatically filtered using .gitignore patterns",
-    );
+    console.log("   • Upload the combined file to your LLM for codebase analysis");
+    console.log("   • Files are automatically filtered using .gitignore patterns");
     console.log("   • Lockfiles and binary files are excluded");
     console.log("   • Each file is clearly marked with its original path");
   }
@@ -381,9 +369,7 @@ async function main() {
       console.log("Options:");
       console.log("  --verbose, -v    Enable verbose output");
       console.log("  --hidden         Include hidden files/directories");
-      console.log(
-        "  --output, -o     Output directory (default: .llm-context)",
-      );
+      console.log("  --output, -o     Output directory (default: .llm-context)");
       console.log("  --help, -h       Show this help message");
       console.log("");
       console.log("Examples:");

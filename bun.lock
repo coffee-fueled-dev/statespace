@@ -68,6 +68,7 @@
       "version": "0.2.0-beta.1",
       "dependencies": {
         "@statespace/core": "workspace:*",
+        "@statespace/explorer": "workspace:*",
       },
       "peerDependencies": {
         "typescript": "^5.0.0",

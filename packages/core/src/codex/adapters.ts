@@ -1,8 +1,8 @@
 // TODO: Replace with Bun.gzip and Bun.gunzip
 // https://bun.com/docs/api/utils#bun-gzipsync
 
-import { gzip, gunzip } from "zlib";
-import { promisify } from "util";
+import { promisify } from "node:util";
+import { gunzip, gzip } from "zlib";
 import type { Codex } from "./entity";
 
 const gzipAsync = promisify(gzip);

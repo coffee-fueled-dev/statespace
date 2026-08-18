@@ -1,17 +1,12 @@
 import { PathRepository } from "../path/adapters";
 import type { Path, PathReference, Value } from "../path/domain";
-import type { EffectFailure, EffectSuccess, IEffectRepository } from "./domain";
+import type { Effect, EffectFailure, EffectFn, EffectSuccess, IEffectRepository } from "./domain";
 import { mergeValue, validateMutation } from "./libs";
 
 export const EffectRepository: IEffectRepository = {
   apply: (state, path, transition, validator) => {
-    type TState = typeof state;
-
     try {
-      const result = EffectRepository.makeExecutable(transition.effect)(
-        path,
-        state
-      );
+      const result = EffectRepository.makeExecutable(transition.effect)(path, state);
 
       if (!result.success) {
         return result;
@@ -29,7 +24,7 @@ export const EffectRepository: IEffectRepository = {
     } catch (error) {
       let errorMessage = "Failed to apply effect";
       if (error instanceof Error) {
-        errorMessage += ":\n" + error.message;
+        errorMessage += `:\n${error.message}`;
       }
       return {
         success: false,
@@ -55,40 +50,29 @@ export const EffectRepository: IEffectRepository = {
       const pathRef = effect.value as PathReference<TState, TPath>;
       const path = pathRef.slice(1) as TPath;
 
-      try {
-        return PathRepository.valueFromPath(path, state) as TValue;
-      } catch {
-        return undefined as any;
-      }
+      return PathRepository.valueFromPath(path, state) as TValue;
     } else {
       return effect.value as TValue;
     }
   },
 
-  makeExecutable: (effect: any) => (path: any, state: any) => {
+  makeExecutable: (effect) => (path, state) => {
     type TState = typeof state;
     type TPath = typeof path;
 
     const currentValue = PathRepository.valueFromPath(path, state);
 
-    function mergeAndValidate<TValue extends unknown>(
-      nextValue: TValue
-    ): EffectSuccess<TState> {
-      const validatedValue = validateMutation(
-        path,
-        state,
-        nextValue as Value<TState, TPath>
-      );
+    function mergeAndValidate<TValue>(nextValue: TValue): EffectSuccess<TState> {
+      const validatedValue = validateMutation(path, state, nextValue as Value<TState, TPath>);
       const nextState = mergeValue(state, path, validatedValue);
 
       return {
         success: true,
         state: nextState,
-        // effect: effect,
       };
     }
 
-    const effectValue = EffectRepository.resolveValue(effect as any, state);
+    const effectValue = EffectRepository.resolveValue(effect as unknown as Effect<TState>, state);
     switch (effect.operation) {
       case "set":
         return mergeAndValidate(effectValue);
@@ -114,31 +98,26 @@ export const EffectRepository: IEffectRepository = {
         return mergeAndValidate(String(effectValue) + String(currentValue));
 
       case "cut":
-        return mergeAndValidate(
-          String(currentValue).replace(String(effectValue), "")
-        );
+        return mergeAndValidate(String(currentValue).replace(String(effectValue), ""));
 
       // Custom transformation
-      case "transform":
-        const transformResult = effect.value(path, state);
+      case "transform": {
+        const transformResult = (effect.value as EffectFn<TState>)(path, state);
         if (transformResult.success) {
           return {
             success: true,
             state: transformResult.state,
-            effect: effect,
           };
         } else {
           return {
             success: false,
-            // effect,
             error: transformResult.error,
           } satisfies EffectFailure;
         }
+      }
 
       default:
-        throw new Error(
-          `Invalid effect operation: ${(effect as any).operation}`
-        );
+        throw new Error(`Invalid effect operation: ${effect.operation}`);
     }
   },
 } as const;

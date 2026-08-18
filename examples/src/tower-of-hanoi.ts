@@ -1,12 +1,6 @@
-import {
-  jsonCodex,
-  Path,
-  StateSpaceRepository,
-  type Schema,
-  type Transition,
-} from "@statespace/core";
-import { Explorer } from "@statespace/explorer";
 import { bfs } from "@statespace/bfs";
+import { jsonCodex, type Schema, StateSpaceRepository, type Transition } from "@statespace/core";
+import { Explorer } from "@statespace/explorer";
 
 interface HanoiState {
   pegs: number[][];
@@ -105,11 +99,7 @@ const result = await explorer.study(bfs, {
 console.log(result.exitReason);
 
 // If we found the goal, reconstruct and display the shortest path
-if (
-  result.exitReason === "Goal reached" &&
-  result.reconstructPath &&
-  goalHash
-) {
+if (result.exitReason === "Goal reached" && result.reconstructPath && goalHash) {
   const path = await result.reconstructPath(goalHash);
   console.log(`\nShortest path (${path.length} moves):`);
 
@@ -119,8 +109,6 @@ if (
   for (let i = 0; i < path.length; i++) {
     const transition = path[i];
     currentState = transition.state;
-    console.log(
-      `${i + 1}. ${transition.name}: ${JSON.stringify(currentState.pegs)}`
-    );
+    console.log(`${i + 1}. ${transition.name}: ${JSON.stringify(currentState.pegs)}`);
   }
 }
