@@ -304,6 +304,9 @@ describe("ConstraintRepository", () => {
       );
       const result = constraintFn("e[1]", shortState, "before_transition");
       expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.message).toBe("compared element is missing");
+      }
     });
 
     test("should validate boolean property in array object", () => {
