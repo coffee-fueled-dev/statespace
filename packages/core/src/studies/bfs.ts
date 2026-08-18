@@ -14,6 +14,7 @@ export async function bfs<T extends object>({
   explorer,
   initialState,
   exitConditions,
+  context,
   comparator = (a, b) => (a.effect?.cost ?? 0) - (b.effect?.cost ?? 0),
 }: BFSConfig<T>): Promise<BFSResult<T>> {
   explorer.resetState();
@@ -25,7 +26,7 @@ export async function bfs<T extends object>({
   const initialHash = await explorer.encode(initialState);
   visited.add(initialHash);
 
-  const initialNeighbors = await explorer.neighbors(initialState);
+  const initialNeighbors = await explorer.neighbors(initialState, context);
   for (const neighbor of initialNeighbors) {
     if (neighbor.result.success) {
       queue.enqueue(neighbor.result);
@@ -77,7 +78,7 @@ export async function bfs<T extends object>({
     if (visited.has(currentHash)) continue;
     visited.add(currentHash);
 
-    const neighbors = await explorer.neighbors(current.state);
+    const neighbors = await explorer.neighbors(current.state, context);
     for (const neighbor of neighbors) {
       const { result, hash } = neighbor;
       if (result.success && !visited.has(hash)) {

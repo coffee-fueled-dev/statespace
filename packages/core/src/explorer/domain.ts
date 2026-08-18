@@ -28,6 +28,7 @@ export type StudyResult<T extends object> = {
 export interface StudyConfig<T extends object> {
   explorer: IExplorer<T>;
   initialState: T;
+  context?: unknown;
   exitConditions: ((
     explorer: IExplorer<T>,
   ) => StudyResult<T> | null | Promise<StudyResult<T> | null>)[];
