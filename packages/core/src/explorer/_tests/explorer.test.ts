@@ -144,6 +144,16 @@ describe("Explorer", () => {
       expect(explorer.uniqueStates).toBe(3); // No new unique states
       expect(explorer.graph.get(initialStateHash)?.get(neighbor1Hash)?.[1]).toBe(2); // Count incremented
     });
+
+    test("passes context to stateSpace.apply for each transition", async () => {
+      const context = { quoteId: "quote-123" };
+      await explorer.neighbors(initialState, context);
+
+      expect(mockStateSpace.apply).toHaveBeenCalledTimes(3);
+      expect(mockStateSpace.apply).toHaveBeenCalledWith(initialState, "t1", context);
+      expect(mockStateSpace.apply).toHaveBeenCalledWith(initialState, "t2", context);
+      expect(mockStateSpace.apply).toHaveBeenCalledWith(initialState, "t3", context);
+    });
   });
 
   describe("study", () => {

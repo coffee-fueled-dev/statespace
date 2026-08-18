@@ -17,9 +17,10 @@ export class Explorer<T extends object> implements IExplorer<T> {
     name: string,
     initialState: T,
     transitionMap: Map<string, MarkovChain[2]>,
+    context?: unknown,
   ): Promise<HashedTransition<T> | null> {
     this._totalOperations++;
-    const result = this.stateSpace.apply(initialState, name);
+    const result = this.stateSpace.apply(initialState, name, context);
 
     if (result.success) {
       const resultStateHash = await this.encode(result.state);
@@ -46,16 +47,16 @@ export class Explorer<T extends object> implements IExplorer<T> {
     return null;
   }
 
-  async neighbors(initialState: T): Promise<HashedTransition<T>[]> {
+  async neighbors(initialState: T, context?: unknown): Promise<HashedTransition<T>[]> {
     const neighbors: HashedTransition<T>[] = [];
-    for await (const neighbor of this.neighborIterator(initialState)) {
+    for await (const neighbor of this.neighborIterator(initialState, context)) {
       neighbors.push(neighbor);
     }
 
     return neighbors;
   }
 
-  async *neighborIterator(initialState: T): AsyncGenerator<HashedTransition<T>> {
+  async *neighborIterator(initialState: T, context?: unknown): AsyncGenerator<HashedTransition<T>> {
     const initialStateHash = await this.encode(initialState);
     let transitionMap = this._graph.get(initialStateHash);
     if (!transitionMap) {
@@ -81,6 +82,7 @@ export class Explorer<T extends object> implements IExplorer<T> {
           transition.name,
           initialState,
           transitionMap,
+          context,
         );
         if (hashedTransition) {
           results.push(hashedTransition);

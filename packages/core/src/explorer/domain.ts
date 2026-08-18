@@ -9,8 +9,8 @@ export interface IExplorer<T extends object> {
   readonly totalOperations: number;
   readonly shape: Schema<T>;
 
-  neighbors(initialState: T): Promise<HashedTransition<T>[]>;
-  neighborIterator(initialState: T): AsyncGenerator<HashedTransition<T>>;
+  neighbors(initialState: T, context?: unknown): Promise<HashedTransition<T>[]>;
+  neighborIterator(initialState: T, context?: unknown): AsyncGenerator<HashedTransition<T>>;
   encode(state: T): Promise<string>;
   decode(key: string): Promise<T>;
   study<TResult>(
