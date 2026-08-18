@@ -1,13 +1,32 @@
 import { describe, expect, jest, test } from "bun:test";
-import type { IExplorer } from "../../explorer/domain";
+import type { HashedTransition, IExplorer } from "../../explorer/domain";
+import type { TransitionSuccess } from "../../transition/domain";
 import { bfs } from "../bfs";
 
 type MockState = { value: number };
 
+const effect: TransitionSuccess<MockState>["effect"] = {
+  path: "value",
+  operation: "set",
+  value: 2,
+};
+
 describe("bfs", () => {
-  test("passes study context to explorer.neighbors", async () => {
+  test("passes study context to explorer.neighbors on initial and loop calls", async () => {
     const context = { quoteId: "quote-123" };
-    const neighbors = jest.fn(async () => []);
+    const nextState: MockState = { value: 2 };
+    const nextNeighbor: HashedTransition<MockState> = {
+      hash: JSON.stringify(nextState),
+      result: {
+        success: true,
+        name: "t1",
+        state: nextState,
+        effect,
+      },
+    };
+    const neighbors = jest.fn(async (state: MockState) =>
+      state.value === 1 ? [nextNeighbor] : [],
+    );
     const explorer = {
       graph: new Map(),
       uniqueStates: 0,
@@ -29,5 +48,6 @@ describe("bfs", () => {
     });
 
     expect(neighbors).toHaveBeenCalledWith({ value: 1 }, context);
+    expect(neighbors).toHaveBeenCalledWith(nextState, context);
   });
 });
