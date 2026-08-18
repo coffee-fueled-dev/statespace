@@ -10,11 +10,20 @@
     "tools/*"
   ],
   "scripts": {
+    "format": "biome check --write .",
+    "format:check": "biome check .",
+    "typecheck": "tsc --noEmit",
     "context": "bun run --filter @statespace/scripts context",
-    "example:tower-of-hanoi": "bun run --filter @statespace/examples tower-of-hanoi"
+    "example:tower-of-hanoi": "bun run --filter @statespace/examples tower-of-hanoi",
+    "prepare": "husky",
+    "review": "agent-review run --scope staged --include-workstream"
   },
   "devDependencies": {
-    "@types/bun": "latest"
+    "@biomejs/biome": "2.5.6",
+    "@khoralabs/agent-review": "0.2.0",
+    "@types/bun": "latest",
+    "husky": "^9.1.7",
+    "typescript": "^5"
   },
   "peerDependencies": {},
   "trustedDependencies": [
