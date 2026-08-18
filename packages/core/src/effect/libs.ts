@@ -11,21 +11,31 @@ export const mergeValue = <T extends object, P extends Path<T>>(
     const segments = PathRepository.parsePathSegments(path);
     let current: object = draft;
 
-    // Navigate to the parent of the target
+    const childAt = (
+      parent: object,
+      segment: { type: "property"; key: string } | { type: "index"; index: number },
+    ): object => {
+      const next =
+        segment.type === "property"
+          ? (parent as Record<string, unknown>)[segment.key]
+          : (parent as unknown[])[segment.index];
+      if (typeof next !== "object" || next === null) {
+        throw new Error(`Invalid path: ${String(path)}`);
+      }
+      return next;
+    };
+
     for (let i = 0; i < segments.length - 1; i++) {
       const segment = segments[i];
-      if (segment.type === "property") {
-        current = (current as Record<string, object>)[segment.key];
-      } else if (segment.type === "index") {
-        current = (current as object[])[segment.index];
-      }
+      if (!segment) throw new Error(`Invalid path: ${String(path)}`);
+      current = childAt(current, segment);
     }
 
-    // Set the final value
     const lastSegment = segments[segments.length - 1];
+    if (!lastSegment) throw new Error(`Invalid path: ${String(path)}`);
     if (lastSegment.type === "property") {
       (current as Record<string, unknown>)[lastSegment.key] = nextValue;
-    } else if (lastSegment.type === "index") {
+    } else {
       (current as unknown[])[lastSegment.index] = nextValue;
     }
   });

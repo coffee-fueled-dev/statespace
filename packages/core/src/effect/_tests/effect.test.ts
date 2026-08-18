@@ -43,7 +43,7 @@ describe("Effect libs", () => {
 
     test("should update a nested value in an array element", () => {
       const newState = mergeValue(testState, "h[0].name", "updated");
-      expect(newState.h[0].name).toBe("updated");
+      expect(newState.h[0]?.name).toBe("updated");
       expect(newState.h[0]).toEqual({ id: 1, name: "updated" });
       expect(newState.h).not.toBe(testState.h);
     });
@@ -296,8 +296,8 @@ describe("EffectRepository", () => {
       const result = executable("h[0].name", testState);
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.state.h[0].name).toBe("updated");
-        expect(result.state.h[0].id).toBe(1); // should preserve other properties
+        expect(result.state.h[0]?.name).toBe("updated");
+        expect(result.state.h[0]?.id).toBe(1); // should preserve other properties
       }
     });
 

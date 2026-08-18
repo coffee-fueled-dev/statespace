@@ -38,16 +38,24 @@ function createMove(from: number, to: number): Transition<HanoiState> {
         const newState = structuredClone(state);
         const src = newState.pegs[from];
         const dst = newState.pegs[to];
+        if (!src || !dst) {
+          return {
+            success: false,
+            state,
+            error: "Invalid peg",
+          };
+        }
 
-        if (src.length === 0) {
+        const disk = src.at(-1);
+        if (disk === undefined) {
           return {
             success: false,
             state,
             error: "Empty source",
           };
         }
-        const disk = src[src.length - 1];
-        if (dst.length > 0 && dst[dst.length - 1] < disk) {
+        const top = dst.at(-1);
+        if (top !== undefined && top < disk) {
           return {
             success: false,
             state,
@@ -113,6 +121,7 @@ if (result.exitReason === "Goal reached" && result.reconstructPath && goalHash) 
 
   for (let i = 0; i < path.length; i++) {
     const transition = path[i];
+    if (!transition) continue;
     currentState = transition.state;
     console.log(`${i + 1}. ${transition.name}: ${JSON.stringify(currentState.pegs)}`);
   }

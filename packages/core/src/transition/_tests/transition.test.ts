@@ -54,7 +54,7 @@ describe("TransitionRepository", () => {
     test("should return true if there are no constraints for the phase", () => {
       const result = TransitionRepository.validateConstraints(
         "after_transition",
-        [constraints[0]], // only a before_transition constraint
+        constraints.slice(0, 1), // only a before_transition constraint
         testState,
       );
       expect(result).toBe(true);

@@ -362,6 +362,7 @@ async function main() {
   // Parse command line arguments
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
+    if (arg === undefined) continue;
 
     if (arg === "--help" || arg === "-h") {
       console.log("Usage: bun run collect-context.ts [options] [directory]");
@@ -382,7 +383,12 @@ async function main() {
     } else if (arg === "--hidden") {
       options.includeHidden = true;
     } else if (arg === "--output" || arg === "-o") {
-      options.outputDir = args[++i];
+      const outputDir = args[++i];
+      if (!outputDir) {
+        console.error("Missing value for --output");
+        process.exit(1);
+      }
+      options.outputDir = outputDir;
     } else if (!arg.startsWith("-")) {
       options.targetDir = arg;
     }

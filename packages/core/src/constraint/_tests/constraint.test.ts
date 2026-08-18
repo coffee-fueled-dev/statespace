@@ -215,7 +215,7 @@ describe("ConstraintRepository", () => {
         path: "e[2]",
         phase: "before_transition",
         validation: (path, state, phase) => ({
-          success: state.e[2] > 250,
+          success: (state.e[2] ?? Number.NEGATIVE_INFINITY) > 250,
           path,
           state,
           phase,
@@ -231,7 +231,7 @@ describe("ConstraintRepository", () => {
         path: "e[0]",
         phase: "before_transition",
         validation: (path, state, phase) => ({
-          success: state.e[0] > 150,
+          success: (state.e[0] ?? Number.NEGATIVE_INFINITY) > 150,
           path,
           state,
           phase,
@@ -262,7 +262,7 @@ describe("ConstraintRepository", () => {
 
     test("should use createImperative with array indexed paths", () => {
       const imperativeFn = (value: number, state: typeof testState) => ({
-        success: value < state.e[1], // e[0] should be less than e[1]
+        success: value < (state.e[1] ?? Number.NEGATIVE_INFINITY), // e[0] should be less than e[1]
         message: "First element should be less than second",
       });
       const constraintFn = ConstraintRepository.createImperative<typeof testState, "e[0]">(
@@ -274,7 +274,7 @@ describe("ConstraintRepository", () => {
 
     test("should fail createImperative with array indexed paths", () => {
       const imperativeFn = (value: number, state: typeof testState) => ({
-        success: value > state.e[2], // e[1] should be greater than e[2]
+        success: value > (state.e[2] ?? Number.NEGATIVE_INFINITY), // e[1] should be greater than e[2]
         message: "Second element should be greater than third",
       });
       const constraintFn = ConstraintRepository.createImperative<typeof testState, "e[1]">(
