@@ -4,9 +4,9 @@ import type { Effect, EffectFailure, EffectFn, EffectSuccess, IEffectRepository 
 import { mergeValue, validateMutation } from "./libs";
 
 export const EffectRepository: IEffectRepository = {
-  apply: (state, path, transition, validator) => {
+  apply: (state, path, transition, validator, context) => {
     try {
-      const result = EffectRepository.makeExecutable(transition.effect)(path, state);
+      const result = EffectRepository.makeExecutable(transition.effect)(path, state, context);
 
       if (!result.success) {
         return result;
@@ -33,9 +33,9 @@ export const EffectRepository: IEffectRepository = {
     }
   },
 
-  createImperative: (fn) => (path, state) => {
+  createImperative: (fn) => (path, state, context) => {
     const value = PathRepository.valueFromPath(path, state);
-    const result = fn(value, state);
+    const result = fn(value, state, context);
     return result;
   },
 
@@ -56,7 +56,7 @@ export const EffectRepository: IEffectRepository = {
     }
   },
 
-  makeExecutable: (effect) => (path, state) => {
+  makeExecutable: (effect) => (path, state, context) => {
     type TState = typeof state;
     type TPath = typeof path;
 
@@ -102,7 +102,7 @@ export const EffectRepository: IEffectRepository = {
 
       // Custom transformation
       case "transform": {
-        const transformResult = (effect.value as EffectFn<TState>)(path, state);
+        const transformResult = (effect.value as EffectFn<TState>)(path, state, context);
         if (transformResult.success) {
           return {
             success: true,

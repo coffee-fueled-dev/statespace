@@ -7,7 +7,10 @@ export interface Transition<TState extends object> {
   constraints: Constraint<TState>[]; // Constraints could point to any path of state, not exclusively TPath
 }
 
-export type TransitionFn<TState extends object> = (state: TState) => TransitionResult<TState>;
+export type TransitionFn<TState extends object> = (
+  state: TState,
+  context?: unknown,
+) => TransitionResult<TState>;
 
 export type TransitionSuccess<TState extends object> = {
   success: true;
@@ -20,7 +23,7 @@ export type TransitionFailure<TState extends object> = {
   name: string;
   state: TState;
   error: string;
-  effect: Effect<TState>;
+  effect?: Effect<TState>;
 };
 
 export type TransitionResult<TState extends object> =
@@ -32,6 +35,7 @@ export interface ITransitionRepository {
     state: TState,
     transition: Transition<TState>,
     validator: (state: TState) => boolean,
+    context?: unknown,
   ) => TransitionResult<TState>;
 
   readonly makeExecutable: <TState extends object>(

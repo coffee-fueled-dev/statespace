@@ -19,6 +19,7 @@ export type EffectResult<TState extends object> = EffectSuccess<TState> | Effect
 export type EffectFn<TState extends object> = (
   path: Path<TState>,
   state: TState,
+  context?: unknown,
 ) => EffectResult<TState>;
 
 type NumericEffect<TState extends object, P extends Path<TState>> = {
@@ -67,7 +68,11 @@ export type Effect<TState extends object> = {
 
 export interface IEffectRepository {
   readonly createImperative: <TState extends object>(
-    fn: (value: Value<TState, Path<TState>>, state: TState) => EffectResult<TState>,
+    fn: (
+      value: Value<TState, Path<TState>>,
+      state: TState,
+      context?: unknown,
+    ) => EffectResult<TState>,
   ) => EffectFn<TState>;
 
   readonly makeExecutable: <
@@ -78,13 +83,18 @@ export interface IEffectRepository {
     },
   >(
     effect: TEffect,
-  ) => <TState extends object>(path: Path<TState>, state: TState) => EffectResult<TState>;
+  ) => <TState extends object>(
+    path: Path<TState>,
+    state: TState,
+    context?: unknown,
+  ) => EffectResult<TState>;
 
   readonly apply: <TState extends object, TPath extends Path<TState> = Path<TState>>(
     state: TState,
     path: TPath,
     transition: Transition<TState>,
     validator: (state: TState) => boolean,
+    context?: unknown,
   ) => EffectResult<TState>;
 
   readonly resolveValue: <TState extends object>(

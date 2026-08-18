@@ -1,7 +1,6 @@
 import Queue from "queue";
 import type { Codex } from "../codex/entity";
 import type { ExecutableStateSpace, Schema } from "../statespace/domain";
-import type { TransitionResult } from "../transition/domain";
 import type { HashedTransition, IExplorer, MarkovChain, MarkovGraph, StudyConfig } from "./domain";
 
 export class Explorer<T extends object> implements IExplorer<T> {
@@ -15,12 +14,12 @@ export class Explorer<T extends object> implements IExplorer<T> {
   ) {}
 
   private async _processTransition(
-    transition: (state: T) => TransitionResult<T>,
+    name: string,
     initialState: T,
     transitionMap: Map<string, MarkovChain[2]>,
   ): Promise<HashedTransition<T> | null> {
     this._totalOperations++;
-    const result = transition(initialState);
+    const result = this.stateSpace.apply(initialState, name);
 
     if (result.success) {
       const resultStateHash = await this.encode(result.state);
@@ -79,7 +78,7 @@ export class Explorer<T extends object> implements IExplorer<T> {
     for (const transition of this.stateSpace.transitions) {
       q.push(async () => {
         const hashedTransition = await this._processTransition(
-          transition,
+          transition.name,
           initialState,
           transitionMap,
         );

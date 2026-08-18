@@ -239,6 +239,24 @@ describe("EffectRepository", () => {
       }
     });
 
+    test("transform operation receives context", () => {
+      const transformFn: EffectFn<typeof testState> = (_path, state, context) => ({
+        success: true,
+        state: { ...state, b: String(context) },
+      });
+      const effect = {
+        path: "b",
+        operation: "transform",
+        value: transformFn,
+      } satisfies Effect<TestState>;
+      const executable = EffectRepository.makeExecutable(effect);
+      const result = executable("b", testState, "quote-123");
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.state.b).toBe("quote-123");
+      }
+    });
+
     test("set operation should work with array indexing", () => {
       const effect = {
         path: "g[1]",

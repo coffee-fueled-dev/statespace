@@ -3,8 +3,8 @@ import { EffectRepository } from "../effect/adapters";
 import type { ITransitionRepository, TransitionFailure, TransitionSuccess } from "./domain";
 
 export const TransitionRepository: ITransitionRepository = {
-  apply: (state, transition, validator) =>
-    TransitionRepository.makeExecutable(transition, validator)(state),
+  apply: (state, transition, validator, context) =>
+    TransitionRepository.makeExecutable(transition, validator)(state, context),
 
   validateConstraints: (phase, constraints, state) => {
     const constrainstOfPhase = constraints.filter((constraint) => constraint.phase === phase);
@@ -18,7 +18,7 @@ export const TransitionRepository: ITransitionRepository = {
     }
   },
 
-  makeExecutable: (transition, validator) => (state) => {
+  makeExecutable: (transition, validator) => (state, context) => {
     const { effect, constraints } = transition;
     const { path } = effect;
 
@@ -40,7 +40,7 @@ export const TransitionRepository: ITransitionRepository = {
       } satisfies TransitionFailure<TState>;
     }
 
-    const result = EffectRepository.apply(state, path, transition, validator);
+    const result = EffectRepository.apply(state, path, transition, validator, context);
 
     if (!result.success) {
       return {
@@ -63,7 +63,7 @@ export const TransitionRepository: ITransitionRepository = {
       return {
         success: false,
         name: transition.name,
-        state: result.state,
+        state,
         error: "Constraints failed after transition",
         effect: effect,
       } satisfies TransitionFailure<TState>;

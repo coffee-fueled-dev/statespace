@@ -155,7 +155,30 @@ describe("TransitionRepository", () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error).toBe("Constraints failed after transition");
-        expect(result.state.a).toBe(15); // state is the new, invalid state
+        expect(result.state).toBe(testState);
+        expect(result.state.a).toBe(10);
+      }
+    });
+
+    test("should pass context through to a transform effect", () => {
+      const transition: Transition<typeof testState> = {
+        name: "With Context",
+        effect: {
+          path: "c",
+          operation: "transform",
+          value: (_path, state, context) => ({
+            success: true,
+            state: { ...state, c: String(context) },
+          }),
+        },
+        constraints: [],
+      };
+
+      const result = TransitionRepository.apply(testState, transition, validator, "quote-123");
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.state.c).toBe("quote-123");
+        expect(testState.c).toBe("hello");
       }
     });
   });

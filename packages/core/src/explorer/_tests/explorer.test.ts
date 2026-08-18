@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, jest, test } from "bun:test";
 import type { Codex } from "../../codex/entity";
 import type { ExecutableStateSpace } from "../../statespace/domain";
-import type { TransitionSuccess } from "../../transition/domain";
+import type { Transition, TransitionResult, TransitionSuccess } from "../../transition/domain";
 import { Explorer } from "../adapters";
 
 type MockState = { value: number };
@@ -12,11 +12,32 @@ const mockCodex: Codex<MockState> = {
   decode: jest.fn(async (key) => JSON.parse(key)),
 };
 
-const mockSuccessTransition: TransitionSuccess<MockState> = {
-  success: true,
-  name: "t1",
-  state: { value: 1 },
-  effect: { path: "value", operation: "set", value: 1 },
+const mockEffect: TransitionSuccess<MockState>["effect"] = {
+  path: "value",
+  operation: "set",
+  value: 1,
+};
+
+const mockTransitions: Transition<MockState>[] = [
+  { name: "t1", effect: mockEffect, constraints: [] },
+  { name: "t2", effect: mockEffect, constraints: [] },
+  { name: "t3", effect: mockEffect, constraints: [] },
+];
+
+const applyByName = (state: MockState, name: string): TransitionResult<MockState> => {
+  if (name === "t1") {
+    return { success: true, name, state: { value: 2 }, effect: mockEffect };
+  }
+  if (name === "t2") {
+    return { success: true, name, state: { value: 3 }, effect: mockEffect };
+  }
+  return {
+    success: false,
+    name,
+    state,
+    error: "failed",
+    effect: mockEffect,
+  };
 };
 
 const mockStateSpace: ExecutableStateSpace<MockState> = {
@@ -28,17 +49,18 @@ const mockStateSpace: ExecutableStateSpace<MockState> = {
     required: ["value"],
     additionalProperties: false,
   },
-  transitions: [
-    jest.fn(() => ({ ...mockSuccessTransition, state: { value: 2 } })),
-    jest.fn(() => ({ ...mockSuccessTransition, state: { value: 3 } })),
-    jest.fn(() => ({
-      success: false,
-      name: "t3",
-      state: { value: 1 },
-      error: "failed",
-      effect: mockSuccessTransition.effect,
-    })),
-  ],
+  transitions: mockTransitions,
+  apply: jest.fn(applyByName),
+  enabled: jest.fn((state) => {
+    const neighbors: TransitionSuccess<MockState>[] = [];
+    for (const transition of mockTransitions) {
+      const result = applyByName(state, transition.name);
+      if (result.success) {
+        neighbors.push(result);
+      }
+    }
+    return neighbors;
+  }),
 };
 
 describe("Explorer", () => {
