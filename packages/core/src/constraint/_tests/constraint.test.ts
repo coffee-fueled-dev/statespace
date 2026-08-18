@@ -274,7 +274,7 @@ describe("ConstraintRepository", () => {
 
     test("should fail createImperative with array indexed paths", () => {
       const imperativeFn = (value: number, state: typeof testState) => ({
-        success: value > (state.e[2] ?? Number.NEGATIVE_INFINITY), // e[1] should be greater than e[2]
+        success: value > state.e[2]!, // e[1] should be greater than e[2]
         message: "Second element should be greater than third",
       });
       const constraintFn = ConstraintRepository.createImperative<typeof testState, "e[1]">(
