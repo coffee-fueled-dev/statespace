@@ -273,10 +273,13 @@ describe("ConstraintRepository", () => {
     });
 
     test("should fail createImperative with array indexed paths", () => {
-      const imperativeFn = (value: number, state: typeof testState) => ({
-        success: value > state.e[2]!, // e[1] should be greater than e[2]
-        message: "Second element should be greater than third",
-      });
+      const imperativeFn = (value: number, state: typeof testState) => {
+        const compared = state.e[2];
+        return {
+          success: compared !== undefined && value > compared,
+          message: "Second element should be greater than third",
+        };
+      };
       const constraintFn = ConstraintRepository.createImperative<typeof testState, "e[1]">(
         imperativeFn,
       );
@@ -285,6 +288,22 @@ describe("ConstraintRepository", () => {
       if (!result.success) {
         expect(result.message).toBe("Second element should be greater than third");
       }
+    });
+
+    test("should fail createImperative greater-than when compared index is missing", () => {
+      const shortState = { ...testState, e: [100, 200] };
+      const imperativeFn = (value: number, state: typeof testState) => {
+        const compared = state.e[2];
+        return {
+          success: compared !== undefined && value > compared,
+          message: "compared element is missing",
+        };
+      };
+      const constraintFn = ConstraintRepository.createImperative<typeof testState, "e[1]">(
+        imperativeFn,
+      );
+      const result = constraintFn("e[1]", shortState, "before_transition");
+      expect(result.success).toBe(false);
     });
 
     test("should validate boolean property in array object", () => {
