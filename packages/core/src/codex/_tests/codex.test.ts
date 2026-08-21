@@ -50,22 +50,16 @@ describe("jsonCodex", () => {
     expect(decoded).toEqual(array);
   });
 
-  test("encoded string should be a base64 string", async () => {
-    const simpleObject = { a: 1 };
+  test("encoded string should equal JSON.stringify", async () => {
+    const simpleObject = { a: 1, b: "hello" };
     const encoded = await codex.encode(simpleObject);
-    const base64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
-    expect(base64Regex.test(encoded)).toBe(true);
+    expect(encoded).toBe(JSON.stringify(simpleObject));
   });
 
-  test("encoded string should be smaller than json string for large objects", async () => {
-    const largeObject: { [key: string]: string } = {};
-    for (let i = 0; i < 100; i++) {
-      largeObject[`key${i}`] = "a".repeat(100);
-    }
-
-    const jsonString = JSON.stringify(largeObject);
-    const encoded = await codex.encode(largeObject);
-
-    expect(encoded.length).toBeLessThan(jsonString.length);
+  test("encode falls back to null JSON when stringify returns undefined", async () => {
+    const encoded = await codex.encode(undefined);
+    expect(encoded).toBe("null");
+    expect(typeof encoded).toBe("string");
+    expect(await codex.decode(encoded)).toBeNull();
   });
 });
