@@ -24,8 +24,5 @@
     "husky": "^9.1.7",
     "typescript": "^5"
   },
-  "peerDependencies": {},
-  "trustedDependencies": [
-    "kuzu"
-  ]
+  "peerDependencies": {}
 }
