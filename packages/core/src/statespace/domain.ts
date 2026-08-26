@@ -26,9 +26,15 @@ export interface ExecutableStateSpace<TState extends object> {
 // biome-ignore lint/suspicious/noExplicitAny: intentional erase for heterogeneous registries
 export type AnyStateSpace = StateSpace<any>;
 
-/** Erase T for registry storage. Prefer this over casting to StateSpace<object>. */
-export function eraseStateSpace<TState extends object>(space: StateSpace<TState>): AnyStateSpace {
-  // AJV JSONSchemaType keeps Schema<T> from assigning to Schema<any>; erase here.
+/**
+ * Erase T for registry storage. Prefer this over casting to StateSpace<object>.
+ * Accepts a structural shape so unions of StateSpace<T_i> type-check
+ * (AJV JSONSchemaType blocks StateSpace<T> assigning to StateSpace<any> otherwise).
+ */
+export function eraseStateSpace(space: {
+  readonly shape: unknown;
+  readonly transitions: readonly unknown[];
+}): AnyStateSpace {
   return space as AnyStateSpace;
 }
 
