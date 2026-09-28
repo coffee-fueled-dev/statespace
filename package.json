@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit",
     "context": "bun run --filter @statespace/scripts context",
     "example:tower-of-hanoi": "bun run --filter @statespace/examples tower-of-hanoi",
+    "stage-release": "bun run tools/scripts/src/stage-release.ts",
     "prepare": "husky",
     "review": "agent-review run --scope staged --include-workstream"
   },

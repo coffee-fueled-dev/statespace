@@ -102,6 +102,10 @@ web_modules/
 
 *.tgz
 
+# Staged npm publish package
+
+release/
+
 # Yarn Integrity file
 
 .yarn-integrity

@@ -1,10 +1,40 @@
 {
   "name": "@statespace/core",
-  "module": "index.ts",
-  "type": "module",
   "version": "0.2.0-beta.1",
+  "description": "Configurable framework for generating and analyzing state graphs.",
+  "license": "MIT",
+  "type": "module",
+  "module": "./src/index.ts",
+  "engines": {
+    "bun": ">=1.1.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/coffee-fueled-dev/statespace.git",
+    "directory": "packages/core"
+  },
+  "homepage": "https://github.com/coffee-fueled-dev/statespace#readme",
+  "bugs": "https://github.com/coffee-fueled-dev/statespace/issues",
+  "keywords": [
+    "state-space",
+    "state-graph",
+    "exploration",
+    "pathfinding",
+    "bun"
+  ],
+  "files": [
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "import": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {},
   "peerDependencies": {

@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "context": "bun run src/context.ts"
+    "context": "bun run src/context.ts",
+    "stage-release": "bun run src/stage-release.ts"
   },
   "devDependencies": {
     "@types/parse-gitignore": "^1.0.2",

@@ -10,6 +10,12 @@ Please note that this repository is currently a **work in progress**.
 
 ---
 
+## Releasing
+
+Publish `@statespace/core` via GitHub Actions (`workflow_dispatch` on [`.github/workflows/release.yml`](./.github/workflows/release.yml)): choose semver + npm dist-tag. Staging script: `bun run stage-release -- <version>`. Requires the `NPM_TOKEN` repository secret.
+
+---
+
 ## What It Does
 
 This framework helps you model dynamic systems to:
