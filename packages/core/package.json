@@ -1,6 +1,6 @@
 {
   "name": "@very-coffee/statespace",
-  "version": "0.2.0",
+  "version": "0.1.0",
   "description": "Configurable framework for generating and analyzing state graphs.",
   "license": "MIT",
   "type": "module",
