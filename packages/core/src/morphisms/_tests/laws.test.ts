@@ -3,6 +3,7 @@ import {
   type Arrow,
   compose,
   composeArrows,
+  defineMorphisms,
   identityArrow,
   instantiate,
   type MorphismDef,
@@ -85,6 +86,42 @@ describe("classification", () => {
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.error.type).toBe("unclassified");
+  });
+});
+
+describe("defineMorphisms", () => {
+  test("preserves unparameterized definitions", () => {
+    const defs = defineMorphisms<Tip>()([armDef, bumpDef, finishDef]);
+    expect(defs.map((d) => d.name)).toEqual(["arm", "bump", "finish"]);
+    expect(defs[0]?.source).toBe("idle");
+    expect(defs[2]?.target).toBe("done");
+  });
+
+  test("accepts parameterized definitions", () => {
+    const bumpWithDelta: MorphismDef<Tip, unknown, "ready", "ready", { delta: number }> = {
+      name: "bump",
+      source: "ready",
+      target: "ready",
+      run: (v, _ctx, params) =>
+        ok({
+          ...v.state,
+          value: v.state.value + params.delta,
+          steps: [...v.state.steps, `bump:${params.delta}`],
+        }),
+    };
+    const defs = defineMorphisms<Tip>()([bumpWithDelta]);
+    expect(defs).toHaveLength(1);
+    const def = defs[0];
+    expect(def).toBeDefined();
+    if (!def) return;
+    expect(def.name).toBe("bump");
+    const arrow = instantiate(def, { delta: 4 }, objects, "bump:4");
+    const ready = { tip: "ready" as const, value: 1, steps: [] };
+    const result = arrow.run(witness(ready), undefined);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.state.value).toBe(5);
+    expect(arrow.params).toEqual({ delta: 4 });
   });
 });
 

@@ -11,7 +11,16 @@ import { err, flatMap, ok, type Result } from "./result";
 
 /** Preserve literal morphism name unions from a const definition list. */
 export function defineMorphisms<TState extends object, TContext = unknown>() {
-  return <const TDefs extends readonly MorphismDef<TState, TContext, string, string, undefined>[]>(
+  return <
+    const TDefs extends readonly MorphismDef<
+      TState,
+      TContext,
+      string,
+      string,
+      // biome-ignore lint/suspicious/noExplicitAny: open params slot for parameterized defs
+      any
+    >[],
+  >(
     definitions: TDefs,
   ): TDefs => definitions;
 }

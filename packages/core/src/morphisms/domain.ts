@@ -24,7 +24,8 @@ export type SemanticObject<TState extends object, K extends string = string> = {
 
 /**
  * Declarative morphism. `run` returns the next raw state; the category seals
- * source membership and target closure around it.
+ * source membership and target closure around it. Witness keys are `string` so
+ * heterogeneous definition lists remain assignable (source checked at seal time).
  */
 export type MorphismDef<
   TState extends object,
@@ -37,7 +38,7 @@ export type MorphismDef<
   readonly source: S;
   readonly target: T;
   readonly run: (
-    value: ObjectValue<TState, S>,
+    value: ObjectValue<TState, string>,
     context: TContext,
     params: TParams,
   ) => Result<TState, MorphismError>;

@@ -34,6 +34,19 @@ import {
   instantiate,
   ok,
 } from "@very-coffee/statespace/morphisms";
+import type { Schema } from "@very-coffee/statespace";
+
+type Tip = { tip: "idle" | "ready"; value: number };
+
+const shape = {
+  type: "object",
+  properties: {
+    tip: { type: "string", enum: ["idle", "ready"] },
+    value: { type: "number" },
+  },
+  required: ["tip", "value"],
+  additionalProperties: false,
+} as unknown as Schema<Tip>;
 
 const objects = defineObjects<Tip>()([
   { key: "idle", contains: (s) => s.tip === "idle" },
