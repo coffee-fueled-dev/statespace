@@ -31,7 +31,7 @@ export class Explorer<T extends object> implements IExplorer<T> {
         transitionMap.set(resultStateHash, [
           {
             name: result.name,
-            path: result.effect.path,
+            ...("path" in result.effect ? { path: result.effect.path } : {}),
             cost: result.effect.cost,
             meta: result.effect.meta,
           },

@@ -216,9 +216,8 @@ describe("StateSpaceRepository", () => {
       const withContext: Transition<MyState> = {
         name: "set_from_context",
         effect: {
-          path: "b",
           operation: "transform",
-          value: (_path, state, context) => ({
+          transform: (state, context) => ({
             success: true,
             state: { ...state, b: String(context) },
           }),
@@ -275,9 +274,8 @@ describe("StateSpaceRepository", () => {
       const gated: Transition<MyState> = {
         name: "set_from_context",
         effect: {
-          path: "b",
           operation: "transform",
-          value: (_path, state, context) => ({
+          transform: (state, context) => ({
             success: true,
             state: { ...state, b: String(context) },
           }),

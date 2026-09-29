@@ -20,7 +20,6 @@ export const TransitionRepository: ITransitionRepository = {
 
   makeExecutable: (transition, validator) => (state, context) => {
     const { effect, constraints } = transition;
-    const { path } = effect;
 
     type TState = typeof state;
 
@@ -40,7 +39,7 @@ export const TransitionRepository: ITransitionRepository = {
       } satisfies TransitionFailure<TState>;
     }
 
-    const result = EffectRepository.apply(state, path, transition, validator, context);
+    const result = EffectRepository.apply(state, transition, validator, context);
 
     if (!result.success) {
       return {

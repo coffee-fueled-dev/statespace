@@ -108,6 +108,35 @@ describe("Explorer", () => {
   describe("neighborIterator", () => {
     const initialState = { value: 1 };
 
+    test("omits path on transform-effect edges", async () => {
+      const transformEffect: TransitionSuccess<MockState>["effect"] = {
+        operation: "transform",
+        transform: (state) => ({ success: true, state: { value: state.value + 10 } }),
+      };
+      const transformSpace: ExecutableStateSpace<MockState> = {
+        ...mockStateSpace,
+        transitions: [{ name: "bump", effect: transformEffect, constraints: [] }],
+        apply: jest.fn((state, name): TransitionResult<MockState> => {
+          if (name !== "bump") {
+            return { success: false, name, state, error: "unknown", effect: transformEffect };
+          }
+          return {
+            success: true,
+            name,
+            state: { value: state.value + 10 },
+            effect: transformEffect,
+          };
+        }),
+      };
+      const transformExplorer = new Explorer(transformSpace, mockCodex);
+      await transformExplorer.neighbors(initialState);
+      const initialHash = await mockCodex.encode(initialState);
+      const nextHash = await mockCodex.encode({ value: 11 });
+      const edge = transformExplorer.graph.get(initialHash)?.get(nextHash)?.[0];
+      expect(edge?.name).toBe("bump");
+      expect(edge?.path).toBeUndefined();
+    });
+
     test("should explore neighbors and update graph correctly on first visit", async () => {
       const neighbors = await explorer.neighbors(initialState);
 
