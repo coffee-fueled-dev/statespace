@@ -40,7 +40,8 @@ export type MarkovChain = [
   [
     {
       name: string;
-      path: string;
+      /** Present for path-focused effects; omitted for whole-state transforms. */
+      path?: string;
       meta?: Metadata;
       cost?: number | null | undefined;
     },

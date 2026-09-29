@@ -1,12 +1,20 @@
 import { PathRepository } from "../path/adapters";
 import type { Path, PathReference, Value } from "../path/domain";
-import type { Effect, EffectFailure, EffectFn, EffectSuccess, IEffectRepository } from "./domain";
+import type {
+  Effect,
+  EffectFailure,
+  EffectSuccess,
+  IEffectRepository,
+  PathEffect,
+  TransformEffect,
+} from "./domain";
+import { isPathEffect, isTransformEffect } from "./domain";
 import { mergeValue, validateMutation } from "./libs";
 
 export const EffectRepository: IEffectRepository = {
-  apply: (state, path, transition, validator, context) => {
+  apply: (state, transition, validator, context) => {
     try {
-      const result = EffectRepository.makeExecutable(transition.effect)(path, state, context);
+      const result = EffectRepository.makeExecutable(transition.effect)(state, context);
 
       if (!result.success) {
         return result;
@@ -33,12 +41,6 @@ export const EffectRepository: IEffectRepository = {
     }
   },
 
-  createImperative: (fn) => (path, state, context) => {
-    const value = PathRepository.valueFromPath(path, state);
-    const result = fn(value, state, context);
-    return result;
-  },
-
   resolveValue: (effect, state) => {
     type TState = typeof state;
     type TPath = Path<TState>;
@@ -56,8 +58,30 @@ export const EffectRepository: IEffectRepository = {
     }
   },
 
-  makeExecutable: (effect) => (path, state, context) => {
+  makeExecutable: (effect) => (state, context) => {
     type TState = typeof state;
+
+    if (isTransformEffect(effect as Effect<TState>)) {
+      const transformEffect = effect as TransformEffect<TState>;
+      const transformResult = transformEffect.transform(state, context);
+      if (transformResult.success) {
+        return {
+          success: true,
+          state: transformResult.state,
+        };
+      }
+      return {
+        success: false,
+        error: transformResult.error,
+      } satisfies EffectFailure;
+    }
+
+    if (!isPathEffect(effect as Effect<TState>)) {
+      throw new Error(`Invalid effect operation: ${(effect as { operation: string }).operation}`);
+    }
+
+    const pathEffect = effect as PathEffect<TState>;
+    const path = pathEffect.path as Path<TState>;
     type TPath = typeof path;
 
     const currentValue = PathRepository.valueFromPath(path, state);
@@ -72,12 +96,11 @@ export const EffectRepository: IEffectRepository = {
       };
     }
 
-    const effectValue = EffectRepository.resolveValue(effect as unknown as Effect<TState>, state);
-    switch (effect.operation) {
+    const effectValue = EffectRepository.resolveValue(pathEffect, state);
+    switch (pathEffect.operation) {
       case "set":
         return mergeAndValidate(effectValue);
 
-      // Numeric operations
       case "add":
         return mergeAndValidate(Number(currentValue) + Number(effectValue));
 
@@ -90,7 +113,6 @@ export const EffectRepository: IEffectRepository = {
       case "divide":
         return mergeAndValidate(Number(currentValue) / Number(effectValue));
 
-      // String operations
       case "append":
         return mergeAndValidate(String(currentValue) + String(effectValue));
 
@@ -100,24 +122,10 @@ export const EffectRepository: IEffectRepository = {
       case "cut":
         return mergeAndValidate(String(currentValue).replace(String(effectValue), ""));
 
-      // Custom transformation
-      case "transform": {
-        const transformResult = (effect.value as EffectFn<TState>)(path, state, context);
-        if (transformResult.success) {
-          return {
-            success: true,
-            state: transformResult.state,
-          };
-        } else {
-          return {
-            success: false,
-            error: transformResult.error,
-          } satisfies EffectFailure;
-        }
-      }
-
       default:
-        throw new Error(`Invalid effect operation: ${effect.operation}`);
+        throw new Error(
+          `Invalid effect operation: ${(pathEffect as { operation: string }).operation}`,
+        );
     }
   },
 } as const;

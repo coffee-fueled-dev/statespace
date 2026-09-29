@@ -164,9 +164,8 @@ describe("TransitionRepository", () => {
       const transition: Transition<typeof testState> = {
         name: "With Context",
         effect: {
-          path: "c",
           operation: "transform",
-          value: (_path, state, context) => ({
+          transform: (state, context) => ({
             success: true,
             state: { ...state, c: String(context) },
           }),

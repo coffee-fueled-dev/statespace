@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import type { Transition } from "../../transition";
 import { EffectRepository } from "../adapters";
-import type { Effect, EffectFn } from "../domain";
+import type { Effect, PathEffect, TransformFn } from "../domain";
 import { mergeValue, validateMutation } from "../libs";
 
 type TestState = typeof testState;
@@ -114,9 +114,9 @@ describe("EffectRepository", () => {
         path: "a",
         operation: "set",
         value: 100,
-      };
+      } satisfies PathEffect<TestState>;
       const executable = EffectRepository.makeExecutable(effect);
-      const result = executable("a", testState);
+      const result = executable(testState);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.state.a).toBe(100);
@@ -130,7 +130,7 @@ describe("EffectRepository", () => {
         value: 5,
       } satisfies Effect<TestState>;
       const executable = EffectRepository.makeExecutable(effect);
-      const result = executable("a", testState);
+      const result = executable(testState);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.state.a).toBe(15);
@@ -144,7 +144,7 @@ describe("EffectRepository", () => {
         value: 5,
       } satisfies Effect<TestState>;
       const executable = EffectRepository.makeExecutable(effect);
-      const result = executable("a", testState);
+      const result = executable(testState);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.state.a).toBe(5);
@@ -158,7 +158,7 @@ describe("EffectRepository", () => {
         value: 2,
       } satisfies Effect<TestState>;
       const executable = EffectRepository.makeExecutable(effect);
-      const result = executable("a", testState);
+      const result = executable(testState);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.state.a).toBe(20);
@@ -172,7 +172,7 @@ describe("EffectRepository", () => {
         value: 2,
       } satisfies Effect<TestState>;
       const executable = EffectRepository.makeExecutable(effect);
-      const result = executable("a", testState);
+      const result = executable(testState);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.state.a).toBe(5);
@@ -186,7 +186,7 @@ describe("EffectRepository", () => {
         value: " world",
       } satisfies Effect<TestState>;
       const executable = EffectRepository.makeExecutable(effect);
-      const result = executable("b", testState);
+      const result = executable(testState);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.state.b).toBe("hello world");
@@ -200,7 +200,7 @@ describe("EffectRepository", () => {
         value: "world ",
       } satisfies Effect<TestState>;
       const executable = EffectRepository.makeExecutable(effect);
-      const result = executable("b", testState);
+      const result = executable(testState);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.state.b).toBe("world hello");
@@ -214,7 +214,7 @@ describe("EffectRepository", () => {
         value: "ell",
       } satisfies Effect<TestState>;
       const executable = EffectRepository.makeExecutable(effect);
-      const result = executable("b", testState);
+      const result = executable(testState);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.state.b).toBe("ho");
@@ -222,17 +222,16 @@ describe("EffectRepository", () => {
     });
 
     test("transform operation", () => {
-      const transformFn: EffectFn<typeof testState> = (_path, state) => ({
+      const transformFn: TransformFn<typeof testState> = (state) => ({
         success: true,
         state: { ...state, a: state.a + 1 },
       });
       const effect = {
-        path: "a",
         operation: "transform",
-        value: transformFn,
+        transform: transformFn,
       } satisfies Effect<TestState>;
       const executable = EffectRepository.makeExecutable(effect);
-      const result = executable("a", testState);
+      const result = executable(testState);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.state.a).toBe(11);
@@ -240,17 +239,16 @@ describe("EffectRepository", () => {
     });
 
     test("transform operation receives context", () => {
-      const transformFn: EffectFn<typeof testState> = (_path, state, context) => ({
+      const transformFn: TransformFn<typeof testState> = (state, context) => ({
         success: true,
         state: { ...state, b: String(context) },
       });
       const effect = {
-        path: "b",
         operation: "transform",
-        value: transformFn,
+        transform: transformFn,
       } satisfies Effect<TestState>;
       const executable = EffectRepository.makeExecutable(effect);
-      const result = executable("b", testState, "quote-123");
+      const result = executable(testState, "quote-123");
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.state.b).toBe("quote-123");
@@ -258,13 +256,13 @@ describe("EffectRepository", () => {
     });
 
     test("set operation should work with array indexing", () => {
-      const effect = {
+      const effect: Effect<TestState> = {
         path: "g[1]",
         operation: "set",
         value: 999,
       };
       const executable = EffectRepository.makeExecutable(effect);
-      const result = executable("g[1]", testState);
+      const result = executable(testState);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.state.g[1]).toBe(999);
@@ -279,7 +277,7 @@ describe("EffectRepository", () => {
         value: 50,
       };
       const executable = EffectRepository.makeExecutable(effect);
-      const result = executable("g[0]", testState);
+      const result = executable(testState);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.state.g[0]).toBe(150);
@@ -287,13 +285,13 @@ describe("EffectRepository", () => {
     });
 
     test("set operation should work with nested array paths", () => {
-      const effect = {
+      const effect: Effect<TestState> = {
         path: "h[0].name",
         operation: "set",
         value: "updated",
-      } satisfies Effect<TestState>;
+      };
       const executable = EffectRepository.makeExecutable(effect);
-      const result = executable("h[0].name", testState);
+      const result = executable(testState);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.state.h[0]?.name).toBe("updated");
@@ -308,7 +306,7 @@ describe("EffectRepository", () => {
         value: 1,
       } satisfies Effect<TestState>;
       const executable = EffectRepository.makeExecutable(effect);
-      expect(() => executable("a", testState)).toThrow("Invalid effect operation: invalid_op");
+      expect(() => executable(testState)).toThrow("Invalid effect operation: invalid_op");
     });
   });
 
@@ -325,7 +323,7 @@ describe("EffectRepository", () => {
 
     test("should apply effect and pass validation", () => {
       const validator = (state: typeof testState) => state.a === 100;
-      const result = EffectRepository.apply(testState, "a", transition, validator);
+      const result = EffectRepository.apply(testState, transition, validator);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.state.a).toBe(100);
@@ -334,7 +332,7 @@ describe("EffectRepository", () => {
 
     test("should return failure if validation fails", () => {
       const validator = (state: typeof testState) => state.a !== 100;
-      const result = EffectRepository.apply(testState, "a", transition, validator);
+      const result = EffectRepository.apply(testState, transition, validator);
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error).toBe("Malformed state after effect");
@@ -352,7 +350,7 @@ describe("EffectRepository", () => {
         constraints: [],
       } satisfies Transition<typeof testState>;
       const validator = () => true;
-      const result = EffectRepository.apply(testState, "a", badTransition, validator);
+      const result = EffectRepository.apply(testState, badTransition, validator);
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error).toContain("Failed to apply effect");

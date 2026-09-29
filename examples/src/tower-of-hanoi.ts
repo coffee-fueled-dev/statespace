@@ -32,16 +32,14 @@ function createMove(from: number, to: number): Transition<HanoiState> {
     name: `Move ${from}->${to}`,
     constraints: [], // We'll enforce legality in the effect
     effect: {
-      path: "pegs",
       operation: "transform",
-      value: (_path, state) => {
+      transform: (state) => {
         const newState = structuredClone(state);
         const src = newState.pegs[from];
         const dst = newState.pegs[to];
         if (!src || !dst) {
           return {
             success: false,
-            state,
             error: "Invalid peg",
           };
         }
@@ -50,7 +48,6 @@ function createMove(from: number, to: number): Transition<HanoiState> {
         if (disk === undefined) {
           return {
             success: false,
-            state,
             error: "Empty source",
           };
         }
@@ -58,7 +55,6 @@ function createMove(from: number, to: number): Transition<HanoiState> {
         if (top !== undefined && top < disk) {
           return {
             success: false,
-            state,
             error: "Illegal move",
           };
         }
