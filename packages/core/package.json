@@ -1,6 +1,6 @@
 {
   "name": "@very-coffee/statespace",
-  "version": "0.2.0-beta.1",
+  "version": "0.2.0",
   "description": "Configurable framework for generating and analyzing state graphs.",
   "license": "MIT",
   "type": "module",
@@ -31,6 +31,10 @@
     ".": {
       "import": "./src/index.ts",
       "types": "./src/index.ts"
+    },
+    "./morphisms": {
+      "import": "./src/morphisms/index.ts",
+      "types": "./src/morphisms/index.ts"
     }
   },
   "publishConfig": {
