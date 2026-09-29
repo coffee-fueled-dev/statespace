@@ -3,7 +3,7 @@
   "configVersion": 0,
   "workspaces": {
     "": {
-      "name": "@statespace/monorepo",
+      "name": "@very-coffee/statespace-monorepo",
       "devDependencies": {
         "@biomejs/biome": "2.5.6",
         "@khoralabs/agent-review": "^0.2.2",
@@ -13,17 +13,17 @@
       },
     },
     "examples": {
-      "name": "@statespace/examples",
+      "name": "@very-coffee/statespace-examples",
       "version": "0.2.0-beta.1",
       "dependencies": {
-        "@statespace/core": "workspace:*",
+        "@very-coffee/statespace": "workspace:*",
       },
       "peerDependencies": {
         "typescript": "^5.0.0",
       },
     },
     "packages/core": {
-      "name": "@statespace/core",
+      "name": "@very-coffee/statespace",
       "version": "0.2.0-beta.1",
       "dependencies": {
         "@datastructures-js/priority-queue": "^6.3.4",
@@ -36,7 +36,7 @@
       },
     },
     "tools/scripts": {
-      "name": "@statespace/scripts",
+      "name": "@very-coffee/statespace-scripts",
       "version": "0.1.0-beta.0",
       "devDependencies": {
         "@types/parse-gitignore": "^1.0.2",
@@ -106,12 +106,6 @@
 
     "@standard-schema/spec": ["@standard-schema/spec@1.1.0", "", {}, "sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w=="],
 
-    "@statespace/core": ["@statespace/core@workspace:packages/core"],
-
-    "@statespace/examples": ["@statespace/examples@workspace:examples"],
-
-    "@statespace/scripts": ["@statespace/scripts@workspace:tools/scripts"],
-
     "@tokenizer/inflate": ["@tokenizer/inflate@0.4.1", "", { "dependencies": { "debug": "^4.4.3", "token-types": "^6.1.1" } }, "sha512-2mAv+8pkG6GIZiF1kNg1jAjh27IDxEPKwdGul3snfztFerfPGI1LjDezZp3i7BElXompqEtPmoPx6c2wgtWsOA=="],
 
     "@tokenizer/token": ["@tokenizer/token@0.3.0", "", {}, "sha512-OvjF+z51L3ov0OyAU0duzsYuvO01PH7x4t6DJx+guahgTnBHkhJdG7soQeTSFLWN3efnHyibZ4Z8l2EuWwJN3A=="],
@@ -125,6 +119,12 @@
     "@types/react": ["@types/react@19.1.12", "", { "dependencies": { "csstype": "^3.0.2" } }, "sha512-cMoR+FoAf/Jyq6+Df2/Z41jISvGZZ2eTlnsaJRptmZ76Caldwy1odD4xTr/gNV9VLj0AWgg/nmkevIyUfIIq5w=="],
 
     "@vercel/oidc": ["@vercel/oidc@3.2.0", "", {}, "sha512-UycprH3T6n3jH0k44NHMa7pnFHGu/N05MjojYr+Mc6I7obkoLIJujSWwin1pCvdy/eOxrI/l3uDLQsmcrOb4ug=="],
+
+    "@very-coffee/statespace": ["@very-coffee/statespace@workspace:packages/core"],
+
+    "@very-coffee/statespace-examples": ["@very-coffee/statespace-examples@workspace:examples"],
+
+    "@very-coffee/statespace-scripts": ["@very-coffee/statespace-scripts@workspace:tools/scripts"],
 
     "@workflow/serde": ["@workflow/serde@4.1.0", "", {}, "sha512-pav4F2BoirECWR7Nf1TKt+2eETcBj7jj4cBefQ8VXQCA6NPkaKeLfj/zMgi+3zYV5ZIBT4GuUiphsj0/b9hPQQ=="],
 

@@ -1,4 +1,4 @@
-name: release @statespace/core
+name: release @very-coffee/statespace
 
 on:
   workflow_dispatch:
@@ -70,7 +70,7 @@ jobs:
         run: |
           set -euo pipefail
           echo "npm user: $(npm whoami)"
-          echo "Dry-run (404 here = no publish rights on @statespace scope)..."
+          echo "Dry-run (404 here = no publish rights on @very-coffee scope)..."
           (cd release && npm publish --access public --tag "$NPM_TAG" --dry-run)
 
       - name: publish
@@ -102,7 +102,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add packages/core/package.json
           git diff --cached --quiet && echo "::warning::packages/core/package.json version unchanged" && exit 0
-          git commit -m "chore(release): @statespace/core v${VERSION}"
+          git commit -m "chore(release): @very-coffee/statespace v${VERSION}"
           git push origin "HEAD:refs/heads/${{ github.ref_name }}"
 
       - name: tag and push
@@ -112,5 +112,5 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git tag "core-v${VERSION}"
-          git push origin "core-v${VERSION}"
+          git tag "statespace-v${VERSION}"
+          git push origin "statespace-v${VERSION}"

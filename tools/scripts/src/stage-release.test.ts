@@ -39,7 +39,7 @@ describe("stageRelease", () => {
       devDependencies?: unknown;
       publishConfig?: { access?: string };
     };
-    expect(pkg.name).toBe("@statespace/core");
+    expect(pkg.name).toBe("@very-coffee/statespace");
     expect(pkg.version).toBe("0.0.0-test");
     expect(pkg.private).toBeUndefined();
     expect(pkg.dependencies?.immer).toBeDefined();

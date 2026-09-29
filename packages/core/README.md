@@ -1,4 +1,4 @@
-# @statespace/core
+# @very-coffee/statespace
 
 ## Typing / registries
 

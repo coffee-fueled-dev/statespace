@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * Stage @statespace/core under release/ for npm publish.
+ * Stage @very-coffee/statespace under release/ for npm publish.
  */
 
 import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, statSync } from "node:fs";

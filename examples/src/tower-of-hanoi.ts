@@ -5,7 +5,7 @@ import {
   type Schema,
   StateSpaceRepository,
   type Transition,
-} from "@statespace/core";
+} from "@very-coffee/statespace";
 
 interface HanoiState {
   pegs: number[][];
