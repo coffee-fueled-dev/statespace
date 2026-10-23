@@ -6,4 +6,5 @@ export * from "./path";
 export * from "./statespace";
 export * from "./studies/bfs";
 export * from "./studies/dfs";
+export * from "./studies/uniformCost";
 export * from "./transition";
