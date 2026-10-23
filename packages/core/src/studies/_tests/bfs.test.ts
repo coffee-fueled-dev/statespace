@@ -96,8 +96,8 @@ describe("bfs", () => {
       exitConditions: [],
     });
 
-    const path = await result.reconstructPath!("G");
-    expect(path.map((t) => t.name)).toEqual(["direct"]);
+    const path = await result.reconstructPath?.("G");
+    expect(path?.map((t) => t.name)).toEqual(["direct"]);
   });
 
   test("does not re-enqueue a state reached by a longer path", async () => {
@@ -121,7 +121,7 @@ describe("bfs", () => {
     });
 
     expect(expandedViaNeighbors.filter((id) => id === "B")).toHaveLength(1);
-    const path = await result.reconstructPath!("B");
-    expect(path.map((t) => t.name)).toEqual(["toB"]);
+    const path = await result.reconstructPath?.("B");
+    expect(path?.map((t) => t.name)).toEqual(["toB"]);
   });
 });
