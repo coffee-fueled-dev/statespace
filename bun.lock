@@ -14,7 +14,7 @@
     },
     "examples": {
       "name": "@very-coffee/statespace-examples",
-      "version": "0.2.0-beta.1",
+      "version": "0.2.0",
       "dependencies": {
         "@very-coffee/statespace": "workspace:*",
       },
@@ -24,7 +24,7 @@
     },
     "packages/core": {
       "name": "@very-coffee/statespace",
-      "version": "0.2.0-beta.1",
+      "version": "0.2.0",
       "dependencies": {
         "@datastructures-js/priority-queue": "^6.3.4",
         "ajv": "^8.17.1",
