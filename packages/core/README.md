@@ -3,6 +3,7 @@
 ## Studies
 
 - **`bfs`** — unweighted FIFO breadth-first exploration.
+- **`dfs`** — unweighted LIFO depth-first exploration.
 - **`uniformCost`** — Dijkstra-style search by cumulative path cost (sum of `effect.cost`; equal costs FIFO).
 
 ## Typing / registries
