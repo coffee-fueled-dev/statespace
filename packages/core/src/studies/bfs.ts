@@ -1,25 +1,26 @@
-import { type ICompare, PriorityQueue } from "@datastructures-js/priority-queue";
 import type { StudyConfig, StudyResult } from "../explorer";
 import type { TransitionResult, TransitionSuccess } from "../transition/domain";
 
-export interface BFSConfig<T extends object> extends StudyConfig<T> {
-  comparator?: ICompare<TransitionResult<T>>;
-}
+export interface BFSConfig<T extends object> extends StudyConfig<T> {}
 
 export interface BFSResult<T extends object> extends StudyResult<T> {
   reconstructPath?: (goalStateHash: string) => Promise<TransitionSuccess<T>[]>;
 }
 
+/**
+ * Unweighted breadth-first search (FIFO queue).
+ * For cost-aware shortest paths, use `uniformCost`.
+ */
 export async function bfs<T extends object>({
   explorer,
   initialState,
   exitConditions,
   context,
-  comparator = (a, b) => (a.effect?.cost ?? 0) - (b.effect?.cost ?? 0),
 }: BFSConfig<T>): Promise<BFSResult<T>> {
   explorer.resetState();
 
-  const queue = new PriorityQueue<TransitionSuccess<T>>(comparator);
+  const queue: TransitionSuccess<T>[] = [];
+  let head = 0;
   const visited = new Set<string>();
   const parents = new Map<string, { parentHash: string; transition: TransitionSuccess<T> }>();
 
@@ -28,8 +29,9 @@ export async function bfs<T extends object>({
 
   const initialNeighbors = await explorer.neighbors(initialState, context);
   for (const neighbor of initialNeighbors) {
-    if (neighbor.result.success) {
-      queue.enqueue(neighbor.result);
+    if (neighbor.result.success && !visited.has(neighbor.hash)) {
+      visited.add(neighbor.hash);
+      queue.push(neighbor.result);
       parents.set(neighbor.hash, {
         parentHash: initialHash,
         transition: neighbor.result,
@@ -53,12 +55,11 @@ export async function bfs<T extends object>({
 
   let lastTransition: TransitionResult<T> | null = null;
 
-  while (!queue.isEmpty()) {
-    const current = queue.dequeue();
+  while (head < queue.length) {
+    const current = queue[head++];
     if (!current) break;
     lastTransition = current;
 
-    // Check async or sync exit conditions
     for (const exitCondition of exitConditions) {
       const maybeExit = exitCondition(explorer) as
         | StudyResult<T>
@@ -75,14 +76,12 @@ export async function bfs<T extends object>({
     }
 
     const currentHash = await explorer.encode(current.state);
-    if (visited.has(currentHash)) continue;
-    visited.add(currentHash);
-
     const neighbors = await explorer.neighbors(current.state, context);
     for (const neighbor of neighbors) {
       const { result, hash } = neighbor;
       if (result.success && !visited.has(hash)) {
-        queue.enqueue(result);
+        visited.add(hash);
+        queue.push(result);
         parents.set(hash, { parentHash: currentHash, transition: result });
       }
     }
