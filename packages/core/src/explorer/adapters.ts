@@ -7,11 +7,19 @@ export class Explorer<T extends object> implements IExplorer<T> {
   private _graph: MarkovGraph = new Map();
   private _uniqueStates: number = 0;
   private _totalOperations: number = 0;
+  /** Hashes observed as a source or target; drives uniqueStates (count-once). */
+  private _seenStates = new Set<string>();
 
   constructor(
     private readonly stateSpace: ExecutableStateSpace<T>,
     private readonly codex: Codex<T>,
   ) {}
+
+  private noteState(hash: string): void {
+    if (this._seenStates.has(hash)) return;
+    this._seenStates.add(hash);
+    this._uniqueStates++;
+  }
 
   private async _processTransition(
     name: string,
@@ -27,7 +35,7 @@ export class Explorer<T extends object> implements IExplorer<T> {
 
       const transitionEntry = transitionMap.get(resultStateHash);
       if (!transitionEntry) {
-        this._uniqueStates++;
+        this.noteState(resultStateHash);
         transitionMap.set(resultStateHash, [
           {
             name: result.name,
@@ -58,9 +66,9 @@ export class Explorer<T extends object> implements IExplorer<T> {
 
   async *neighborIterator(initialState: T, context?: unknown): AsyncGenerator<HashedTransition<T>> {
     const initialStateHash = await this.encode(initialState);
+    this.noteState(initialStateHash);
     let transitionMap = this._graph.get(initialStateHash);
     if (!transitionMap) {
-      this._uniqueStates++;
       transitionMap = new Map();
       this._graph.set(initialStateHash, transitionMap);
     }
@@ -133,6 +141,7 @@ export class Explorer<T extends object> implements IExplorer<T> {
    */
   resetState(): void {
     this._graph.clear();
+    this._seenStates.clear();
     this._uniqueStates = 0;
     this._totalOperations = 0;
   }

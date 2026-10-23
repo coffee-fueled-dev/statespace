@@ -174,6 +174,17 @@ describe("Explorer", () => {
       expect(explorer.graph.get(initialStateHash)?.get(neighbor1Hash)?.[1]).toBe(2); // Count incremented
     });
 
+    test("does not double-count when expanding a previously discovered neighbor", async () => {
+      await explorer.neighbors(initialState);
+      expect(explorer.uniqueStates).toBe(3); // initial + value:2 + value:3
+
+      const discovered = { value: 2 };
+      await explorer.neighbors(discovered);
+      // Expanding discovered state must not re-count it; successors already seen.
+      expect(explorer.uniqueStates).toBe(3);
+      expect(explorer.graph.has(await mockCodex.encode(discovered))).toBe(true);
+    });
+
     test("passes context to stateSpace.apply for each transition", async () => {
       const context = { quoteId: "quote-123" };
       await explorer.neighbors(initialState, context);
